@@ -1,7 +1,7 @@
 {
-	"$schema": "../sites/docs/static/schema/registry.json",
-	"name": "acme",
-	"homepage": "https://acme.com",
+	"$schema": "https://shadcn-svelte.com/schema/registry.json",
+	"name": "svagent",
+	"homepage": "https://svagent.twango.dev",
 	"items": [
 		{
 			"name": "hello-world",
