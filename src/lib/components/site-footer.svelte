@@ -18,7 +18,8 @@
 					class="font-medium underline underline-offset-4"
 				>
 					elevenlabs/ui
-				</a> and
+				</a>
+				and
 				<a
 					href="https://shadcn-svelte.com"
 					target="_blank"
