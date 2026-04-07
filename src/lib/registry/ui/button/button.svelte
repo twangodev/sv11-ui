@@ -1,5 +1,7 @@
 <script lang="ts" module>
 	import { tv, type VariantProps } from "tailwind-variants";
+	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from "svelte/elements";
+	import type { Snippet } from "svelte";
 
 	export const buttonVariants = tv({
 		base: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
@@ -27,12 +29,17 @@
 			size: "default",
 		},
 	});
+
+	export type ButtonProps = HTMLButtonAttributes &
+		HTMLAnchorAttributes &
+		VariantProps<typeof buttonVariants> & {
+			child?: Snippet<[{ props: Record<string, unknown> }]>;
+			ref?: HTMLElement | null;
+		};
 </script>
 
 <script lang="ts">
 	import { cn } from "$lib/utils.js";
-	import type { HTMLButtonAttributes } from "svelte/elements";
-	import type { Snippet } from "svelte";
 
 	let {
 		ref = $bindable(null),
@@ -41,12 +48,11 @@
 		child,
 		children,
 		class: className,
+		href = undefined,
+		type = "button",
+		disabled,
 		...restProps
-	}: HTMLButtonAttributes &
-		VariantProps<typeof buttonVariants> & {
-			child?: Snippet<[{ props: Record<string, unknown> }]>;
-			ref?: HTMLElement | null;
-		} = $props();
+	}: ButtonProps = $props();
 
 	const mergedProps = $derived({
 		...restProps,
@@ -57,8 +63,19 @@
 
 {#if child}
 	{@render child({ props: mergedProps })}
-{:else if children}
-	<button {...mergedProps} bind:this={ref}>
+{:else if href}
+	<a
+		bind:this={ref}
+		{...mergedProps}
+		href={disabled ? undefined : href}
+		aria-disabled={disabled}
+		role={disabled ? "link" : undefined}
+		tabindex={disabled ? -1 : undefined}
+	>
+		{@render children?.()}
+	</a>
+{:else}
+	<button bind:this={ref} {...mergedProps} {type} {disabled}>
 		{@render children?.()}
 	</button>
 {/if}

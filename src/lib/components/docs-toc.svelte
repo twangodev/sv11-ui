@@ -91,12 +91,7 @@
 		<DropdownMenu.Root bind:open>
 			<DropdownMenu.Trigger>
 				{#snippet child({ props })}
-					<Button
-						{...props}
-						variant="outline"
-						size="sm"
-						class={cn("h-8 md:h-7", className)}
-					>
+					<Button {...props} variant="outline" size="sm" class={cn("h-8 md:h-7", className)}>
 						<Menu3Icon /> On This Page
 					</Button>
 				{/snippet}

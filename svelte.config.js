@@ -1,6 +1,6 @@
 // @ts-check
 import { mdsx } from "mdsx";
-import adapter from "@sveltejs/adapter-auto";
+import adapter from "@sveltejs/adapter-static";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import MagicString from "magic-string";
 import { mdsxConfig } from "./mdsx.config.js";
@@ -11,7 +11,9 @@ const config = {
 	extensions: [".svelte", ".md"],
 
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			fallback: "404.html",
+		}),
 		prerender: {
 			handleMissingId: (details) => {
 				if (details.id === "#") return;
@@ -43,7 +45,7 @@ function componentPreviews() {
 
 			// Skip if called inside mdsx's internal preprocessing (no script tags yet)
 			// We need the instance <script> tag to exist so we can inject imports
-			if (!content.includes("<script>") && !content.includes('<script ')) return;
+			if (!content.includes("<script>") && !content.includes("<script ")) return;
 
 			const ms = new MagicString(content);
 			const results = content.matchAll(/<ComponentPreview name=["|']([^\s]*)["|']/g);
@@ -59,14 +61,10 @@ function componentPreviews() {
 			}
 
 			// Build all import statements we need to inject
-			const imports = [
-				`import ComponentPreview from "$lib/components/component-preview.svelte";`,
-			];
+			const imports = [`import ComponentPreview from "$lib/components/component-preview.svelte";`];
 			for (const name of components) {
 				const identifier = camelize(name);
-				imports.push(
-					`import ${identifier} from "$lib/registry/examples/${name}.svelte";`
-				);
+				imports.push(`import ${identifier} from "$lib/registry/examples/${name}.svelte";`);
 			}
 
 			// Find the instance <script> tag (not <script module>) to insert imports after it

@@ -38,14 +38,11 @@
 										>
 											{#snippet child({ props })}
 												<a href={subItem.href} {...props}>
-													<span
-														class="absolute inset-0 flex w-(--sidebar-width) bg-transparent"
+													<span class="absolute inset-0 flex w-(--sidebar-width) bg-transparent"
 													></span>
 													{subItem.title}
 													{#if subItem.indicator === "new"}
-														<span
-															class="bg-svelte-orange flex size-2 rounded-full"
-															title="New"
+														<span class="bg-svelte-orange flex size-2 rounded-full" title="New"
 														></span>
 													{/if}
 												</a>

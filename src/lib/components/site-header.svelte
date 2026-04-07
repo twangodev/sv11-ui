@@ -13,9 +13,7 @@
 
 <header class="bg-background sticky top-0 z-50 w-full">
 	<div class="container-wrapper px-6">
-		<div
-			class="flex h-(--header-height) items-center gap-2 **:data-[slot=separator]:h-4!"
-		>
+		<div class="flex h-(--header-height) items-center gap-2 **:data-[slot=separator]:h-4!">
 			<MobileNav bind:this={mobileNavRef} class="flex lg:hidden" />
 			<Button href="/" variant="ghost" size="icon" class="hidden size-8 lg:flex">
 				<Logo class="size-5" />

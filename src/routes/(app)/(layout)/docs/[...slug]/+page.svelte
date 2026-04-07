@@ -40,9 +40,7 @@
 		>
 			<div class="flex flex-col gap-2">
 				<div class="flex items-start justify-between">
-					<h1
-						class="scroll-m-20 text-4xl font-semibold tracking-tight sm:text-3xl xl:text-4xl"
-					>
+					<h1 class="scroll-m-20 text-4xl font-semibold tracking-tight sm:text-3xl xl:text-4xl">
 						{doc.title}
 					</h1>
 					<div class="flex items-center gap-2">
@@ -82,12 +80,7 @@
 		</div>
 		<div class="mx-auto hidden h-16 w-full max-w-2xl items-center gap-2 px-4 sm:flex md:px-0">
 			{#if neighbors.previous}
-				<Button
-					variant="secondary"
-					size="sm"
-					class="shadow-none"
-					href={neighbors.previous.href}
-				>
+				<Button variant="secondary" size="sm" class="shadow-none" href={neighbors.previous.href}>
 					<ArrowLeftIcon />
 					{neighbors.previous.title}
 				</Button>

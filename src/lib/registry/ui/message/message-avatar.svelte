@@ -1,11 +1,7 @@
 <script lang="ts">
 	import { cn } from "$lib/utils.js";
 	import { Avatar as AvatarPrimitive } from "bits-ui";
-	import {
-		Avatar,
-		AvatarImage,
-		AvatarFallback,
-	} from "$lib/registry/ui/avatar/index.js";
+	import { Avatar, AvatarImage, AvatarFallback } from "$lib/registry/ui/avatar/index.js";
 
 	let {
 		src,
