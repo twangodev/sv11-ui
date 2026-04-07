@@ -4,7 +4,7 @@
 			<div class="text-muted-foreground w-full text-center text-xs leading-loose sm:text-sm">
 				Built by
 				<a
-					href="https://github.com/twangodev"
+					href="https://twango.dev"
 					target="_blank"
 					rel="noreferrer"
 					class="font-medium underline underline-offset-4"
@@ -18,7 +18,7 @@
 					class="font-medium underline underline-offset-4"
 				>
 					elevenlabs/ui
-				</a>. Built with
+				</a> and
 				<a
 					href="https://shadcn-svelte.com"
 					target="_blank"
