@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ShimmeringText } from "$lib/registry/ui/shimmering-text/index.js";
+	import { fly } from "svelte/transition";
 
 	const phrases = [
 		"Agent is thinking...",
@@ -26,9 +27,15 @@
 	</div>
 
 	<div class="space-y-4">
-		<div class="bg-muted/10 flex items-center justify-center rounded-lg py-8">
+		<div class="bg-muted/10 relative flex items-center justify-center rounded-lg py-8">
 			{#key currentIndex}
-				<ShimmeringText text={phrases[currentIndex]} />
+				<div
+					class="absolute"
+					in:fly={{ y: 10, duration: 300, delay: 300 }}
+					out:fly={{ y: -10, duration: 300 }}
+				>
+					<ShimmeringText text={phrases[currentIndex]} />
+				</div>
 			{/key}
 		</div>
 	</div>

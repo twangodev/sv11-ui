@@ -32,7 +32,8 @@
 
 	let ref = $state<HTMLSpanElement>();
 	let isInView = $state(false);
-	let controls: ReturnType<typeof animate> | undefined;
+	let shimmerControls: ReturnType<typeof animate> | undefined;
+	let fadeControls: ReturnType<typeof animate> | undefined;
 
 	let dynamicSpread = $derived(text.length * spread);
 	let shouldAnimate = $derived(!startOnView || isInView);
@@ -59,10 +60,10 @@
 		if (!ref || !shouldAnimate) return;
 
 		// Fade in
-		animate(ref, { opacity: [0, 1] }, { duration: 0.3, delay });
+		fadeControls = animate(ref, { opacity: [0, 1] }, { duration: 0.3, delay });
 
 		// Shimmer
-		controls = animate(
+		shimmerControls = animate(
 			ref,
 			{ backgroundPosition: ["100% center", "0% center"] },
 			{
@@ -75,7 +76,8 @@
 		);
 
 		return () => {
-			controls?.stop();
+			shimmerControls?.stop();
+			fadeControls?.stop();
 		};
 	});
 </script>
@@ -95,6 +97,7 @@
 	style:--base-color={color || undefined}
 	style:--shimmer-color={shimmerColor || undefined}
 	style:background-image="var(--shimmer-bg), linear-gradient(var(--base-color), var(--base-color))"
+	style:background-position="100% center"
 	style:opacity="0"
 >
 	{text}
