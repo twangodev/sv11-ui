@@ -63,7 +63,7 @@ Components below are listed in recommended porting order: foundations first, the
 | `shimmering-text`   | Text with shimmer/gradient animation                | Done    |
 | `scrub-bar`         | Audio timeline scrubber                             | Done    |
 | `conversation`      | Chat message container with auto-scroll             | Done    |
-| `audio-player`      | Full-featured audio playback with scrubbing         | Planned |
+| `audio-player`      | Full-featured audio playback with scrubbing         | Done    |
 | `waveform`          | Static audio waveform visualization                 | Planned |
 | `live-waveform`     | Real-time microphone waveform                       | Planned |
 | `voice-button`      | Voice input button with state feedback              | Planned |
