@@ -135,6 +135,18 @@
     "slugFull": "/components/shimmering-text"
   },
   {
+    "title": "Transcript Viewer",
+    "description": "Synchronized transcript with audio playback. Highlights each word as it's spoken, supports seeking via scrub bar, and exposes a compound-component API with provider-agnostic character-alignment data.",
+    "path": "components/transcript-viewer",
+    "links": {
+      "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/transcript-viewer"
+    },
+    "component": true,
+    "toc": [],
+    "slug": "transcript-viewer",
+    "slugFull": "/components/transcript-viewer"
+  },
+  {
     "title": "Voice Button",
     "description": "Stateful button with integrated live waveform feedback for voice recording, success/error states, and keyboard shortcut slots.",
     "path": "components/voice-button",

@@ -70,7 +70,7 @@ Components below are listed in recommended porting order: foundations first, the
 | `mic-selector`      | Microphone device selector                          | Done    |
 | `matrix`            | LED matrix display with animations                  | Done    |
 | `bar-visualizer`    | Audio frequency band visualization                  | Done    |
-| `transcript-viewer` | Synchronized transcript with audio playback         | Planned |
+| `transcript-viewer` | Synchronized transcript with audio playback         | Done    |
 | `speech-input`      | Real-time speech-to-text input                      | Planned |
 | `conversation-bar`  | Chat input bar with voice/text modes                | Planned |
 | `orb`               | 3D animated voice agent visualization               | Planned |
