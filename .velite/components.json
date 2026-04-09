@@ -85,5 +85,17 @@
     "toc": [],
     "slug": "shimmering-text",
     "slugFull": "/components/shimmering-text"
+  },
+  {
+    "title": "Waveform",
+    "description": "Canvas-based audio waveform visualization components with recording, playback scrubbing, and microphone input support.",
+    "path": "components/waveform",
+    "links": {
+      "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/waveform"
+    },
+    "component": true,
+    "toc": [],
+    "slug": "waveform",
+    "slugFull": "/components/waveform"
   }
 ]
