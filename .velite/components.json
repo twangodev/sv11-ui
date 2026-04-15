@@ -111,6 +111,18 @@
     "slugFull": "/components/mic-selector"
   },
   {
+    "title": "Orb",
+    "description": "A 3D animated orb with audio reactivity, custom colors, and agent state visualization built with Three.js.",
+    "path": "components/orb",
+    "links": {
+      "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/orb"
+    },
+    "component": true,
+    "toc": [],
+    "slug": "orb",
+    "slugFull": "/components/orb"
+  },
+  {
     "title": "Response",
     "description": "A streaming-friendly text response component for AI agent output.",
     "path": "components/response",

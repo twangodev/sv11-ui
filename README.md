@@ -73,7 +73,7 @@ Components below are listed in recommended porting order: foundations first, the
 | `transcript-viewer` | Synchronized transcript with audio playback         | Done    |
 | `speech-input`      | Real-time speech-to-text input                      | Done    |
 | `conversation-bar`  | Chat input bar with voice/text modes                | Done    |
-| `orb`               | 3D animated voice agent visualization               | Planned |
+| `orb`               | 3D animated voice agent visualclzation              | Done    |
 | `voice-picker`      | Voice selection dropdown with preview               | Planned |
 
 ### Provider-Agnostic
