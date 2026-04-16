@@ -71,7 +71,7 @@
 		"unist-builder": "^4.0.0",
 		"unist-util-visit": "^5.1.0",
 		"velite": "^0.3.1",
-		"vite": "^8.0.5",
+		"vite": "^8.0.8",
 		"vite-plugin-devtools-json": "^1.0.0",
 		"zod": "^4.2.1"
 	},
