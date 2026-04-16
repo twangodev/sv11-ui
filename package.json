@@ -42,7 +42,7 @@
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-svelte": "^3.9.2",
-		"globals": "^16.0.0",
+		"globals": "^17.5.0",
 		"magic-string": "^0.30.21",
 		"mdsx": "^0.0.7",
 		"mode-watcher": "^1.1.0",
