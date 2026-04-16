@@ -9,3 +9,6 @@ export declare const gettingStarted: gettingStarted[]
 
 export type components = Collections['components']['schema']['_output']
 export declare const components: components[]
+
+export type adapters = Collections['adapters']['schema']['_output']
+export declare const adapters: adapters[]

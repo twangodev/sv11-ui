@@ -1,7 +1,15 @@
-import { components, gettingStarted } from "$content/index.js";
+import { adapters, components, gettingStarted } from "$content/index.js";
 import type { Component } from "svelte";
 
-const GET_STARTED_ORDER = ["index", "setup", "usage", "troubleshooting"];
+const GET_STARTED_ORDER = [
+	"index",
+	"setup",
+	"usage",
+	"providers",
+	"theming",
+	"dark-mode",
+	"troubleshooting",
+];
 
 export const NEW_COMPONENTS = new Set<string>([]);
 
@@ -49,6 +57,29 @@ function generateGetStartedNav(): SidebarNavItem[] {
 	return ordered;
 }
 
+function generateAdaptersNav(): SidebarNavItem[] {
+	const adaptersNavItems: SidebarNavItem[] = [];
+	const index = adapters.find((doc) => doc.path === "adapters");
+	if (index) {
+		adaptersNavItems.push({
+			title: index.title,
+			href: "/docs/adapters",
+			items: [],
+		});
+	}
+
+	for (const doc of adapters) {
+		if (doc.path === "adapters") continue;
+		adaptersNavItems.push({
+			title: doc.title,
+			href: `/docs/${doc.path}`,
+			items: [],
+		});
+	}
+
+	return adaptersNavItems;
+}
+
 function generateComponentsNav(): SidebarNavItem[] {
 	const componentsNavItems: SidebarNavItem[] = [];
 	const index = components.find((doc) => doc.title === "Components");
@@ -74,12 +105,17 @@ function generateComponentsNav(): SidebarNavItem[] {
 }
 
 const getStartedNav = generateGetStartedNav();
+const adaptersNav = generateAdaptersNav();
 const componentsNav = generateComponentsNav();
 
 export const sidebarNavItems: SidebarNavItem[] = [
 	{
 		title: "Get Started",
 		items: getStartedNav,
+	},
+	{
+		title: "Adapters",
+		items: adaptersNav.filter((item) => item.title !== "Adapters"),
 	},
 	{
 		title: "Components",
@@ -99,7 +135,7 @@ export const mainNavItems: NavItem[] = [
 ];
 
 export function getFullNavItems(): Array<SidebarNavItem & { index: number }> {
-	return [...getStartedNav, ...componentsNav].map((item, index) => ({
+	return [...getStartedNav, ...adaptersNav, ...componentsNav].map((item, index) => ({
 		...item,
 		index,
 	}));

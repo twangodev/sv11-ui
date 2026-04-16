@@ -1,5 +1,40 @@
 [
   {
+    "title": "Dark Mode",
+    "description": "Add light and dark themes to a svagent-ui project with mode-watcher.",
+    "path": "dark-mode",
+    "component": false,
+    "toc": [
+      {
+        "title": "Install mode-watcher",
+        "url": "#install-mode-watcher",
+        "items": []
+      },
+      {
+        "title": "Add the watcher",
+        "url": "#add-the-watcher",
+        "items": []
+      },
+      {
+        "title": "CSS setup",
+        "url": "#css-setup",
+        "items": []
+      },
+      {
+        "title": "Building a toggle",
+        "url": "#building-a-toggle",
+        "items": []
+      },
+      {
+        "title": "Reading the current mode",
+        "url": "#reading-the-current-mode",
+        "items": []
+      }
+    ],
+    "slug": "",
+    "slugFull": "/dark-mode"
+  },
+  {
     "title": "Introduction",
     "description": "A component registry for building AI agent interfaces with Svelte 5.",
     "path": "index",
@@ -13,6 +48,48 @@
     ],
     "slug": "",
     "slugFull": "/index"
+  },
+  {
+    "title": "Providers",
+    "description": "Provider-agnostic adapter interfaces for wiring svagent components to any backend.",
+    "path": "providers",
+    "component": false,
+    "toc": [
+      {
+        "title": "ConversationAdapter",
+        "url": "#conversationadapter",
+        "items": [
+          {
+            "title": "Method responsibilities",
+            "url": "#method-responsibilities",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "TranscriptionAdapter",
+        "url": "#transcriptionadapter",
+        "items": [
+          {
+            "title": "Contract details",
+            "url": "#contract-details",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "Voice",
+        "url": "#voice",
+        "items": []
+      },
+      {
+        "title": "Writing your own adapter",
+        "url": "#writing-your-own-adapter",
+        "items": []
+      }
+    ],
+    "slug": "",
+    "slugFull": "/providers"
   },
   {
     "title": "Setup",
@@ -33,6 +110,52 @@
     ],
     "slug": "",
     "slugFull": "/setup"
+  },
+  {
+    "title": "Theming",
+    "description": "Customize svagent-ui components using CSS variables and component-level color props.",
+    "path": "theming",
+    "component": false,
+    "toc": [
+      {
+        "title": "CSS variables",
+        "url": "#css-variables",
+        "items": []
+      },
+      {
+        "title": "Customizing tokens",
+        "url": "#customizing-tokens",
+        "items": []
+      },
+      {
+        "title": "Component-specific theming",
+        "url": "#component-specific-theming",
+        "items": [
+          {
+            "title": "Orb",
+            "url": "#orb",
+            "items": []
+          },
+          {
+            "title": "Matrix",
+            "url": "#matrix",
+            "items": []
+          },
+          {
+            "title": "Waveform and LiveWaveform",
+            "url": "#waveform-and-livewaveform",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "Dark mode",
+        "url": "#dark-mode",
+        "items": []
+      }
+    ],
+    "slug": "",
+    "slugFull": "/theming"
   },
   {
     "title": "Troubleshooting",

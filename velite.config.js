@@ -37,11 +37,18 @@ const components = defineCollection({
 	schema: docSchema,
 });
 
+const adapters = defineCollection({
+	name: "adapters",
+	pattern: "./adapters/**/*.md",
+	schema: docSchema,
+});
+
 export default defineConfig({
 	root: "./content",
 	collections: {
 		gettingStarted,
 		components,
+		adapters,
 	},
 	output: { assets: "static" },
 });

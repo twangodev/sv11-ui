@@ -2,3 +2,4 @@
 
 export { default as gettingStarted } from './gettingStarted.json' with { type: 'json' }
 export { default as components } from './components.json' with { type: 'json' }
+export { default as adapters } from './adapters.json' with { type: 'json' }
