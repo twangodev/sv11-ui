@@ -23,6 +23,7 @@ Thumbs.db
 
 # Registry (generated)
 src/__registry__
+/static/r
 
 # Vite
 vite.config.js.timestamp-*
