@@ -6,18 +6,82 @@
     "component": false,
     "toc": [
       {
-        "title": "svagent-ui",
-        "url": "#svagent-ui",
-        "items": [
-          {
-            "title": "Features",
-            "url": "#features",
-            "items": []
-          }
-        ]
+        "title": "Features",
+        "url": "#features",
+        "items": []
       }
     ],
     "slug": "",
     "slugFull": "/index"
+  },
+  {
+    "title": "Setup",
+    "description": "Getting started with svagent-ui.",
+    "path": "setup",
+    "component": false,
+    "toc": [
+      {
+        "title": "Prerequisites",
+        "url": "#prerequisites",
+        "items": []
+      },
+      {
+        "title": "Installing components",
+        "url": "#installing-components",
+        "items": []
+      }
+    ],
+    "slug": "",
+    "slugFull": "/setup"
+  },
+  {
+    "title": "Troubleshooting",
+    "description": "Common issues when installing and using svagent-ui components.",
+    "path": "troubleshooting",
+    "component": false,
+    "toc": [
+      {
+        "title": "Why are my components not styled?",
+        "url": "#why-are-my-components-not-styled",
+        "items": []
+      },
+      {
+        "title": "I ran the install command but nothing was added to my project",
+        "url": "#i-ran-the-install-command-but-nothing-was-added-to-my-project",
+        "items": []
+      },
+      {
+        "title": "Theme switching doesn't work — my app stays in light mode",
+        "url": "#theme-switching-doesnt-work--my-app-stays-in-light-mode",
+        "items": []
+      },
+      {
+        "title": "Component imports fail with \"module not found\"",
+        "url": "#component-imports-fail-with-module-not-found",
+        "items": []
+      },
+      {
+        "title": "Still stuck?",
+        "url": "#still-stuck",
+        "items": []
+      }
+    ],
+    "slug": "",
+    "slugFull": "/troubleshooting"
+  },
+  {
+    "title": "Usage",
+    "description": "How to use svagent-ui components in your SvelteKit application.",
+    "path": "usage",
+    "component": false,
+    "toc": [
+      {
+        "title": "Example",
+        "url": "#example",
+        "items": []
+      }
+    ],
+    "slug": "",
+    "slugFull": "/usage"
   }
 ]

@@ -1,5 +1,7 @@
-import { components } from "$content/index.js";
+import { components, gettingStarted } from "$content/index.js";
 import type { Component } from "svelte";
+
+const GET_STARTED_ORDER = ["index", "setup", "usage", "troubleshooting"];
 
 export const NEW_COMPONENTS = new Set<string>([]);
 
@@ -21,29 +23,30 @@ export type NavItemWithChildren = NavItem & {
 	items: NavItemWithChildren[];
 };
 
-function generateSectionsNav(): SidebarNavItem[] {
-	return [
-		{
-			title: "Get Started",
-			href: "/docs",
-			items: [],
-		},
-		{
-			title: "Components",
-			href: "/docs/components",
-			items: [],
-		},
-	];
-}
-
 function generateGetStartedNav(): SidebarNavItem[] {
-	return [
-		{
-			title: "Introduction",
-			href: "/docs",
+	const byPath = new Map(gettingStarted.map((doc) => [doc.path, doc]));
+	const ordered: SidebarNavItem[] = [];
+
+	for (const path of GET_STARTED_ORDER) {
+		const doc = byPath.get(path);
+		if (!doc) continue;
+		byPath.delete(path);
+		ordered.push({
+			title: doc.title,
+			href: path === "index" ? "/docs" : `/docs/${path}`,
 			items: [],
-		},
-	];
+		});
+	}
+
+	for (const doc of byPath.values()) {
+		ordered.push({
+			title: doc.title,
+			href: `/docs/${doc.path}`,
+			items: [],
+		});
+	}
+
+	return ordered;
 }
 
 function generateComponentsNav(): SidebarNavItem[] {
@@ -70,15 +73,10 @@ function generateComponentsNav(): SidebarNavItem[] {
 	return componentsNavItems;
 }
 
-const sectionsNav = generateSectionsNav();
 const getStartedNav = generateGetStartedNav();
 const componentsNav = generateComponentsNav();
 
 export const sidebarNavItems: SidebarNavItem[] = [
-	{
-		title: "Sections",
-		items: sectionsNav,
-	},
 	{
 		title: "Get Started",
 		items: getStartedNav,
