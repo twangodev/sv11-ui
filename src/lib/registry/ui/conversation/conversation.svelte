@@ -52,10 +52,12 @@
 
 <div
 	bind:this={scrollEl}
+	{...restProps}
 	data-slot="conversation"
 	role="log"
+	aria-live="polite"
+	aria-relevant="additions"
 	class={cn("relative flex-1 overflow-y-auto", className)}
-	{...restProps}
 >
 	{@render children?.()}
 </div>
