@@ -85,11 +85,7 @@ The matrix LED display accepts a `palette` prop with `on` and `off` colors for l
 	import { Matrix } from "$lib/registry/ui/matrix";
 </script>
 
-<Matrix
-	rows={7}
-	cols={7}
-	palette={{ on: "oklch(0.7 0.2 150)", off: "var(--muted-foreground)" }}
-/>
+<Matrix rows={7} cols={7} palette={{ on: "oklch(0.7 0.2 150)", off: "var(--muted-foreground)" }} />
 ```
 
 The default is `{ on: "currentColor", off: "var(--muted-foreground)" }`, so if you don't pass a palette the lit pixels follow the element's `color`, making the matrix themeable via any Tailwind text utility (`class="text-primary"`, `class="text-destructive"`, etc.).

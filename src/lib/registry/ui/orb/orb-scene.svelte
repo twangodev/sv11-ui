@@ -4,14 +4,14 @@
 	import { onMount } from "svelte";
 	import * as THREE from "three";
 	import { mode } from "mode-watcher";
-	import type { AgentState } from "./types.js";
+	import type { OrbAgentState } from "./types.js";
 	import fragmentShader from "./shaders/orb.frag.glsl?raw";
 	import vertexShader from "./shaders/orb.vert.glsl?raw";
 
 	type Props = {
 		colors: [string, string];
 		seed: number;
-		agentState: AgentState;
+		agentState: OrbAgentState;
 		volumeMode: "auto" | "manual";
 		manualInput?: number;
 		manualOutput?: number;

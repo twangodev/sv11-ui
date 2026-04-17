@@ -4,17 +4,47 @@
 	import type { AudioType, CharacterAlignment, SegmentComposer } from "./context.svelte.js";
 
 	export type TranscriptViewerProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
+		/** URL of the audio file that backs the transcript. */
 		audioSrc: string;
+		/**
+		 * MIME type emitted on the inner `<source>` element. Set this when
+		 * serving non-MP3 audio so the browser picks the right decoder.
+		 * @default "audio/mpeg"
+		 */
 		audioType?: AudioType;
+		/**
+		 * Character-level alignment used to compute word boundaries and drive
+		 * highlighting. Shape matches ElevenLabs' `CharacterAlignmentResponseModel`;
+		 * reshape other providers' output to the same structure.
+		 */
 		alignment: CharacterAlignment;
+		/**
+		 * Override the default word/gap segmentation. Receives the raw
+		 * alignment and returns the composed `segments` and `words` arrays.
+		 */
 		segmentComposer?: SegmentComposer;
+		/**
+		 * When `true`, ElevenLabs-style tags like `[excited]` are stripped
+		 * from the rendered transcript.
+		 * @default true
+		 */
 		hideAudioTags?: boolean;
+		/** Called when the audio starts playing. */
 		onPlay?: () => void;
+		/** Called when the audio is paused. */
 		onPause?: () => void;
+		/** Called with the current playback time (in seconds) on every audio `timeupdate`. */
 		onTimeUpdate?: (time: number) => void;
+		/** Called when playback reaches the end of the track. */
 		onEnded?: () => void;
+		/** Called with the total duration (in seconds) once metadata is available. */
 		onDurationChange?: (duration: number) => void;
+		/**
+		 * Sub-components composed inside the root (e.g. `<TranscriptViewerAudio />`,
+		 * `<TranscriptViewerWords />`, `<TranscriptViewerScrubBar />`).
+		 */
 		children?: Snippet;
+		/** Bind to the underlying wrapper `<div>` element. */
 		ref?: HTMLDivElement | null;
 	};
 </script>

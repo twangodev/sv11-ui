@@ -14,10 +14,15 @@
 		children,
 		...restProps
 	}: HTMLAttributes<HTMLDivElement> & {
+		/** Total duration of the timeline, in seconds. */
 		duration: number;
+		/** Current playback time, in seconds. */
 		value: number;
+		/** Called with the new time (in seconds) as the user scrubs. */
 		onScrub?: (time: number) => void;
+		/** Called when the user presses down on the track or thumb. */
 		onScrubStart?: () => void;
+		/** Called when the user releases the pointer after scrubbing. */
 		onScrubEnd?: () => void;
 		children?: Snippet;
 	} = $props();

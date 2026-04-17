@@ -13,11 +13,11 @@ After installing svagent-ui components, you can use them in your application lik
 
 ```svelte
 <script lang="ts">
-    import { Orb } from "$lib/registry/ui/orb";
-    import { Card } from "$lib/registry/ui/card";
+	import { Orb } from "$lib/registry/ui/orb";
+	import { Card } from "$lib/registry/ui/card";
 </script>
 
 <Card class="flex items-center justify-center p-8">
-    <Orb />
+	<Orb />
 </Card>
 ```

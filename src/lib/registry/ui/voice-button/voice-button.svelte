@@ -11,13 +11,32 @@
 	import { cn } from "$lib/utils.js";
 
 	export type VoiceButtonProps = Omit<ComponentProps<typeof Button>, "onclick"> & {
+		/**
+		 * Current state of the voice button. Drives the internal waveform,
+		 * success/error feedback, and disabled behavior.
+		 * @default "idle"
+		 */
 		state?: VoiceButtonState;
+		/** Called when the button is clicked, after any native `onclick` handler. */
 		onPress?: () => void;
+		/** Native click handler invoked before `onPress`. */
 		onclick?: (e: MouseEvent) => void;
+		/** Leading content rendered on non-icon sizes. Accepts a string or a snippet. */
 		label?: string | Snippet;
+		/**
+		 * Trailing content rendered on the right (e.g. a keyboard shortcut).
+		 * Hidden while the waveform is active. Accepts a string or a snippet.
+		 */
 		trailing?: string | Snippet;
+		/** Icon snippet rendered when `size="icon"` and no waveform is active. */
 		icon?: Snippet;
+		/** Extra classes forwarded to the waveform container. */
 		waveformClassName?: string;
+		/**
+		 * Milliseconds to display the success/error state before returning
+		 * to idle visuals.
+		 * @default 1500
+		 */
 		feedbackDuration?: number;
 	};
 

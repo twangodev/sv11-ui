@@ -16,7 +16,12 @@
 		format = formatTimestamp,
 		...restProps
 	}: HTMLAttributes<HTMLSpanElement> & {
+		/** Time value in seconds to render. */
 		time: number;
+		/**
+		 * Custom formatter applied to `time` before rendering. Defaults to
+		 * `m:ss` (e.g. `1:07`).
+		 */
 		format?: (time: number) => string;
 	} = $props();
 </script>

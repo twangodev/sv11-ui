@@ -5,21 +5,78 @@
 	export type MatrixMode = "default" | "vu";
 
 	export type MatrixProps = HTMLAttributes<HTMLDivElement> & {
+		/** Number of rows in the matrix grid. */
 		rows: number;
+		/** Number of columns in the matrix grid. */
 		cols: number;
+		/**
+		 * Static pattern to display. A 2D array of brightness values in
+		 * `[0, 1]`. When set, animation is disabled and `frames` is ignored.
+		 */
 		pattern?: Frame;
+		/**
+		 * Ordered frames to loop through for animation. Ignored when
+		 * `pattern` is provided.
+		 */
 		frames?: Frame[];
+		/**
+		 * Playback rate in frames per second when animating `frames`.
+		 * @default 12
+		 */
 		fps?: number;
+		/**
+		 * Start animating automatically on mount. Ignored when a static
+		 * `pattern` is provided.
+		 * @default true
+		 */
 		autoplay?: boolean;
+		/**
+		 * Loop the frame sequence. When `false`, animation halts on the last
+		 * frame.
+		 * @default true
+		 */
 		loop?: boolean;
+		/**
+		 * Cell diameter in pixels.
+		 * @default 10
+		 */
 		size?: number;
+		/**
+		 * Gap between cells in pixels.
+		 * @default 2
+		 */
 		gap?: number;
+		/**
+		 * CSS colors for active and inactive cells. Defaults map `on` to the
+		 * current text color and `off` to the muted foreground token.
+		 * @default { on: "currentColor", off: "var(--muted-foreground)" }
+		 */
 		palette?: { on: string; off: string };
+		/**
+		 * Global brightness multiplier applied to every cell, clamped to
+		 * `[0, 1]`.
+		 * @default 1
+		 */
 		brightness?: number;
+		/**
+		 * ARIA label for the container. Falls back to `"matrix display"` when
+		 * omitted.
+		 */
 		ariaLabel?: string;
+		/** Invoked whenever the active frame index changes during animation. */
 		onFrame?: (index: number) => void;
+		/**
+		 * Rendering mode. `"vu"` reads `levels` each render to draw a
+		 * bottom-anchored meter instead of `frames` or `pattern`.
+		 * @default "default"
+		 */
 		mode?: MatrixMode;
+		/**
+		 * Per-column level values in `[0, 1]` used when `mode="vu"`. Ignored
+		 * in other modes.
+		 */
 		levels?: number[];
+		/** Bound reference to the root container element. */
 		ref?: HTMLDivElement | null;
 	};
 </script>
@@ -140,7 +197,13 @@
 		height: rows * (size + gap) - gap,
 	});
 
-	const isAnimating = $derived(!pattern && !!frames && frames.length > 0);
+	// SVG `id` is document-global: multiple <Matrix> instances on a page would
+	// all reference the first instance's gradients/filter. Namespace every
+	// defined id with a stable per-instance prefix.
+	const uid = $props.id();
+	const onId = `matrix-pixel-on-${uid}`;
+	const offId = `matrix-pixel-off-${uid}`;
+	const glowId = `matrix-glow-${uid}`;
 </script>
 
 <div
@@ -148,7 +211,6 @@
 	data-slot="matrix"
 	role="img"
 	aria-label={ariaLabel ?? "matrix display"}
-	aria-live={isAnimating ? "polite" : undefined}
 	class={cn("relative inline-block", className)}
 	style="--matrix-on: {palette.on}; --matrix-off: {palette.off}; --matrix-gap: {gap}px; --matrix-size: {size}px;"
 	{...restProps}
@@ -162,16 +224,16 @@
 		style="overflow: visible;"
 	>
 		<defs>
-			<radialGradient id="matrix-pixel-on" cx="50%" cy="50%" r="50%">
+			<radialGradient id={onId} cx="50%" cy="50%" r="50%">
 				<stop offset="0%" stop-color="var(--matrix-on)" stop-opacity="1" />
 				<stop offset="70%" stop-color="var(--matrix-on)" stop-opacity="0.85" />
 				<stop offset="100%" stop-color="var(--matrix-on)" stop-opacity="0.6" />
 			</radialGradient>
-			<radialGradient id="matrix-pixel-off" cx="50%" cy="50%" r="50%">
-				<stop offset="0%" stop-color="var(--muted-foreground)" stop-opacity="1" />
-				<stop offset="100%" stop-color="var(--muted-foreground)" stop-opacity="0.7" />
+			<radialGradient id={offId} cx="50%" cy="50%" r="50%">
+				<stop offset="0%" stop-color="var(--matrix-off)" stop-opacity="1" />
+				<stop offset="100%" stop-color="var(--matrix-off)" stop-opacity="0.7" />
 			</radialGradient>
-			<filter id="matrix-glow" x="-50%" y="-50%" width="200%" height="200%">
+			<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
 				<feGaussianBlur stdDeviation="2" result="blur" />
 				<feComposite in="SourceGraphic" in2="blur" operator="over" />
 			</filter>
@@ -185,17 +247,15 @@
 					{@const isActive = opacity > 0.5}
 					{@const isOn = opacity > 0.05}
 					<circle
-						class={cn(
-							"matrix-pixel",
-							isActive && "matrix-pixel-active",
-							!isOn && "opacity-20 dark:opacity-[0.1]"
-						)}
+						class={cn("matrix-pixel", !isOn && "opacity-20 dark:opacity-[0.1]")}
 						cx={pos.x + size / 2}
 						cy={pos.y + size / 2}
 						r={(size / 2) * 0.9}
-						fill={isOn ? "url(#matrix-pixel-on)" : "url(#matrix-pixel-off)"}
+						fill={isOn ? `url(#${onId})` : `url(#${offId})`}
 						opacity={isOn ? opacity : 0.1}
-						style="transform: scale({isActive ? 1.1 : 1});"
+						style="transform: scale({isActive ? 1.1 : 1}); filter: {isActive
+							? `url(#${glowId})`
+							: 'none'};"
 					/>
 				{/if}
 			{/each}
@@ -207,11 +267,9 @@
 	:global(.matrix-pixel) {
 		transition:
 			opacity 300ms ease-out,
-			transform 150ms ease-out;
+			transform 150ms ease-out,
+			filter 150ms ease-out;
 		transform-origin: center;
 		transform-box: fill-box;
-	}
-	:global(.matrix-pixel-active) {
-		filter: url(#matrix-glow);
 	}
 </style>

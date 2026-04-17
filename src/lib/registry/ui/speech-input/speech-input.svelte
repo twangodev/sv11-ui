@@ -5,14 +5,39 @@
 	import type { SpeechInputData, ButtonSize } from "./context.svelte.js";
 
 	export type SpeechInputProps = Omit<HTMLAttributes<HTMLDivElement>, "children" | "onerror"> & {
+		/**
+		 * STT backend bridge that owns the transcription session. Conforms to
+		 * [`TranscriptionAdapter`](/docs/providers#transcriptionadapter).
+		 */
 		adapter: TranscriptionAdapter;
+		/**
+		 * Shared size applied to `SpeechInputRecordButton` and
+		 * `SpeechInputCancelButton` via context.
+		 * @default "default"
+		 */
 		size?: ButtonSize;
+		/** Fired once the adapter reports the connection is ready for audio. */
 		onStart?: (data: SpeechInputData) => void;
+		/**
+		 * Fired when the user stops recording. Receives a snapshot of the
+		 * transcript — any in-flight partial is preserved.
+		 */
 		onStop?: (data: SpeechInputData) => void;
+		/**
+		 * Fired when the user cancels recording. Receives the snapshot taken
+		 * before partial + committed state is cleared.
+		 */
 		onCancel?: (data: SpeechInputData) => void;
+		/** Fired on every partial or committed transcript update. */
 		onChange?: (data: SpeechInputData) => void;
+		/** Fired when the adapter surfaces an error or `start()` rejects. */
 		onError?: (error: Error) => void;
+		/**
+		 * Compound children — typically `SpeechInputRecordButton`,
+		 * `SpeechInputPreview`, and `SpeechInputCancelButton` in any order.
+		 */
 		children?: Snippet;
+		/** Bindable ref to the root `<div>` element. */
 		ref?: HTMLDivElement | null;
 	};
 </script>

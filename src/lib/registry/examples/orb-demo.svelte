@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from "$lib/registry/ui/button/index.js";
-	import { Orb, type AgentState } from "$lib/registry/ui/orb/index.js";
+	import { Orb, type OrbAgentState } from "$lib/registry/ui/orb/index.js";
 
 	const ORBS: Array<[string, string]> = [
 		["#CADCFC", "#A0B9D1"],
@@ -8,7 +8,7 @@
 		["#E5E7EB", "#9CA3AF"],
 	];
 
-	let agent = $state<AgentState>(null);
+	let agent = $state<OrbAgentState>(null);
 </script>
 
 <div class="bg-card w-full rounded-lg border p-6">

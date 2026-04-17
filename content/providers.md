@@ -44,11 +44,7 @@ export interface ConversationMessage {
 Status and mode are narrow string-literal unions:
 
 ```ts
-export type AgentConnectionState =
-	| "disconnected"
-	| "connecting"
-	| "connected"
-	| "disconnecting";
+export type AgentConnectionState = "disconnected" | "connecting" | "connected" | "disconnecting";
 
 export type ConversationMode = "speaking" | "listening";
 ```
@@ -135,10 +131,9 @@ An adapter is any object that matches the interface — there is no base class, 
 
 ```svelte
 <script lang="ts">
-	import { ConversationBar } from "$lib/registry/ui/conversation-bar";
-	import type { ConversationAdapter } from "$lib/registry/ui/conversation-bar/types";
+	import { ConversationBar, type ConversationAdapter } from "$lib/registry/ui/conversation-bar";
 
-	let adapter: ConversationAdapter = /* your adapter instance */;
+	declare const adapter: ConversationAdapter;
 </script>
 
 <ConversationBar {adapter} />

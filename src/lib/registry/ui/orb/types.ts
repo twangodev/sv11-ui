@@ -1,1 +1,1 @@
-export type AgentState = null | "thinking" | "listening" | "talking";
+export type OrbAgentState = null | "thinking" | "listening" | "talking";

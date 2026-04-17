@@ -38,7 +38,7 @@ svagent-ui uses a `.dark` class on the `<html>` element, managed by [`mode-watch
 
 ```svelte
 <script lang="ts">
-    import { ModeWatcher } from "mode-watcher";
+	import { ModeWatcher } from "mode-watcher";
 </script>
 
 <ModeWatcher defaultMode="system" disableTransitions />
@@ -60,7 +60,7 @@ SvelteKit uses the `$lib` alias, not `@/`. Registry components land under `src/l
 
 ```svelte
 <script lang="ts">
-    import { Orb } from "$lib/registry/ui/orb";
+	import { Orb } from "$lib/registry/ui/orb";
 </script>
 ```
 
