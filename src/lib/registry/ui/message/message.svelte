@@ -9,7 +9,13 @@
 		children,
 		...restProps
 	}: HTMLAttributes<HTMLDivElement> & {
+		/**
+		 * Determines the message's alignment and which group-scoped styles
+		 * (`is-user` / `is-assistant`) apply to `MessageContent` and
+		 * `MessageAvatar` descendants.
+		 */
 		from: "user" | "assistant";
+		/** Message body — typically a `MessageContent` and/or `MessageAvatar`. */
 		children?: Snippet;
 	} = $props();
 </script>

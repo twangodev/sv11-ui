@@ -3,25 +3,106 @@
 	import { cn } from "$lib/utils.js";
 
 	export type LiveWaveformProps = HTMLAttributes<HTMLDivElement> & {
+		/**
+		 * When `true`, requests microphone access and drives the waveform from
+		 * live audio input. Toggling off stops the stream and closes the
+		 * audio context.
+		 * @default false
+		 */
 		active?: boolean;
+		/**
+		 * When `true` (and `active` is `false`), renders an animated placeholder
+		 * wave pattern. Use this to signal a processing or awaiting state.
+		 * @default false
+		 */
 		processing?: boolean;
+		/**
+		 * Specific `MediaDeviceInfo.deviceId` to capture from. Omit to use the
+		 * default microphone.
+		 */
 		deviceId?: string;
+		/**
+		 * Width of each bar in pixels.
+		 * @default 3
+		 */
 		barWidth?: number;
+		/**
+		 * Minimum bar height in pixels. Bars are drawn at least this tall even
+		 * when their value is near zero.
+		 * @default 4
+		 */
 		barHeight?: number;
+		/**
+		 * Gap between bars in pixels.
+		 * @default 1
+		 */
 		barGap?: number;
+		/**
+		 * Corner radius applied to each bar.
+		 * @default 1.5
+		 */
 		barRadius?: number;
+		/**
+		 * Custom bar color. Falls back to the canvas's computed `color` when
+		 * unset.
+		 */
 		barColor?: string;
+		/**
+		 * Fade the left and right edges of the waveform via a destination-out
+		 * gradient mask.
+		 * @default true
+		 */
 		fadeEdges?: boolean;
+		/**
+		 * Width of the edge fade region in pixels.
+		 * @default 24
+		 */
 		fadeWidth?: number;
+		/**
+		 * Height of the waveform container. Numbers are treated as pixels;
+		 * strings are passed through as a CSS length.
+		 * @default 64
+		 */
 		height?: string | number;
+		/**
+		 * Amplitude multiplier applied to normalized frequency data before
+		 * rendering. Higher values make quiet sounds visible.
+		 * @default 1
+		 */
 		sensitivity?: number;
+		/**
+		 * Smoothing factor forwarded to the underlying `AnalyserNode` in
+		 * `[0, 1]`. Higher values produce smoother transitions.
+		 * @default 0.8
+		 */
 		smoothingTimeConstant?: number;
+		/**
+		 * FFT size forwarded to the underlying `AnalyserNode`. Must be a power
+		 * of two.
+		 * @default 256
+		 */
 		fftSize?: number;
+		/**
+		 * Maximum number of samples retained in scrolling mode.
+		 * @default 60
+		 */
 		historySize?: number;
+		/**
+		 * Minimum interval in milliseconds between audio samples.
+		 * @default 30
+		 */
 		updateRate?: number;
+		/**
+		 * `"static"` renders a symmetric frequency-band visualization; `"scrolling"`
+		 * renders the volume average as a timeline that scrolls right-to-left.
+		 * @default "static"
+		 */
 		mode?: "scrolling" | "static";
+		/** Called when microphone setup fails (e.g. permission denied). */
 		onError?: (error: Error) => void;
+		/** Called with the captured `MediaStream` once the microphone is ready. */
 		onStreamReady?: (stream: MediaStream) => void;
+		/** Called when the stream is stopped or `active` flips back to `false`. */
 		onStreamEnd?: () => void;
 	};
 

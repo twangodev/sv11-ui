@@ -2,12 +2,22 @@
 	import type { Voice } from "./types.js";
 
 	export type VoicePickerProps = {
+		/** Voices to display in the picker. Any object conforming to `Voice` works. */
 		voices: Voice[];
+		/** Selected voice ID for controlled usage. */
 		value?: string;
+		/** Called with the voice ID when the user picks a voice. */
 		onValueChange?: (value: string) => void;
+		/**
+		 * Placeholder shown on the trigger when no voice is selected.
+		 * @default "Select a voice..."
+		 */
 		placeholder?: string;
+		/** Extra classes forwarded to the trigger button. */
 		class?: string;
+		/** Controlled popover open state. Leave undefined for uncontrolled. */
 		open?: boolean;
+		/** Called when the popover open state changes. */
 		onOpenChange?: (open: boolean) => void;
 	};
 </script>

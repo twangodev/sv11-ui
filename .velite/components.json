@@ -7,7 +7,59 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/audio-player"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Playing a Specific Track",
+            "url": "#playing-a-specific-track",
+            "items": []
+          },
+          {
+            "title": "Multiple Tracks",
+            "url": "#multiple-tracks",
+            "items": []
+          },
+          {
+            "title": "Playback Speed",
+            "url": "#playback-speed",
+            "items": []
+          },
+          {
+            "title": "Custom Controls",
+            "url": "#custom-controls",
+            "items": []
+          },
+          {
+            "title": "Error Handling",
+            "url": "#error-handling",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "audio-player",
     "slugFull": "/components/audio-player"
   },
@@ -19,7 +71,54 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/bar-visualizer"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Visualizer",
+            "url": "#basic-visualizer",
+            "items": []
+          },
+          {
+            "title": "Demo Mode",
+            "url": "#demo-mode",
+            "items": []
+          },
+          {
+            "title": "Agent State",
+            "url": "#agent-state",
+            "items": []
+          },
+          {
+            "title": "Height Range",
+            "url": "#height-range",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "bar-visualizer",
     "slugFull": "/components/bar-visualizer"
   },
@@ -31,7 +130,54 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/conversation-bar"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Usage",
+            "url": "#basic-usage",
+            "items": []
+          },
+          {
+            "title": "Custom Styling",
+            "url": "#custom-styling",
+            "items": []
+          },
+          {
+            "title": "Custom Disconnected Label",
+            "url": "#custom-disconnected-label",
+            "items": []
+          },
+          {
+            "title": "Collecting Messages",
+            "url": "#collecting-messages",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "conversation-bar",
     "slugFull": "/components/conversation-bar"
   },
@@ -43,7 +189,44 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/conversation"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Conversation",
+            "url": "#basic-conversation",
+            "items": []
+          },
+          {
+            "title": "With Empty State",
+            "url": "#with-empty-state",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "conversation",
     "slugFull": "/components/conversation"
   },
@@ -70,7 +253,54 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/live-waveform"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Static Mode",
+            "url": "#static-mode",
+            "items": []
+          },
+          {
+            "title": "Scrolling Mode",
+            "url": "#scrolling-mode",
+            "items": []
+          },
+          {
+            "title": "Processing State",
+            "url": "#processing-state",
+            "items": []
+          },
+          {
+            "title": "Custom Styling",
+            "url": "#custom-styling",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "live-waveform",
     "slugFull": "/components/live-waveform"
   },
@@ -82,7 +312,74 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/matrix"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Static Pattern",
+            "url": "#static-pattern",
+            "items": []
+          },
+          {
+            "title": "Animated Display",
+            "url": "#animated-display",
+            "items": []
+          },
+          {
+            "title": "VU Meter",
+            "url": "#vu-meter",
+            "items": []
+          },
+          {
+            "title": "Custom Pattern",
+            "url": "#custom-pattern",
+            "items": []
+          },
+          {
+            "title": "Custom Palette",
+            "url": "#custom-palette",
+            "items": []
+          },
+          {
+            "title": "Frame Change Callback",
+            "url": "#frame-change-callback",
+            "items": []
+          },
+          {
+            "title": "Live VU Meter",
+            "url": "#live-vu-meter",
+            "items": []
+          },
+          {
+            "title": "Custom Animation",
+            "url": "#custom-animation",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "matrix",
     "slugFull": "/components/matrix"
   },
@@ -94,7 +391,49 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/message"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Message",
+            "url": "#basic-message",
+            "items": []
+          },
+          {
+            "title": "Message Variants",
+            "url": "#message-variants",
+            "items": []
+          },
+          {
+            "title": "In a Conversation",
+            "url": "#in-a-conversation",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "message",
     "slugFull": "/components/message"
   },
@@ -106,7 +445,59 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/mic-selector"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Usage",
+            "url": "#basic-usage",
+            "items": []
+          },
+          {
+            "title": "Controlled",
+            "url": "#controlled",
+            "items": []
+          },
+          {
+            "title": "With Mute Control",
+            "url": "#with-mute-control",
+            "items": []
+          },
+          {
+            "title": "Custom Styling",
+            "url": "#custom-styling",
+            "items": []
+          },
+          {
+            "title": "Using the Hook",
+            "url": "#using-the-hook",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "mic-selector",
     "slugFull": "/components/mic-selector"
   },
@@ -128,6 +519,47 @@
         "title": "Usage",
         "url": "#usage",
         "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Custom Colors",
+            "url": "#custom-colors",
+            "items": []
+          },
+          {
+            "title": "Audio Reactivity",
+            "url": "#audio-reactivity",
+            "items": []
+          },
+          {
+            "title": "Custom Seed",
+            "url": "#custom-seed",
+            "items": []
+          },
+          {
+            "title": "Agent State",
+            "url": "#agent-state",
+            "items": []
+          },
+          {
+            "title": "Manual Volume Control",
+            "url": "#manual-volume-control",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
       }
     ],
     "slug": "orb",
@@ -141,7 +573,54 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/response"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Usage",
+            "url": "#basic-usage",
+            "items": []
+          },
+          {
+            "title": "With Markdown",
+            "url": "#with-markdown",
+            "items": []
+          },
+          {
+            "title": "Streaming Response",
+            "url": "#streaming-response",
+            "items": []
+          },
+          {
+            "title": "With Message Component",
+            "url": "#with-message-component",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "response",
     "slugFull": "/components/response"
   },
@@ -153,7 +632,49 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/scrub-bar"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Usage",
+            "url": "#basic-usage",
+            "items": []
+          },
+          {
+            "title": "Scrub Start and End",
+            "url": "#scrub-start-and-end",
+            "items": []
+          },
+          {
+            "title": "Custom Time Format",
+            "url": "#custom-time-format",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "scrub-bar",
     "slugFull": "/components/scrub-bar"
   },
@@ -165,7 +686,59 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/shimmering-text"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Usage",
+            "url": "#basic-usage",
+            "items": []
+          },
+          {
+            "title": "Custom Duration and Colors",
+            "url": "#custom-duration-and-colors",
+            "items": []
+          },
+          {
+            "title": "Trigger on Viewport Entry",
+            "url": "#trigger-on-viewport-entry",
+            "items": []
+          },
+          {
+            "title": "Repeating Animation",
+            "url": "#repeating-animation",
+            "items": []
+          },
+          {
+            "title": "With Custom Styling",
+            "url": "#with-custom-styling",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "shimmering-text",
     "slugFull": "/components/shimmering-text"
   },
@@ -177,7 +750,64 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/speech-input"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Usage",
+            "url": "#basic-usage",
+            "items": []
+          },
+          {
+            "title": "With Form Input",
+            "url": "#with-form-input",
+            "items": []
+          },
+          {
+            "title": "Reversed Layout",
+            "url": "#reversed-layout",
+            "items": []
+          },
+          {
+            "title": "Minimal (Record Button Only)",
+            "url": "#minimal-record-button-only",
+            "items": []
+          },
+          {
+            "title": "Custom Placeholder",
+            "url": "#custom-placeholder",
+            "items": []
+          },
+          {
+            "title": "Using the Hook",
+            "url": "#using-the-hook",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "speech-input",
     "slugFull": "/components/speech-input"
   },
@@ -189,7 +819,59 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/transcript-viewer"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Custom Audio Type",
+            "url": "#custom-audio-type",
+            "items": []
+          },
+          {
+            "title": "Custom Word and Gap Rendering",
+            "url": "#custom-word-and-gap-rendering",
+            "items": []
+          },
+          {
+            "title": "Playback Callbacks",
+            "url": "#playback-callbacks",
+            "items": []
+          },
+          {
+            "title": "Custom Play/Pause Button",
+            "url": "#custom-playpause-button",
+            "items": []
+          },
+          {
+            "title": "Accessing Viewer State",
+            "url": "#accessing-viewer-state",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "transcript-viewer",
     "slugFull": "/components/transcript-viewer"
   },
@@ -201,7 +883,64 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/voice-button"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Usage",
+            "url": "#basic-usage",
+            "items": []
+          },
+          {
+            "title": "With Label and Keyboard Shortcut",
+            "url": "#with-label-and-keyboard-shortcut",
+            "items": []
+          },
+          {
+            "title": "Different States",
+            "url": "#different-states",
+            "items": []
+          },
+          {
+            "title": "Icon Button",
+            "url": "#icon-button",
+            "items": []
+          },
+          {
+            "title": "Custom Styling",
+            "url": "#custom-styling",
+            "items": []
+          },
+          {
+            "title": "Auto-transitioning States",
+            "url": "#auto-transitioning-states",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "voice-button",
     "slugFull": "/components/voice-button"
   },
@@ -213,7 +952,59 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/voice-picker"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Usage",
+            "url": "#basic-usage",
+            "items": []
+          },
+          {
+            "title": "Controlled vs Uncontrolled",
+            "url": "#controlled-vs-uncontrolled",
+            "items": []
+          },
+          {
+            "title": "Control Open State",
+            "url": "#control-open-state",
+            "items": []
+          },
+          {
+            "title": "Custom Placeholder",
+            "url": "#custom-placeholder",
+            "items": []
+          },
+          {
+            "title": "Loading Voices from a Provider",
+            "url": "#loading-voices-from-a-provider",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "voice-picker",
     "slugFull": "/components/voice-picker"
   },
@@ -225,7 +1016,69 @@
       "source": "https://github.com/twangodev/svagent-ui/tree/main/src/lib/registry/ui/waveform"
     },
     "component": true,
-    "toc": [],
+    "toc": [
+      {
+        "title": "Installation",
+        "url": "#installation",
+        "items": []
+      },
+      {
+        "title": "Usage",
+        "url": "#usage",
+        "items": []
+      },
+      {
+        "title": "Examples",
+        "url": "#examples",
+        "items": [
+          {
+            "title": "Basic Waveform",
+            "url": "#basic-waveform",
+            "items": []
+          },
+          {
+            "title": "Scrolling Animation",
+            "url": "#scrolling-animation",
+            "items": []
+          },
+          {
+            "title": "Microphone Input",
+            "url": "#microphone-input",
+            "items": []
+          },
+          {
+            "title": "Static Waveform",
+            "url": "#static-waveform",
+            "items": []
+          },
+          {
+            "title": "Audio Scrubber",
+            "url": "#audio-scrubber",
+            "items": []
+          },
+          {
+            "title": "Voice Recorder",
+            "url": "#voice-recorder",
+            "items": []
+          },
+          {
+            "title": "Live Microphone with Playback",
+            "url": "#live-microphone-with-playback",
+            "items": []
+          }
+        ]
+      },
+      {
+        "title": "API Reference",
+        "url": "#api-reference",
+        "items": []
+      },
+      {
+        "title": "Notes",
+        "url": "#notes",
+        "items": []
+      }
+    ],
     "slug": "waveform",
     "slugFull": "/components/waveform"
   }

@@ -4,13 +4,44 @@
 	export type AgentState = "connecting" | "initializing" | "listening" | "speaking" | "thinking";
 
 	export type BarVisualizerProps = HTMLAttributes<HTMLDivElement> & {
+		/**
+		 * Voice-agent lifecycle state. Drives the bar highlight sequence and
+		 * animation cadence. Leave undefined for a static row.
+		 */
 		state?: AgentState;
+		/**
+		 * Number of bars to render across the visualizer.
+		 * @default 15
+		 */
 		barCount?: number;
+		/**
+		 * Live audio source used for FFT analysis. Ignored when `demo` is
+		 * `true`. Pass `null` to disable analysis without unmounting.
+		 */
 		mediaStream?: MediaStream | null;
+		/**
+		 * Minimum bar height as a percentage of the container.
+		 * @default 20
+		 */
 		minHeight?: number;
+		/**
+		 * Maximum bar height as a percentage of the container.
+		 * @default 100
+		 */
 		maxHeight?: number;
+		/**
+		 * When `true`, replaces the FFT feed with a synthetic oscillating
+		 * pattern. Useful for previews and documentation.
+		 * @default false
+		 */
 		demo?: boolean;
+		/**
+		 * Align bars from the vertical center rather than growing up from the
+		 * bottom.
+		 * @default false
+		 */
 		centerAlign?: boolean;
+		/** Bound reference to the root container element. */
 		ref?: HTMLDivElement | null;
 	};
 </script>

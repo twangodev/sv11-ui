@@ -3,14 +3,30 @@
 	import type { ConversationAdapter, ConversationMessage, AgentConnectionState } from "./types.js";
 
 	export type ConversationBarProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
+		/**
+		 * Backend bridge that owns the session lifecycle — connecting, streaming
+		 * messages, and muting. Conforms to
+		 * [`ConversationAdapter`](/docs/providers#conversationadapter).
+		 */
 		adapter: ConversationAdapter;
+		/**
+		 * Label shown in the waveform slot while the session is disconnected.
+		 * @default "Customer Support"
+		 */
 		disconnectedText?: string;
+		/** Extra classes merged onto the inner waveform container. */
 		waveformClassName?: string;
+		/** Fired after the adapter reports a successful connection. */
 		onConnect?: () => void;
+		/** Fired after the adapter reports disconnection. */
 		onDisconnect?: () => void;
+		/** Fired when the adapter surfaces an error or `connect()` rejects. */
 		onError?: (error: Error) => void;
+		/** Fired for each message emitted by the adapter (both user and AI turns). */
 		onMessage?: (message: ConversationMessage) => void;
+		/** Fired after a text-input message has been handed off to the adapter. */
 		onSendMessage?: (message: string) => void;
+		/** Bindable ref to the root `<div>` element. */
 		ref?: HTMLDivElement | null;
 	};
 </script>

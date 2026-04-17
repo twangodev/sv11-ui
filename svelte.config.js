@@ -4,6 +4,7 @@ import adapter from "@sveltejs/adapter-static";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import MagicString from "magic-string";
 import { mdsxConfig } from "./mdsx.config.js";
+import { extractAllProps } from "./scripts/extract-props.js";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -35,8 +36,9 @@ export default config;
  * Rewrites authoring sugar in .md docs into plain markdown BEFORE mdsx runs.
  *
  * Supported tags (must be self-closing with a `component="<name>"` attribute):
- *   <Install component="orb" />  → ```bash fence with the shadcn-svelte CLI command
- *   <Usage component="orb" />    → ```svelte fence with a minimal import + bare usage
+ *   <Install component="orb" />       → ```bash fence with the shadcn-svelte CLI command
+ *   <Usage component="orb" />         → ```svelte fence with a minimal import + bare usage
+ *   <ComponentAPI component="orb" />  → markdown props table from extracted TS types
  *
  * Expansion happens pre-mdsx so shiki highlights the resulting code fences
  * naturally and mdsx's normal markdown pipeline handles everything downstream.
@@ -45,14 +47,27 @@ export default config;
  * exported component (e.g. `audio-player` → `AudioPlayer`). Authors whose
  * barrel exports an unusual name should write the fence manually instead.
  *
+ * The ComponentAPI expansion calls `extractAllProps()` from extract-props.js,
+ * which memoizes across the process. No pre-build step is required. Cache
+ * invalidation on file changes is driven by the `extract-component-props`
+ * Vite plugin (see vite.config.ts).
+ *
  * @returns {import("svelte/compiler").PreprocessorGroup}
  */
 function docSugar() {
 	const INSTALL_REGEX = /<Install\s+component=["']([^"']+)["']\s*\/>/g;
 	const USAGE_REGEX = /<Usage\s+component=["']([^"']+)["']\s*\/>/g;
+	const API_REGEX = /<ComponentAPI\s+component=["']([^"']+)["']\s*\/>/g;
 
 	const toPascalCase = (/** @type {string} */ name) =>
 		name.replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
+
+	const escapePipe = (/** @type {string} */ s) => s.replace(/\|/g, "\\|");
+
+	// Markdown tables require one row per line — any literal newline in a cell
+	// value (most commonly in multi-line JSDoc descriptions) would fragment
+	// the row. Collapse all whitespace runs to a single space.
+	const flatten = (/** @type {string} */ s) => s.replace(/\s+/g, " ").trim();
 
 	const expandInstall = (/** @type {string} */ name) =>
 		[
@@ -74,11 +89,40 @@ function docSugar() {
 		].join("\n");
 	};
 
+	const expandComponentAPI = (/** @type {string} */ name) => {
+		const index = extractAllProps();
+		const entry = index[name];
+		if (!entry) {
+			throw new Error(
+				`<ComponentAPI component="${name}" /> but '${name}' not registered. ` +
+					`Ensure 'content/components/${name}.md' exists and 'src/lib/registry/ui/${name}/${name}.svelte' is present.`
+			);
+		}
+		if (entry.props.length === 0) {
+			return `_This component takes no props._`;
+		}
+		const rows = entry.props.map((p) => {
+			const propName = `\`${flatten(p.name)}${p.optional ? "?" : ""}\``;
+			const type = `\`${escapePipe(flatten(p.type))}\``;
+			const def = p.default ? `\`${escapePipe(flatten(p.default))}\`` : "—";
+			const desc = p.description ? escapePipe(flatten(p.description)) : "—";
+			return `| ${propName} | ${type} | ${def} | ${desc} |`;
+		});
+		return [
+			"| Prop | Type | Default | Description |",
+			"| ---- | ---- | ------- | ----------- |",
+			...rows,
+		].join("\n");
+	};
+
 	return {
 		name: "doc-sugar",
 		markup: ({ content, filename }) => {
 			if (!filename?.endsWith(".md")) return;
-			if (!content.includes("<Install") && !content.includes("<Usage")) return;
+			const hasInstall = content.includes("<Install");
+			const hasUsage = content.includes("<Usage");
+			const hasApi = content.includes("<ComponentAPI");
+			if (!hasInstall && !hasUsage && !hasApi) return;
 
 			const ms = new MagicString(content);
 
@@ -90,6 +134,11 @@ function docSugar() {
 			for (const match of content.matchAll(USAGE_REGEX)) {
 				if (match.index === undefined) continue;
 				ms.overwrite(match.index, match.index + match[0].length, expandUsage(match[1]));
+			}
+
+			for (const match of content.matchAll(API_REGEX)) {
+				if (match.index === undefined) continue;
+				ms.overwrite(match.index, match.index + match[0].length, expandComponentAPI(match[1]));
 			}
 
 			return { code: ms.toString(), map: ms.generateMap() };

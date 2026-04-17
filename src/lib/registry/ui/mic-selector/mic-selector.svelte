@@ -1,9 +1,20 @@
 <script lang="ts" module>
 	export type MicSelectorProps = {
+		/**
+		 * Selected microphone `deviceId`. Leave unset for uncontrolled mode —
+		 * the first available device is auto-selected.
+		 */
 		value?: string;
+		/** Called when the user picks a different microphone from the dropdown. */
 		onValueChange?: (deviceId: string) => void;
+		/**
+		 * Mute state. Leave unset for uncontrolled mode, where the component
+		 * tracks mute internally.
+		 */
 		muted?: boolean;
+		/** Called when the user toggles the mute button. */
 		onMutedChange?: (muted: boolean) => void;
+		/** Disables the trigger button. */
 		disabled?: boolean;
 		class?: string;
 	};

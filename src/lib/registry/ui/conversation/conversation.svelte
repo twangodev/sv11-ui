@@ -12,8 +12,18 @@
 		resize = "smooth" as ScrollBehavior,
 		...restProps
 	}: HTMLAttributes<HTMLDivElement> & {
+		/** Conversation body — typically a `Conversation.Content` and optional `Conversation.ScrollButton`. */
 		children?: Snippet;
+		/**
+		 * Scroll behavior used on first mount to anchor to the bottom.
+		 * @default "smooth"
+		 */
 		initial?: ScrollBehavior;
+		/**
+		 * Scroll behavior used when content resizes (e.g. new messages streamed in)
+		 * while the user is anchored to the bottom.
+		 * @default "smooth"
+		 */
 		resize?: ScrollBehavior;
 	} = $props();
 

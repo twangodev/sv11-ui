@@ -16,17 +16,56 @@
 		color,
 		shimmerColor,
 	}: {
+		/** Text to display with the shimmer effect. */
 		text: string;
+		/**
+		 * Duration of one shimmer sweep in seconds.
+		 * @default 2
+		 */
 		duration?: number;
+		/**
+		 * Seconds to wait before the first sweep begins.
+		 * @default 0
+		 */
 		delay?: number;
+		/**
+		 * Whether the shimmer sweep loops indefinitely.
+		 * @default true
+		 */
 		repeat?: boolean;
+		/**
+		 * Pause between repeats in seconds when `repeat` is `true`.
+		 * @default 0.5
+		 */
 		repeatDelay?: number;
+		/** Extra classes merged onto the root `<span>`. */
 		class?: string;
+		/**
+		 * When `true`, the animation only starts once the element scrolls into
+		 * view. When `false`, it begins on mount.
+		 * @default true
+		 */
 		startOnView?: boolean;
+		/**
+		 * When `true`, the animation fires a single time and never again.
+		 * When `false`, it replays each time the element re-enters the viewport.
+		 * @default false
+		 */
 		once?: boolean;
+		/**
+		 * Root margin passed to the underlying Motion `inView` observer — used
+		 * to shrink or expand the viewport trigger area (e.g. `"0px 0px -10%"`).
+		 */
 		inViewMargin?: NonNullable<Parameters<typeof inView>[2]>["margin"];
+		/**
+		 * Spread multiplier applied to the shimmer highlight width. The final
+		 * spread scales with text length (`text.length * spread` pixels).
+		 * @default 2
+		 */
 		spread?: number;
+		/** Base text color. Defaults to `var(--muted-foreground)`. */
 		color?: string;
+		/** Highlight gradient color. Defaults to `var(--foreground)`. */
 		shimmerColor?: string;
 	} = $props();
 

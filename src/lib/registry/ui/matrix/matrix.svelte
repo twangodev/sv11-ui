@@ -5,21 +5,78 @@
 	export type MatrixMode = "default" | "vu";
 
 	export type MatrixProps = HTMLAttributes<HTMLDivElement> & {
+		/** Number of rows in the matrix grid. */
 		rows: number;
+		/** Number of columns in the matrix grid. */
 		cols: number;
+		/**
+		 * Static pattern to display. A 2D array of brightness values in
+		 * `[0, 1]`. When set, animation is disabled and `frames` is ignored.
+		 */
 		pattern?: Frame;
+		/**
+		 * Ordered frames to loop through for animation. Ignored when
+		 * `pattern` is provided.
+		 */
 		frames?: Frame[];
+		/**
+		 * Playback rate in frames per second when animating `frames`.
+		 * @default 12
+		 */
 		fps?: number;
+		/**
+		 * Start animating automatically on mount. Ignored when a static
+		 * `pattern` is provided.
+		 * @default true
+		 */
 		autoplay?: boolean;
+		/**
+		 * Loop the frame sequence. When `false`, animation halts on the last
+		 * frame.
+		 * @default true
+		 */
 		loop?: boolean;
+		/**
+		 * Cell diameter in pixels.
+		 * @default 10
+		 */
 		size?: number;
+		/**
+		 * Gap between cells in pixels.
+		 * @default 2
+		 */
 		gap?: number;
+		/**
+		 * CSS colors for active and inactive cells. Defaults map `on` to the
+		 * current text color and `off` to the muted foreground token.
+		 * @default { on: "currentColor", off: "var(--muted-foreground)" }
+		 */
 		palette?: { on: string; off: string };
+		/**
+		 * Global brightness multiplier applied to every cell, clamped to
+		 * `[0, 1]`.
+		 * @default 1
+		 */
 		brightness?: number;
+		/**
+		 * ARIA label for the container. Falls back to `"matrix display"` when
+		 * omitted.
+		 */
 		ariaLabel?: string;
+		/** Invoked whenever the active frame index changes during animation. */
 		onFrame?: (index: number) => void;
+		/**
+		 * Rendering mode. `"vu"` reads `levels` each render to draw a
+		 * bottom-anchored meter instead of `frames` or `pattern`.
+		 * @default "default"
+		 */
 		mode?: MatrixMode;
+		/**
+		 * Per-column level values in `[0, 1]` used when `mode="vu"`. Ignored
+		 * in other modes.
+		 */
 		levels?: number[];
+		/** Bound reference to the root container element. */
 		ref?: HTMLDivElement | null;
 	};
 </script>

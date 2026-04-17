@@ -1,8 +1,19 @@
-<script lang="ts">
+<script lang="ts" module>
 	import type { Snippet } from "svelte";
+
+	export type AudioPlayerProps = {
+		/**
+		 * Sub-components that read the shared player state via context
+		 * (e.g. `<AudioPlayer.Button />`, `<AudioPlayer.Progress />`).
+		 */
+		children?: Snippet;
+	};
+</script>
+
+<script lang="ts">
 	import { setAudioPlayer } from "./context.svelte.js";
 
-	let { children }: { children?: Snippet } = $props();
+	let { children }: AudioPlayerProps = $props();
 
 	const player = setAudioPlayer();
 

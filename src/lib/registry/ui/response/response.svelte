@@ -5,7 +5,16 @@
 	import Mermaid from "svelte-streamdown/mermaid";
 	import Math from "svelte-streamdown/math";
 
-	let { class: className, ...restProps }: StreamdownProps & { class?: string } = $props();
+	let {
+		class: className,
+		...restProps
+	}: StreamdownProps & {
+		/**
+		 * Extra classes merged onto the root `Streamdown` container. Top and
+		 * bottom margins are stripped from the first and last children.
+		 */
+		class?: string;
+	} = $props();
 </script>
 
 <Streamdown

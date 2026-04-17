@@ -3,6 +3,7 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig, type Plugin } from "vite";
 import devtoolsJson from "vite-plugin-devtools-json";
 import { spawn } from "node:child_process";
+import { invalidatePropsCache } from "./scripts/extract-props.js";
 
 function shadcnRegistry(): Plugin {
 	return {
@@ -22,8 +23,25 @@ function shadcnRegistry(): Plugin {
 	};
 }
 
+function extractProps(): Plugin {
+	// The props index is extracted lazily and memoized inside svelte.config.js
+	// (see `getPropsIndex` there). This plugin only invalidates that cache
+	// when a registry component file changes during dev, then triggers a
+	// full reload so the docs preprocessor runs again with fresh data.
+	return {
+		name: "extract-component-props",
+		configureServer(server) {
+			server.watcher.on("change", (path) => {
+				if (!/src\/lib\/registry\/ui\/.*\.svelte$/.test(path)) return;
+				invalidatePropsCache();
+				server.ws.send({ type: "full-reload" });
+			});
+		},
+	};
+}
+
 export default defineConfig({
-	plugins: [shadcnRegistry(), tailwindcss(), sveltekit(), devtoolsJson()],
+	plugins: [shadcnRegistry(), extractProps(), tailwindcss(), sveltekit(), devtoolsJson()],
 	server: {
 		fs: {
 			allow: ["content", ".velite"],
