@@ -142,6 +142,7 @@
 	let animationRef: number | null = null;
 	let lastUpdateRef = 0;
 	let processingAnimationRef: number | null = null;
+	let fadeAnimationRef: number | null = null;
 	let lastActiveDataRef: number[] = [];
 	let transitionProgressRef = 0;
 	let staticBarsRef: number[] = [];
@@ -279,16 +280,24 @@
 							historyRef = historyRef.map((value) => value * (1 - fadeProgress));
 						}
 						needsRedrawRef = true;
-						requestAnimationFrame(fadeToIdle);
+						fadeAnimationRef = requestAnimationFrame(fadeToIdle);
 					} else {
 						if (_mode === "static") {
 							staticBarsRef = [];
 						} else {
 							historyRef = [];
 						}
+						fadeAnimationRef = null;
 					}
 				};
-				fadeToIdle();
+				fadeAnimationRef = requestAnimationFrame(fadeToIdle);
+
+				return () => {
+					if (fadeAnimationRef !== null) {
+						cancelAnimationFrame(fadeAnimationRef);
+						fadeAnimationRef = null;
+					}
+				};
 			}
 		}
 	});
@@ -573,6 +582,7 @@
 
 <div
 	bind:this={containerEl}
+	{...restProps}
 	data-slot="live-waveform"
 	class={cn("relative h-full w-full", className)}
 	style:height={heightStyle}
@@ -582,7 +592,6 @@
 			? "Processing audio"
 			: "Audio waveform idle"}
 	role="img"
-	{...restProps}
 >
 	{#if !active && !processing}
 		<div
