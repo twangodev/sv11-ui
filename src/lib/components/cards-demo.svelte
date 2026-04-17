@@ -1,64 +1,83 @@
 <script lang="ts">
-	import OrbDemo from "$lib/registry/examples/orb-demo.svelte";
+	import CardsActivityGoal from "$lib/components/cards/activity-goal.svelte";
+	import CardsBarVisualizer from "$lib/components/cards/bar-visualizer.svelte";
+	import CardsLiveRecording from "$lib/components/cards/live-recording.svelte";
+	import MusicPlayer01 from "$lib/registry/blocks/music-player-01/index.js";
+	import MusicPlayer02 from "$lib/registry/blocks/music-player-02/index.js";
+	import Speaker01 from "$lib/registry/blocks/speaker-01/index.js";
+	import VoiceChat01 from "$lib/registry/blocks/voice-chat-01/index.js";
+	import VoiceChat02 from "$lib/registry/blocks/voice-chat-02/index.js";
+	import VoiceForm from "$lib/registry/blocks/voice-form-01/index.js";
 	import ConversationDemo from "$lib/registry/examples/conversation-demo.svelte";
-	import AudioPlayerDemo from "$lib/registry/examples/audio-player-demo.svelte";
-	import WaveformDemo from "$lib/registry/examples/waveform-demo.svelte";
-	import BarVisualizerDemo from "$lib/registry/examples/bar-visualizer-demo.svelte";
+	import OrbDemo from "$lib/registry/examples/orb-demo.svelte";
 	import VoicePickerDemo from "$lib/registry/examples/voice-picker-demo.svelte";
-	import TranscriptViewerDemo from "$lib/registry/examples/transcript-viewer-demo.svelte";
-	import LiveWaveformDemo from "$lib/registry/examples/live-waveform-demo.svelte";
-	import MicSelectorDemo from "$lib/registry/examples/mic-selector-demo.svelte";
-	import ScrubBarDemo from "$lib/registry/examples/scrub-bar-demo.svelte";
-	import { Card, CardContent } from "$lib/registry/ui/card/index.js";
+	import WaveformDemo from "$lib/registry/examples/waveform-demo.svelte";
+	import { ConversationBar } from "$lib/registry/ui/conversation-bar/index.js";
 </script>
 
 <!--
-	Bento: fixed column flex stacks. Last tile in each column grows to fill,
-	so all columns bottom-align. Columns collapse to fewer at smaller breakpoints.
+	1:1 mirror of elevenlabs-ui/apps/www/components/cards/index.tsx.
+	ConversationBar gets a canned no-op adapter since we don't have a real
+	ElevenLabs agent wired up; the component renders the same but doesn't
+	send anywhere.
 -->
 <div
-	class="grid grid-cols-1 gap-4 **:data-[slot=card]:shadow-none sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+	class="grid **:data-[slot=card]:shadow-none md:gap-4 lg:grid-cols-10 xl:grid-cols-11"
 	data-slot="cards-demo"
 >
-	<!-- Column 1 -->
-	<div class="flex flex-col gap-4">
-		<AudioPlayerDemo />
-		<div class="flex-1 [&>*]:h-full">
-			<BarVisualizerDemo />
+	<div class="grid gap-4 lg:col-span-4 xl:col-span-6">
+		<div class="grid gap-1 sm:grid-cols-[auto_1fr] md:hidden">
+			<VoiceChat02 />
+			<div class="pt-3 sm:pt-0 sm:pl-2 xl:pl-4">
+				<CardsActivityGoal />
+			</div>
 		</div>
-	</div>
-
-	<!-- Column 2 -->
-	<div class="flex flex-col gap-4">
-		<ConversationDemo />
-		<div class="flex-1 [&>*]:h-full">
-			<WaveformDemo />
-		</div>
-	</div>
-
-	<!-- Column 3 -->
-	<div class="flex flex-col gap-4">
-		<TranscriptViewerDemo />
-		<div class="flex-1 [&>*]:h-full">
-			<OrbDemo small />
-		</div>
-	</div>
-
-	<!-- Column 4 -->
-	<div class="flex flex-col gap-4">
-		<LiveWaveformDemo />
-		<Card>
-			<CardContent class="p-4">
+		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+			<div class="flex flex-col gap-4">
+				<CardsBarVisualizer />
+				<VoiceForm />
+				<OrbDemo small />
 				<VoicePickerDemo />
-			</CardContent>
-		</Card>
-		<Card>
-			<CardContent class="p-4">
-				<ScrubBarDemo />
-			</CardContent>
-		</Card>
-		<div class="flex-1 [&>*]:h-full">
-			<MicSelectorDemo />
+				<WaveformDemo />
+			</div>
+			<div class="flex flex-col gap-4">
+				<Speaker01 />
+				<div class="lg:hidden xl:block">
+					<ConversationDemo />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="flex flex-col gap-4 lg:col-span-6 xl:col-span-5">
+		<div class="hidden gap-1 sm:grid-cols-2 md:grid">
+			<VoiceChat02 />
+			<div class="pt-3 sm:pt-0 sm:pl-2 xl:pl-3">
+				<MusicPlayer02 />
+				<div class="pt-3">
+					<CardsLiveRecording />
+				</div>
+				<div class="pt-3">
+					<ConversationBar
+						adapter={{
+							connect: async () => undefined,
+							disconnect: () => undefined,
+							sendMessage: () => undefined,
+							sendContextualUpdate: () => undefined,
+							setMuted: () => undefined,
+						}}
+						class="p-0"
+					/>
+				</div>
+			</div>
+			<div class="pt-3 sm:col-span-2 xl:pt-3">
+				<MusicPlayer01 />
+			</div>
+		</div>
+		<div class="hidden md:block">
+			<VoiceChat01 />
+		</div>
+		<div class="hidden lg:block xl:hidden">
+			<ConversationDemo />
 		</div>
 	</div>
 </div>
