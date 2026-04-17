@@ -624,6 +624,64 @@
 			]
 		},
 		{
+			"name": "speaker-01",
+			"type": "registry:block",
+			"title": "Speaker 01",
+			"description": "A speaker-style music player with two audio-reactive Orbs, waveform strip, transport controls, and a volume slider.",
+			"registryDependencies": ["audio-player", "button", "card", "orb", "waveform"],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/speaker-01/speaker-01.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/speaker-01/speaker-01.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/speaker-01/speaker-inner.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/speaker-01/speaker-inner.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/speaker-01/speaker-orb.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/speaker-01/speaker-orb.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/speaker-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/speaker-01/index.ts"
+				}
+			]
+		},
+		{
+			"name": "voice-chat-01",
+			"type": "registry:block",
+			"title": "Voice Chat 01",
+			"description": "A full voice-and-text chat card: Orb header, scrollable conversation with copy actions, and a composer with send + call toggle.",
+			"registryDependencies": [
+				"button",
+				"card",
+				"conversation",
+				"input",
+				"message",
+				"orb",
+				"response",
+				"shimmering-text",
+				"tooltip"
+			],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/voice-chat-01/voice-chat-01.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/voice-chat-01/voice-chat-01.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/voice-chat-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/voice-chat-01/index.ts"
+				}
+			]
+		},
+		{
 			"name": "voice-chat-02",
 			"type": "registry:block",
 			"title": "Voice Chat 02",
