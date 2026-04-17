@@ -598,6 +598,59 @@
 					"target": "lib/components/ui/waveform/index.ts"
 				}
 			]
+		},
+		{
+			"name": "music-player-02",
+			"type": "registry:block",
+			"title": "Music Player 02",
+			"description": "A minimal single-track music player with play/pause, progress, time, and duration.",
+			"registryDependencies": ["audio-player", "card"],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/music-player-02/music-player-02.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/music-player-02/music-player-02.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/music-player-02/music-player-02-demo.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/music-player-02/music-player-02-demo.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/music-player-02/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/music-player-02/index.ts"
+				}
+			]
+		},
+		{
+			"name": "music-player-01",
+			"type": "registry:block",
+			"title": "Music Player 01",
+			"description": "A music player with a scrollable song list and play/pause, progress, time, and duration controls.",
+			"registryDependencies": ["audio-player", "button", "card", "scroll-area"],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/music-player-01/music-player-01.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/music-player-01/music-player-01.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/music-player-01/music-player-01-player.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/music-player-01/music-player-01-player.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/music-player-01/music-player-01-song.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/music-player-01/music-player-01-song.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/music-player-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/music-player-01/index.ts"
+				}
+			]
 		}
 	]
 }
