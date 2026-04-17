@@ -170,4 +170,4 @@ Build an animation by supplying your own frame array.
 - `mode="vu"` takes precedence over both `pattern` and `frames` when `levels` is non-empty.
 - Animation uses a fixed-timestep accumulator on `requestAnimationFrame`, keeping frame cadence stable under variable paint rates.
 - Cells render as SVG `<circle>` elements with a gradient fill plus a Gaussian-blur glow filter on active pixels.
-- The container advertises `role="img"` plus `aria-live="polite"` while animating, and uses the provided `ariaLabel` (falling back to `"matrix display"`).
+- The container advertises `role="img"` and uses the provided `ariaLabel` (falling back to `"matrix display"`). Because `role="img"` is treated as an atomic graphic, per-frame updates are not re-announced — supply an `ariaLabel` that describes the overall display rather than per-frame content.
