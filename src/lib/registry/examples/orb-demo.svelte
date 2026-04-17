@@ -2,11 +2,15 @@
 	import { Button } from "$lib/registry/ui/button/index.js";
 	import { Orb, type OrbAgentState } from "$lib/registry/ui/orb/index.js";
 
-	const ORBS: Array<[string, string]> = [
+	let { small = false }: { small?: boolean } = $props();
+
+	const ALL_ORBS: Array<[string, string]> = [
 		["#CADCFC", "#A0B9D1"],
 		["#F6E7D8", "#E0CFC2"],
 		["#E5E7EB", "#9CA3AF"],
 	];
+
+	const orbs = $derived(small ? [ALL_ORBS[0]] : ALL_ORBS);
 
 	let agent = $state<OrbAgentState>(null);
 </script>
@@ -19,7 +23,7 @@
 
 	<div class="space-y-4">
 		<div class="flex justify-center gap-8">
-			{#each ORBS as colors, index (index)}
+			{#each orbs as colors, index (index)}
 				<div class={`relative ${index === 1 ? "block md:block" : "hidden md:block"}`}>
 					<div
 						class="bg-muted relative h-32 w-32 rounded-full p-1 shadow-[inset_0_2px_8px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)]"
