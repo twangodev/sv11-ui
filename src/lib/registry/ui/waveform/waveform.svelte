@@ -53,7 +53,10 @@
 		 * @default 128
 		 */
 		height?: string | number;
-		/** Marks the waveform as actively capturing or rendering audio. */
+		/**
+		 * Marks the waveform as actively capturing or rendering audio. Rendered
+		 * as `data-active` on the root element for CSS styling hooks.
+		 */
 		active?: boolean;
 		/** Called when a bar is clicked with the data index and its value. */
 		onBarClick?: (index: number, value: number) => void;
@@ -69,6 +72,7 @@
 		fadeEdges = true,
 		fadeWidth = 24,
 		height = 128,
+		active,
 		onBarClick,
 		class: className,
 		...restProps
@@ -184,6 +188,7 @@
 <div
 	bind:this={containerEl}
 	data-slot="waveform"
+	data-active={active ? "" : undefined}
 	class={cn("relative", className)}
 	style:height={heightStyle}
 	{...restProps}
