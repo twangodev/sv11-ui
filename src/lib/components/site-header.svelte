@@ -7,6 +7,7 @@
 	import MobileNav from "./mobile-nav.svelte";
 	import { mainNavItems } from "$lib/navigation.js";
 	import ModeSwitcher from "./mode-switcher.svelte";
+	import CommandMenu from "./command-menu.svelte";
 
 	let mobileNavRef: { closeMenu: () => void } | undefined;
 </script>
@@ -21,6 +22,9 @@
 			</Button>
 			<MainNav items={mainNavItems} class="hidden lg:flex" />
 			<div class="ms-auto flex items-center gap-2 md:flex-1 md:justify-end">
+				<div class="w-full flex-1 md:w-auto md:flex-none">
+					<CommandMenu />
+				</div>
 				<Separator orientation="vertical" class="ms-2 hidden lg:block" />
 				<GithubLink />
 				<Separator orientation="vertical" />
