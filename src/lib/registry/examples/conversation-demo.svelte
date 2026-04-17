@@ -79,38 +79,38 @@
 	});
 </script>
 
-<div class="bg-card relative mx-auto h-[400px] w-full max-w-2xl overflow-hidden rounded-lg border">
-	<div class="flex h-full flex-col">
-		<Conversation.Root>
-			<Conversation.Content>
-				{#if messages.length === 0 && streamingMessageIndex === null}
-					<Conversation.EmptyState
-						title="Start a conversation"
-						description="This is a simulated conversation"
-					>
-						{#snippet icon()}
-							<MessageCircleIcon class="size-12" />
-						{/snippet}
-					</Conversation.EmptyState>
-				{:else}
-					{#each messages as message (message.id)}
-						<Message from={message.role}>
-							<MessageContent>
-								<Response content={message.text} />
-							</MessageContent>
-						</Message>
-					{/each}
-					{#if streamingMessageIndex !== null}
-						{@const streamingMsg = allMessages[streamingMessageIndex]}
-						<Message from={streamingMsg.role}>
-							<MessageContent>
-								<Response content={streamingContent || "\u200B"} />
-							</MessageContent>
-						</Message>
-					{/if}
+<div
+	class="bg-card relative mx-auto h-full w-full max-w-2xl min-h-0 flex-1 overflow-hidden rounded-lg border"
+>
+	<Conversation.Root class="absolute inset-0">
+		<Conversation.Content>
+			{#if messages.length === 0 && streamingMessageIndex === null}
+				<Conversation.EmptyState
+					title="Start a conversation"
+					description="This is a simulated conversation"
+				>
+					{#snippet icon()}
+						<MessageCircleIcon class="size-12" />
+					{/snippet}
+				</Conversation.EmptyState>
+			{:else}
+				{#each messages as message (message.id)}
+					<Message from={message.role}>
+						<MessageContent>
+							<Response content={message.text} />
+						</MessageContent>
+					</Message>
+				{/each}
+				{#if streamingMessageIndex !== null}
+					{@const streamingMsg = allMessages[streamingMessageIndex]}
+					<Message from={streamingMsg.role}>
+						<MessageContent>
+							<Response content={streamingContent || "\u200B"} />
+						</MessageContent>
+					</Message>
 				{/if}
-			</Conversation.Content>
-			<Conversation.ScrollButton />
-		</Conversation.Root>
-	</div>
+			{/if}
+		</Conversation.Content>
+		<Conversation.ScrollButton />
+	</Conversation.Root>
 </div>

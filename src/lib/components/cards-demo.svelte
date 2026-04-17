@@ -22,7 +22,7 @@
 	send anywhere.
 -->
 <div
-	class="grid **:data-[slot=card]:shadow-none md:gap-4 lg:grid-cols-10 xl:grid-cols-11"
+	class="grid **:data-[slot=card]:shadow-none md:gap-4 lg:h-min lg:grid-cols-10 xl:grid-cols-11"
 	data-slot="cards-demo"
 >
 	<div class="grid gap-4 lg:col-span-4 xl:col-span-6">
@@ -32,7 +32,7 @@
 				<CardsActivityGoal />
 			</div>
 		</div>
-		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:h-min xl:grid-cols-2">
 			<div class="flex flex-col gap-4">
 				<CardsBarVisualizer />
 				<VoiceForm />
@@ -40,9 +40,9 @@
 				<VoicePickerDemo />
 				<WaveformDemo />
 			</div>
-			<div class="flex flex-col gap-4">
+			<div class="flex min-h-0 flex-col gap-4 overflow-hidden">
 				<Speaker01 />
-				<div class="lg:hidden xl:block">
+				<div class="min-h-0 flex-1 overflow-hidden lg:hidden xl:flex xl:flex-col">
 					<ConversationDemo />
 				</div>
 			</div>
@@ -76,7 +76,7 @@
 		<div class="hidden md:block">
 			<VoiceChat01 />
 		</div>
-		<div class="hidden lg:block xl:hidden">
+		<div class="hidden min-h-0 flex-1 lg:flex lg:flex-col xl:hidden">
 			<ConversationDemo />
 		</div>
 	</div>
