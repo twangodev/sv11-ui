@@ -49,8 +49,8 @@ Pass both `value` and `onValueChange` for a fully controlled picker, or just `on
 <script lang="ts">
 	import { VoicePicker, type Voice } from "$lib/registry/ui/voice-picker";
 
-	let { voices, selectedVoice = $bindable() }: { voices: Voice[]; selectedVoice: string } =
-		$props();
+	let { voices }: { voices: Voice[] } = $props();
+	let selectedVoice = $state("");
 </script>
 
 <!-- Controlled -->

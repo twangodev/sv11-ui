@@ -101,7 +101,6 @@
 					if (sessionId !== id) return;
 					agentState = status;
 				},
-				onModeChange: () => {},
 			});
 		} catch (err) {
 			if (sessionId !== id) return;

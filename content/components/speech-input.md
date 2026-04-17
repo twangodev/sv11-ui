@@ -112,7 +112,13 @@ Drop the preview and cancel slots for an icon-only recorder; the transcript is s
 </script>
 
 <p>
-	Status: {state.isConnecting ? "Connecting" : state.isConnected ? "Recording" : "Idle"}
+	Status: {state.error
+		? `Error: ${state.error}`
+		: state.isConnecting
+			? "Connecting"
+			: state.isConnected
+				? "Recording"
+				: "Idle"}
 </p>
 <p>Transcript: {state.transcript}</p>
 ```
