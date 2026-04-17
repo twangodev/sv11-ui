@@ -57,16 +57,35 @@ function splitScripts(source) {
 }
 
 /**
+ * Walks a type node and collects property signatures from:
+ *   - type literals: `{ a: string; b: number }`
+ *   - intersections of the above: `{ a } & { b }`
+ *   - `TypeReference`s that resolve to a local type alias (transitively)
+ *
+ * External references (e.g. `HTMLAttributes<HTMLDivElement>`, `Omit<...>`,
+ * `ComponentProps<typeof Button>`) can't be resolved without a real TS program,
+ * so they contribute no members. We deliberately keep the extractor local and
+ * document this in the Props shape.
+ *
  * @param {import("ts-morph").TypeNode | undefined} typeNode
+ * @param {import("ts-morph").SourceFile[]} files
+ * @param {Set<string>} [seen]
  * @returns {import("ts-morph").PropertySignature[]}
  */
-function collectLiteralMembers(typeNode) {
+function collectLiteralMembers(typeNode, files, seen = new Set()) {
 	if (!typeNode) return [];
 	if (typeNode.isKind(SyntaxKind.TypeLiteral)) {
 		return typeNode.getMembers().filter((m) => m.isKind(SyntaxKind.PropertySignature));
 	}
 	if (typeNode.isKind(SyntaxKind.IntersectionType)) {
-		return typeNode.getTypeNodes().flatMap(collectLiteralMembers);
+		return typeNode.getTypeNodes().flatMap((n) => collectLiteralMembers(n, files, seen));
+	}
+	if (typeNode.isKind(SyntaxKind.TypeReference)) {
+		const refName = typeNode.asKindOrThrow(SyntaxKind.TypeReference).getTypeName().getText();
+		if (seen.has(refName)) return [];
+		const resolved = findTypeAlias(files, refName);
+		if (!resolved) return [];
+		return collectLiteralMembers(resolved, files, new Set([...seen, refName]));
 	}
 	return [];
 }
@@ -76,7 +95,11 @@ function extractDefaultFromJsDoc(docs) {
 	for (const doc of docs) {
 		for (const tag of doc.getTags()) {
 			if (tag.getTagName() === "default") {
-				return (tag.getCommentText() ?? "").trim();
+				// `@default {false}` and `@default false` should both render as `false`.
+				return (tag.getCommentText() ?? "")
+					.trim()
+					.replace(/^\{([\s\S]*)\}$/, "$1")
+					.trim();
 			}
 		}
 	}
@@ -92,14 +115,16 @@ function extractDescriptionFromJsDoc(docs) {
 	return "";
 }
 
-/** @param {string} instanceSource */
-function parseDestructuringDefaults(instanceSource) {
-	const project = new Project({ useInMemoryFileSystem: true, compilerOptions: { allowJs: false } });
-	const file = project.createSourceFile("__instance.ts", instanceSource, { overwrite: true });
+/**
+ * @param {import("ts-morph").SourceFile | null} instanceFile
+ * @returns {Record<string, string>}
+ */
+function parseDestructuringDefaults(instanceFile) {
 	/** @type {Record<string, string>} */
 	const defaults = {};
+	if (!instanceFile) return defaults;
 
-	file.forEachDescendant((node) => {
+	instanceFile.forEachDescendant((node) => {
 		if (!node.isKind(SyntaxKind.CallExpression)) return;
 		const call = node.asKindOrThrow(SyntaxKind.CallExpression);
 		if (call.getExpression().getText() !== "$props") return;
@@ -154,22 +179,12 @@ function findTypeAlias(files, name) {
  * `: LiveWaveformProps = $props()`), we resolve the reference back to its
  * alias declaration in either block.
  *
- * @param {string | null} moduleSource
- * @param {string | null} instanceSource
+ * @param {import("ts-morph").SourceFile[]} files
+ * @param {import("ts-morph").SourceFile | null} instanceFile
  * @param {string} componentName
  * @returns {import("ts-morph").TypeNode | undefined}
  */
-function resolvePropsTypeNode(moduleSource, instanceSource, componentName) {
-	const project = new Project({ useInMemoryFileSystem: true, compilerOptions: { allowJs: false } });
-	/** @type {import("ts-morph").SourceFile[]} */
-	const files = [];
-	if (moduleSource) {
-		files.push(project.createSourceFile("__module.ts", moduleSource, { overwrite: true }));
-	}
-	if (instanceSource) {
-		files.push(project.createSourceFile("__instance.ts", instanceSource, { overwrite: true }));
-	}
-
+function resolvePropsTypeNode(files, instanceFile, componentName) {
 	// Strategy 1: look for `<PascalName>Props` in EITHER block.
 	const expected = `${toPascalCase(componentName)}Props`;
 	const byExactName = findTypeAlias(files, expected);
@@ -196,7 +211,6 @@ function resolvePropsTypeNode(moduleSource, instanceSource, componentName) {
 	}
 
 	// Strategy 3: inline annotation on the instance block's $props() call.
-	const instanceFile = instanceSource ? files[files.length - 1] : null;
 	if (!instanceFile) return undefined;
 
 	/** @type {import("ts-morph").TypeNode | undefined} */
@@ -239,14 +253,41 @@ function extractForComponent(componentName) {
 	const source = readFileSync(svelteFile, "utf-8");
 	const { module: moduleSource, instance: instanceSource } = splitScripts(source);
 
-	const typeNode = resolvePropsTypeNode(moduleSource, instanceSource, componentName);
-	if (!typeNode) {
-		console.warn(`[extract-props] no props type resolved for '${componentName}'`);
-		return { props: [] };
+	// One Project per component, reused for both Props-type resolution and
+	// destructuring-default extraction. Avoids double-allocating a ts-morph
+	// program on every component.
+	const project = new Project({
+		useInMemoryFileSystem: true,
+		compilerOptions: { allowJs: false },
+	});
+	/** @type {import("ts-morph").SourceFile[]} */
+	const files = [];
+	if (moduleSource) {
+		files.push(project.createSourceFile("__module.ts", moduleSource, { overwrite: true }));
+	}
+	/** @type {import("ts-morph").SourceFile | null} */
+	let instanceFile = null;
+	if (instanceSource) {
+		instanceFile = project.createSourceFile("__instance.ts", instanceSource, { overwrite: true });
+		files.push(instanceFile);
 	}
 
-	const members = collectLiteralMembers(typeNode);
-	const destructuringDefaults = instanceSource ? parseDestructuringDefaults(instanceSource) : {};
+	const typeNode = resolvePropsTypeNode(files, instanceFile, componentName);
+	if (!typeNode) {
+		// Loud failure: a documented component with no resolvable Props type
+		// almost always means a misnamed alias or a missing annotation, not
+		// a truly prop-less component. Silently emitting "takes no props"
+		// would publish a lie.
+		throw new Error(
+			`[extract-props] ${componentName}: no props type resolved. ` +
+				`Expected 'export type ${toPascalCase(componentName)}Props = ...' in the <script> block ` +
+				`or an inline annotation on $props(). ` +
+				`If this component genuinely takes no props, declare 'export type ${toPascalCase(componentName)}Props = {}'.`
+		);
+	}
+
+	const members = collectLiteralMembers(typeNode, files);
+	const destructuringDefaults = parseDestructuringDefaults(instanceFile);
 	/** @type {Prop[]} */
 	const props = [];
 	/** @type {string[]} */
