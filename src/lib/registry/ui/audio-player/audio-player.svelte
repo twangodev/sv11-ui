@@ -50,6 +50,7 @@
 
 <audio
 	bind:this={audioEl}
+	data-slot="audio-player"
 	ondurationchange={(e) => {
 		const d = e.currentTarget.duration;
 		player.duration = Number.isFinite(d) ? d : undefined;

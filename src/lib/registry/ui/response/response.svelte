@@ -17,9 +17,11 @@
 	} = $props();
 </script>
 
-<Streamdown
-	baseTheme="shadcn"
-	components={{ code: Code, mermaid: Mermaid, math: Math }}
-	class={cn("size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0", className)}
-	{...restProps}
-/>
+<div data-slot="response" class="contents">
+	<Streamdown
+		baseTheme="shadcn"
+		components={{ code: Code, mermaid: Mermaid, math: Math }}
+		class={cn("size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0", className)}
+		{...restProps}
+	/>
+</div>
