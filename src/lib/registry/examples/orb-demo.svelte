@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button } from "$lib/registry/ui/button/index.js";
 	import { Orb, type OrbAgentState } from "$lib/registry/ui/orb/index.js";
+	import { cn } from "$lib/utils.js";
 
 	let { small = false }: { small?: boolean } = $props();
 
@@ -24,7 +25,7 @@
 	<div class="space-y-4">
 		<div class="flex justify-center gap-8">
 			{#each orbs as colors, index (index)}
-				<div class={`relative ${index === 1 ? "block md:block" : "hidden md:block"}`}>
+				<div class={cn("relative", small || index === 1 ? "block" : "hidden md:block")}>
 					<div
 						class="bg-muted relative h-32 w-32 rounded-full p-1 shadow-[inset_0_2px_8px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)]"
 					>
