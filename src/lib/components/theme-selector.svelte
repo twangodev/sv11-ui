@@ -44,12 +44,10 @@
 	import { Popover, PopoverContent, PopoverTrigger } from "$lib/registry/ui/popover/index.js";
 	import { cn } from "$lib/utils.js";
 
-	let current = $state<ThemeName>("default");
-
-	$effect(() => {
-		current = readStoredTheme();
-		applyTheme(current);
-	});
+	// The theme class is already on <html> from the pre-hydration inline
+	// script in app.html — just mirror the stored value into reactive state
+	// without re-applying. Writable so `choose()` can reassign it.
+	let current = $derived.by(() => readStoredTheme());
 
 	function choose(name: ThemeName) {
 		current = name;

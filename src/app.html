@@ -4,6 +4,17 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			// Apply the stored accent theme before CSS loads so color-heavy themes
+			// don't flash the default palette before hydration. Keep in sync with
+			// STORAGE_KEY / THEMES in src/lib/components/theme-selector.svelte.
+			(function () {
+				try {
+					var t = localStorage.getItem("sv11-theme");
+					if (t && t !== "default") document.documentElement.classList.add("theme-" + t);
+				} catch {}
+			})();
+		</script>
 		<script
 			src="https://rybbit.twango.dev/api/script.js"
 			data-site-id="47f8998a0015"
