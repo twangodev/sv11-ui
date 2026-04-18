@@ -126,8 +126,14 @@
 		}
 	}
 
-	function handleCopy(index: number, content: string) {
-		void navigator.clipboard.writeText(content);
+	async function handleCopy(index: number, content: string) {
+		try {
+			await navigator.clipboard.writeText(content);
+		} catch {
+			// Insecure context or denied permission — don't flash the "Copied!"
+			// state if the write actually failed.
+			return;
+		}
 		copiedIndex = index;
 		timers.push(
 			setTimeout(() => {

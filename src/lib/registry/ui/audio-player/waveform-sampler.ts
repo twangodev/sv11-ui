@@ -54,7 +54,10 @@ export async function precomputeWaveform(
 		window.OfflineAudioContext ||
 		(window as unknown as { webkitOfflineAudioContext: typeof OfflineAudioContext })
 			.webkitOfflineAudioContext;
-	const offlineContext = new OfflineCtx(1, 44100 * 5, 44100);
+	// Length is irrelevant — we only use the context to invoke decodeAudioData,
+	// which returns an AudioBuffer sized to the source. Use the minimum valid
+	// value to make that intent obvious.
+	const offlineContext = new OfflineCtx(1, 1, 44100);
 	const audioBuffer = await offlineContext.decodeAudioData(arrayBuffer.slice(0));
 	const bars = Math.max(1, Math.round(audioBuffer.duration * barsPerSecond));
 	return sampleWaveform(audioBuffer.getChannelData(0), bars);
