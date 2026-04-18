@@ -11,10 +11,7 @@
 
 <svelte:head>
 	<title>Blocks | sv11-ui</title>
-	<meta
-		name="description"
-		content="A gallery of full-page blocks built with sv11-ui components."
-	/>
+	<meta name="description" content="A gallery of full-page blocks built with sv11-ui components." />
 </svelte:head>
 
 <div class="flex flex-1 flex-col">
