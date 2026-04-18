@@ -43,6 +43,11 @@
 	const BARS_PER_SECOND = 8;
 	const BAR_STEP = 5; // barWidth(3) + barGap(2)
 	let precomputedWaveform = $state<number[]>([]);
+	// Tracks which track the loaded waveform belongs to so we only reset the
+	// playhead when the track actually changes — not when a late-resolving
+	// waveform lands for a track the user is already listening to.
+	let loadedTrackId = $state<string | null>(null);
+	let lastResetTrackId: string | null = null;
 	let waveformOffset = $state(0);
 	let containerWidthRef = { current: 300 };
 	let waveformEl = $state<HTMLDivElement | null>(null);
@@ -93,6 +98,7 @@
 
 		if (requestId === waveformRequestId) {
 			precomputedWaveform = bars;
+			loadedTrackId = track.id;
 		}
 	}
 
@@ -109,13 +115,22 @@
 		return () => window.removeEventListener("resize", measure);
 	});
 
-	// Reset playhead + offset whenever a new waveform is ready.
+	// Reset playhead + offset whenever a new waveform is ready — but only if
+	// the waveform belongs to a track we haven't already reset for. Otherwise
+	// a late-arriving decode for the currently-playing track would rewind the
+	// user mid-listen.
 	$effect(() => {
-		if (precomputedWaveform.length > 0 && containerWidthRef.current > 0) {
+		if (
+			precomputedWaveform.length > 0 &&
+			containerWidthRef.current > 0 &&
+			loadedTrackId !== null &&
+			loadedTrackId !== lastResetTrackId
+		) {
 			waveformOffset = containerWidthRef.current;
 			if (player.audio) {
 				player.audio.currentTime = 0;
 			}
+			lastResetTrackId = loadedTrackId;
 		}
 	});
 
@@ -177,6 +192,7 @@
 	// Analyser: tap the <audio> element for frequency data feeding the orbs.
 	let analyser = $state<AnalyserNode | null>(null);
 	let audioContext = $state<AudioContext | null>(null);
+	let analyserSource: MediaElementAudioSourceNode | null = null;
 
 	$effect(() => {
 		const audioEl = player.audio;
@@ -197,13 +213,29 @@
 				a.connect(ctx.destination);
 				audioContext = ctx;
 				analyser = a;
+				analyserSource = source;
 			} catch (err) {
 				console.error("analyser setup failed", err);
 			}
 		};
 
 		audioEl.addEventListener("play", handleStart, { once: true });
-		return () => audioEl.removeEventListener("play", handleStart);
+		return () => {
+			audioEl.removeEventListener("play", handleStart);
+			// Tear down the graph so unmount / HMR doesn't leak contexts — browsers
+			// cap live AudioContexts and a long-lived session accumulates them
+			// across block navigations.
+			try {
+				analyserSource?.disconnect();
+				analyser?.disconnect();
+			} catch {
+				// ignore — nodes may already be gone
+			}
+			void audioContext?.close().catch(() => {});
+			audioContext = null;
+			analyser = null;
+			analyserSource = null;
+		};
 	});
 
 	// RAF loop to sample analyser into audioDataRef.
@@ -460,6 +492,7 @@
 				class="bg-foreground/10 group relative h-1 w-48 cursor-pointer rounded-full"
 				role="slider"
 				tabindex="0"
+				aria-label="Volume"
 				aria-valuemin="0"
 				aria-valuemax="100"
 				aria-valuenow={Math.round(volume * 100)}
