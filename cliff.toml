@@ -16,7 +16,7 @@ body = """
 ### {{ group | upper_first }}
 {% for commit in commits %}
 - {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first | split(pat="\\n") | first }} \
-([{{ commit.id | truncate(length=7, end="") }}](https://github.com/twangodev/svagent-ui/commit/{{ commit.id }}))\
+([{{ commit.id | truncate(length=7, end="") }}](https://github.com/twangodev/sv11-ui/commit/{{ commit.id }}))\
 {% endfor %}
 {% endfor %}\n
 """
