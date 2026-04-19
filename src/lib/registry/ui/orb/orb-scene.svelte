@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { T, useTask, useThrelte } from "@threlte/core";
 	import { useTexture } from "@threlte/extras";
-	import { onMount } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import * as THREE from "three";
 	import { mode } from "mode-watcher";
 	import type { OrbAgentState } from "./types.js";
@@ -34,7 +34,6 @@
 
 	let mesh = $state.raw<THREE.Mesh<THREE.CircleGeometry, THREE.ShaderMaterial>>();
 
-	// Non-reactive refs (upstream's useRef equivalents)
 	const targetColor1 = new THREE.Color(colors[0]);
 	const targetColor2 = new THREE.Color(colors[1]);
 	let curIn = 0;
@@ -42,13 +41,18 @@
 	let animSpeed = 0.1;
 	const offsets = makeOffsets(seed);
 
-	// Reactively update target colors when `colors` prop changes (upstream lines 142-145)
 	$effect(() => {
 		targetColor1.set(colors[0]);
 		targetColor2.set(colors[1]);
 	});
 
-	// WebGL context-lost handler (upstream lines 220-231)
+	$effect(() => {
+		const inverted = mode.current === "dark" ? 1 : 0;
+		const mat = mesh?.material;
+		if (!mat) return;
+		mat.uniforms.uInverted.value = inverted;
+	});
+
 	onMount(() => {
 		const onLost = (e: Event) => {
 			e.preventDefault();
@@ -58,7 +62,6 @@
 		return () => canvas.removeEventListener("webglcontextlost", onLost, false);
 	});
 
-	// Load perlin texture with tiling enabled (upstream line 101-103 + line 234-235)
 	const texture = useTexture("https://sv11.ui.twango.dev/orbs/perlin-noise.png", {
 		transform: (t) => {
 			t.wrapS = THREE.RepeatWrapping;
@@ -68,9 +71,8 @@
 		},
 	});
 
-	// Build uniforms object once (upstream lines 233-251)
 	function makeUniforms(perlinTexture: THREE.Texture<HTMLImageElement>) {
-		return {
+		return untrack(() => ({
 			uColor1: new THREE.Uniform(new THREE.Color(colors[0])),
 			uColor2: new THREE.Uniform(new THREE.Color(colors[1])),
 			uOffsets: { value: offsets },
@@ -81,10 +83,9 @@
 			uInputVolume: new THREE.Uniform(0),
 			uOutputVolume: new THREE.Uniform(0),
 			uOpacity: new THREE.Uniform(0),
-		};
+		}));
 	}
 
-	// Per-frame update — byte-equivalent to upstream useFrame (lines 164-218)
 	useTask((delta) => {
 		const mat = mesh?.material;
 		if (!mat) return;
@@ -128,12 +129,10 @@
 		u.uAnimation.value += delta * animSpeed;
 		u.uInputVolume.value = curIn;
 		u.uOutputVolume.value = curOut;
-		u.uInverted.value = mode.current === "dark" ? 1 : 0;
 		u.uColor1.value.lerp(targetColor1, 0.08);
 		u.uColor2.value.lerp(targetColor2, 0.08);
 	});
 
-	// Upstream splitmix32 (lines 266-276) — byte-for-byte
 	function splitmix32(a: number) {
 		return function () {
 			a |= 0;
@@ -151,7 +150,6 @@
 		return new Float32Array(Array.from({ length: 7 }, () => rng() * Math.PI * 2));
 	}
 
-	// Upstream clamp01 (lines 278-281)
 	function clamp01(n: number) {
 		if (!Number.isFinite(n)) return 0;
 		return Math.min(1, Math.max(0, n));
