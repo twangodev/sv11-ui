@@ -52,6 +52,11 @@
 					"target": "lib/components/ui/audio-player/context.svelte.ts"
 				},
 				{
+					"path": "src/lib/registry/ui/audio-player/audio-graph.svelte.ts",
+					"type": "registry:ui",
+					"target": "lib/components/ui/audio-player/audio-graph.svelte.ts"
+				},
+				{
 					"path": "src/lib/registry/ui/audio-player/utils.ts",
 					"type": "registry:ui",
 					"target": "lib/components/ui/audio-player/utils.ts"
@@ -649,6 +654,11 @@
 					"path": "src/lib/registry/blocks/speaker-01/index.ts",
 					"type": "registry:block",
 					"target": "components/blocks/speaker-01/index.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/speaker-01/use-scratchable-waveform.svelte.ts",
+					"type": "registry:block",
+					"target": "components/blocks/speaker-01/use-scratchable-waveform.svelte.ts"
 				}
 			]
 		},
