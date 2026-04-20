@@ -112,10 +112,14 @@
 	});
 
 	$effect(() => {
+		untrack(() => void loadWaveform(exampleTracks[0]));
+	});
+
+	$effect(() => {
+		if (!player.audio) return;
 		untrack(() => {
 			const track = exampleTracks[0];
 			void player.setActiveItem({ id: track.id, src: track.url, data: { name: track.name } });
-			void loadWaveform(track);
 		});
 	});
 
