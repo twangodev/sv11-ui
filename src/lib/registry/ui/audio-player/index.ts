@@ -29,3 +29,4 @@ export type { AudioPlayerItem } from "./context.svelte.js";
 export { formatTime } from "./utils.js";
 export { exampleTracks } from "./example-tracks.js";
 export { precomputeWaveform, sampleWaveform } from "./waveform-sampler.js";
+export { AudioGraph } from "./audio-graph.svelte.js";

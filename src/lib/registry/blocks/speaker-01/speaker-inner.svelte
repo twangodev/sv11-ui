@@ -8,6 +8,7 @@
 	import Volume2 from "@lucide/svelte/icons/volume-2";
 	import VolumeX from "@lucide/svelte/icons/volume-x";
 	import {
+		AudioGraph,
 		AudioPlayerButton,
 		AudioPlayerDuration,
 		AudioPlayerProgress,
@@ -21,10 +22,12 @@
 	import { Waveform } from "$lib/registry/ui/waveform/index.js";
 	import { cn } from "$lib/utils.js";
 	import SpeakerOrb from "./speaker-orb.svelte";
+	import { useScratchableWaveform } from "./use-scratchable-waveform.svelte.js";
 
 	let { class: className }: { class?: string } = $props();
 
 	const player = useAudioPlayer<{ name: string }>();
+	const graph = new AudioGraph();
 
 	let currentTrackIndex = $state(0);
 	let showTrackList = $state(false);
@@ -32,42 +35,33 @@
 	let volume = $state(0.7);
 	let isDark = $state(false);
 
-	// Refs-as-objects so child components share a single mutable reference.
 	const audioDataRef: { current: number[] } = $state({ current: [] });
 	const isPlayingRef: { current: boolean } = $state({ current: false });
 	const volumeRef: { current: number } = $state({ current: 0.7 });
 
-	// Scrolling waveform state. `BARS_PER_SECOND` keeps scroll speed and detail
-	// consistent across tracks of different lengths; the strip width is derived
-	// from the loaded waveform's actual bar count.
 	const BARS_PER_SECOND = 8;
-	const BAR_STEP = 5; // barWidth(3) + barGap(2)
+	const BAR_STEP = 5;
 	let precomputedWaveform = $state<number[]>([]);
-	// Tracks which track the loaded waveform belongs to so we only reset the
-	// playhead when the track actually changes — not when a late-resolving
-	// waveform lands for a track the user is already listening to.
+	// Guards against a late-arriving decode rewinding the user mid-listen on a
+	// track they've already switched to.
 	let loadedTrackId = $state<string | null>(null);
 	let lastResetTrackId: string | null = null;
-	let waveformOffset = $state(0);
 	let containerWidthRef = { current: 300 };
-	let waveformEl = $state<HTMLDivElement | null>(null);
 	let waveformContainerEl = $state<HTMLDivElement | null>(null);
 	const totalWidth = $derived(precomputedWaveform.length * BAR_STEP);
 
-	// Keep volumeRef in sync with the reactive state.
+	const scrub = useScratchableWaveform({
+		player,
+		graph,
+		trackUrl: () => exampleTracks[currentTrackIndex]?.url ?? null,
+		totalWidth: () => totalWidth,
+		containerWidth: () => containerWidthRef.current,
+	});
+
 	$effect(() => {
 		volumeRef.current = volume;
 	});
 
-	/**
-	 * Resolve a track's waveform in priority order:
-	 *   1. `track.waveform` — inline array, zero I/O
-	 *   2. `track.waveformUrl` — fetch a small JSON
-	 *   3. Decode the mp3 client-side via `OfflineAudioContext` (slow fallback)
-	 *
-	 * Each call tags its own request id so a fast track-switch discards stale
-	 * results instead of overwriting the active waveform.
-	 */
 	let waveformRequestId = 0;
 	async function loadWaveform(track: (typeof exampleTracks)[number]) {
 		const requestId = ++waveformRequestId;
@@ -83,7 +77,7 @@
 					if (Array.isArray(json)) bars = json;
 				}
 			} catch {
-				// Network or parse error — fall through to the client decode path.
+				// fall through to client decode
 			}
 		}
 
@@ -102,12 +96,10 @@
 		}
 	}
 
-	// Measure the waveform container on mount + window resize.
 	$effect(() => {
 		const measure = () => {
 			if (waveformContainerEl) {
-				const rect = waveformContainerEl.getBoundingClientRect();
-				containerWidthRef.current = rect.width;
+				containerWidthRef.current = waveformContainerEl.getBoundingClientRect().width;
 			}
 		};
 		measure();
@@ -115,10 +107,6 @@
 		return () => window.removeEventListener("resize", measure);
 	});
 
-	// Reset playhead + offset whenever a new waveform is ready — but only if
-	// the waveform belongs to a track we haven't already reset for. Otherwise
-	// a late-arriving decode for the currently-playing track would rewind the
-	// user mid-listen.
 	$effect(() => {
 		if (
 			precomputedWaveform.length > 0 &&
@@ -126,36 +114,28 @@
 			loadedTrackId !== null &&
 			loadedTrackId !== lastResetTrackId
 		) {
-			waveformOffset = containerWidthRef.current;
-			if (player.audio) {
-				player.audio.currentTime = 0;
-			}
+			scrub.offset = containerWidthRef.current;
+			if (player.audio) player.audio.currentTime = 0;
 			lastResetTrackId = loadedTrackId;
 		}
 	});
 
-	// Load the first track on mount + fetch its waveform.
 	$effect(() => {
 		const track = exampleTracks[0];
-		void player.setActiveItem({
-			id: track.id,
-			src: track.url,
-			data: { name: track.name },
-		});
+		void player.setActiveItem({ id: track.id, src: track.url, data: { name: track.name } });
 		void loadWaveform(track);
 	});
 
-	// RAF loop: translate the waveform so the playhead (right edge of container)
-	// tracks the current audio time. Mirrors upstream's scroll math — position
-	// normalized against `audio.duration` — so playback and waveform end-of-
-	// track align even when bar count is derived from PCM duration.
+	// Playhead RAF: only drives offset when the user isn't driving it themselves.
 	$effect(() => {
 		let animationId: number;
 		const update = () => {
-			const audio = player.audio;
-			if (audio && !isNaN(audio.duration) && audio.duration > 0) {
-				const position = audio.currentTime / audio.duration;
-				waveformOffset = containerWidthRef.current - position * totalWidth;
+			if (!scrub.isScrubbing && !scrub.isMomentumActive) {
+				const audio = player.audio;
+				if (audio && !isNaN(audio.duration) && audio.duration > 0) {
+					const position = audio.currentTime / audio.duration;
+					scrub.offset = containerWidthRef.current - position * totalWidth;
+				}
 			}
 			animationId = requestAnimationFrame(update);
 		};
@@ -163,85 +143,40 @@
 		return () => cancelAnimationFrame(animationId);
 	});
 
-	// Track the playing state (derived from player context).
 	$effect(() => {
 		isPlayingRef.current = player.isPlaying;
 	});
 
-	// Apply volume to the audio element.
 	$effect(() => {
-		if (player.audio) {
-			player.audio.volume = volume;
-		}
+		if (player.audio) player.audio.volume = volume;
 	});
 
-	// Dark-mode observer.
 	$effect(() => {
 		const check = () => {
 			isDark = document.documentElement.classList.contains("dark");
 		};
 		check();
 		const observer = new MutationObserver(check);
-		observer.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ["class"],
-		});
+		observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 		return () => observer.disconnect();
 	});
 
-	// Analyser: tap the <audio> element for frequency data feeding the orbs.
-	let analyser = $state<AnalyserNode | null>(null);
-	let audioContext = $state<AudioContext | null>(null);
-	let analyserSource: MediaElementAudioSourceNode | null = null;
-
 	$effect(() => {
 		const audioEl = player.audio;
-		if (!audioEl || audioContext) return;
-
-		const handleStart = () => {
-			if (audioContext) return;
-			try {
-				const AC =
-					window.AudioContext ||
-					(window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-				const ctx: AudioContext = new AC();
-				const source = ctx.createMediaElementSource(audioEl);
-				const a = ctx.createAnalyser();
-				a.fftSize = 512;
-				a.smoothingTimeConstant = 0.7;
-				source.connect(a);
-				a.connect(ctx.destination);
-				audioContext = ctx;
-				analyser = a;
-				analyserSource = source;
-			} catch (err) {
-				console.error("analyser setup failed", err);
-			}
-		};
-
-		audioEl.addEventListener("play", handleStart, { once: true });
+		if (!audioEl) return;
+		const handleStart = () => graph.ensureAnalyser(audioEl);
+		audioEl.addEventListener("play", handleStart);
 		return () => {
 			audioEl.removeEventListener("play", handleStart);
-			// Tear down the graph so unmount / HMR doesn't leak contexts — browsers
-			// cap live AudioContexts and a long-lived session accumulates them
-			// across block navigations.
-			try {
-				analyserSource?.disconnect();
-				analyser?.disconnect();
-			} catch {
-				// ignore — nodes may already be gone
-			}
-			void audioContext?.close().catch(() => {});
-			audioContext = null;
-			analyser = null;
-			analyserSource = null;
+			graph.destroy();
+			scrub.reset();
 		};
 	});
 
-	// RAF loop to sample analyser into audioDataRef.
 	$effect(() => {
 		let animationId: number;
 		const loop = () => {
+			const analyser = graph.analyser;
 			if (analyser && isPlayingRef.current) {
 				const arr = new Uint8Array(analyser.frequencyBinCount);
 				analyser.getByteFrequencyData(arr);
@@ -260,6 +195,7 @@
 		const track = exampleTracks[index];
 		void player.play({ id: track.id, src: track.url, data: { name: track.name } });
 		showTrackList = false;
+		scrub.reset();
 		void loadWaveform(track);
 	}
 
@@ -282,11 +218,16 @@
 		volume === 0 ? VolumeX : volume <= 0.33 ? Volume : volume <= 0.66 ? Volume1 : Volume2
 	);
 
+	const scrubberValue = $derived.by(() => {
+		const audio = player.audio;
+		if (!audio || !isFinite(audio.duration) || audio.duration <= 0) return 0;
+		return Math.round((audio.currentTime / audio.duration) * 100);
+	});
+
 	function handleVolumeClick(event: MouseEvent) {
 		const target = event.currentTarget as HTMLDivElement;
 		const rect = target.getBoundingClientRect();
-		const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-		volume = x;
+		volume = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
 	}
 </script>
 
@@ -303,12 +244,8 @@
 			<div class="space-y-2">
 				<div class="flex items-center justify-between">
 					<div class="min-w-0 flex-1">
-						<h3 class="text-foreground truncate text-sm font-medium">
-							{currentTrack.title}
-						</h3>
-						<p class="text-muted-foreground truncate text-xs">
-							{currentTrack.artist}
-						</p>
+						<h3 class="text-foreground truncate text-sm font-medium">{currentTrack.title}</h3>
+						<p class="text-muted-foreground truncate text-xs">{currentTrack.artist}</p>
 					</div>
 					<div class="flex gap-1">
 						<Button
@@ -337,13 +274,22 @@
 
 				<div
 					bind:this={waveformContainerEl}
-					class="waveform-container bg-foreground/10 relative h-12 overflow-hidden rounded-lg p-2 dark:bg-black/80"
+					class="waveform-container bg-foreground/10 relative h-12 cursor-grab touch-none overflow-hidden rounded-lg p-2 select-none active:cursor-grabbing dark:bg-black/80"
+					role="slider"
+					tabindex="0"
+					aria-label="Seek playback"
+					aria-valuemin="0"
+					aria-valuemax="100"
+					aria-valuenow={scrubberValue}
+					onpointerdown={scrub.handlePointerDown}
+					onkeydown={scrub.handleKeyDown}
 				>
 					<div class="relative h-full w-full overflow-hidden">
 						<div
-							bind:this={waveformEl}
-							style:transform="translateX({waveformOffset}px)"
-							style:transition="transform 0.016s linear"
+							style:transform="translateX({scrub.offset}px)"
+							style:transition={scrub.isScrubbing || scrub.isMomentumActive
+								? "none"
+								: "transform 0.016s linear"}
 							style:width="{totalWidth}px"
 							style:position="absolute"
 							style:left="0"
@@ -393,9 +339,7 @@
 								<span class="text-muted-foreground/60">{index + 1}</span>
 								<div class="min-w-0 flex-1">
 									<div class="truncate">{track.title}</div>
-									<div class="text-muted-foreground/60 truncate text-xs">
-										{track.artist}
-									</div>
+									<div class="text-muted-foreground/60 truncate text-xs">{track.artist}</div>
 								</div>
 							</div>
 						</button>
