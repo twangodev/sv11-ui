@@ -67,8 +67,8 @@
 		<InfoIcon class="text-foreground mt-0.5 size-3.5 shrink-0" />
 		<p>
 			<code class="bg-muted rounded px-1 py-0.5">SpeechInput</code> is provider-agnostic — pass a
-			<code class="bg-muted rounded px-1 py-0.5">TranscriptionAdapter</code> wired to ElevenLabs,
-			Deepgram, OpenAI, or any other backend. This demo has no STT hooked up.
+			<code class="bg-muted rounded px-1 py-0.5">TranscriptionAdapter</code> wired to ElevenLabs, Deepgram,
+			OpenAI, or any other backend. This demo has no STT hooked up.
 		</p>
 	</div>
 </div>
