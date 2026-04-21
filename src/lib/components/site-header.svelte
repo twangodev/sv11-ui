@@ -17,8 +17,8 @@
 	<div class="container-wrapper px-6">
 		<div class="flex h-(--header-height) items-center gap-2 **:data-[slot=separator]:h-4!">
 			<MobileNav bind:this={mobileNavRef} class="flex lg:hidden" />
-			<Button href="/" variant="ghost" size="icon" class="hidden size-8 lg:flex">
-				<Logo class="size-5" />
+			<Button href="/" variant="ghost" class="hidden h-8 px-2 lg:flex">
+				<Logo class="!h-5 !w-auto" />
 				<span class="sr-only">sv11-ui</span>
 			</Button>
 			<MainNav items={mainNavItems} class="hidden lg:flex" />
