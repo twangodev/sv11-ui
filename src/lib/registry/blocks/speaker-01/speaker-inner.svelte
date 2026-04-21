@@ -207,7 +207,7 @@
 	const tracks = exampleTracks.map((t) => ({
 		id: t.id,
 		title: t.name,
-		artist: "ElevenLabs Music",
+		artist: "SoundHelix",
 	}));
 	const currentTrack = $derived(tracks[currentTrackIndex]);
 

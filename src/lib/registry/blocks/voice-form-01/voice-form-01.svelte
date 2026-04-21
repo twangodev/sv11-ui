@@ -64,7 +64,7 @@
 				<div class="flex items-start justify-between">
 					<div class="space-y-1">
 						<CardTitle>Voice Fill</CardTitle>
-						<CardDescription>Powered by ElevenLabs Scribe</CardDescription>
+						<CardDescription>Fill fields by voice</CardDescription>
 					</div>
 					<VoiceButton
 						state={voiceState}
