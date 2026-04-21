@@ -4,6 +4,7 @@ import MusicPlayer02 from "$lib/registry/blocks/music-player-02/index.js";
 import Speaker01 from "$lib/registry/blocks/speaker-01/index.js";
 import VoiceChat01 from "$lib/registry/blocks/voice-chat-01/index.js";
 import VoiceChat02 from "$lib/registry/blocks/voice-chat-02/index.js";
+import VoiceChat03 from "$lib/registry/blocks/voice-chat-03/index.js";
 import VoiceForm01 from "$lib/registry/blocks/voice-form-01/index.js";
 
 export type BlockEntry = {
@@ -32,6 +33,13 @@ export const blocks: BlockEntry[] = [
 		title: "Voice Chat 02",
 		description: "Compact call card with animated Orb, connection status, and call toggle.",
 		component: VoiceChat02,
+	},
+	{
+		name: "voice-chat-03",
+		title: "Voice Chat 03",
+		description:
+			"Tall chat card: ConversationBar anchored at the bottom, empty-state Orb, and per-message copy buttons.",
+		component: VoiceChat03,
 	},
 	{
 		name: "music-player-01",

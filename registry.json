@@ -711,6 +711,34 @@
 			]
 		},
 		{
+			"name": "voice-chat-03",
+			"type": "registry:block",
+			"title": "Voice Chat 03",
+			"description": "A tall voice-chat card with a conversation bar anchored at the bottom, an empty-state orb, and per-message copy buttons.",
+			"registryDependencies": [
+				"button",
+				"card",
+				"conversation",
+				"conversation-bar",
+				"message",
+				"orb",
+				"response",
+				"tooltip"
+			],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/voice-chat-03/voice-chat-03.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/voice-chat-03/voice-chat-03.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/voice-chat-03/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/voice-chat-03/index.ts"
+				}
+			]
+		},
+		{
 			"name": "voice-form-01",
 			"type": "registry:block",
 			"title": "Voice Form 01",
