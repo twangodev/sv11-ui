@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { siteConfig } from "$lib/config.js";
 	import Button from "$lib/registry/ui/button/button.svelte";
-	import GithubIcon from "./github.svelte";
+	import SiGithub from "@icons-pack/svelte-simple-icons/icons/SiGithub";
 	import { FALLBACK_STAR_COUNT } from "$lib/constants.js";
 	import { onMount } from "svelte";
 
@@ -31,7 +31,7 @@
 	variant="ghost"
 	class="h-8 shadow-none"
 >
-	<GithubIcon />
+	<SiGithub title="GitHub" />
 	<span class="text-muted-foreground text-xs tabular-nums">
 		{stars >= 1000 ? `${(stars / 1000).toFixed(1)}k` : stars.toLocaleString()}
 	</span>

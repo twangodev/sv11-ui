@@ -3,6 +3,7 @@
 	import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
 	import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
 	import DocsToc from "$lib/components/docs-toc.svelte";
+	import DocsCopyPage from "$lib/components/docs-copy-page.svelte";
 	import { findNeighbors } from "$lib/navigation.js";
 	import { page } from "$app/state";
 	import Metadata from "$lib/components/metadata.svelte";
@@ -24,6 +25,7 @@
 >
 	<div
 		class="sticky top-[calc(var(--header-height)+1px)] z-30 ms-auto hidden h-[calc(100svh-var(--footer-height)+2rem)] w-72 flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex"
+		data-llm-ignore
 	>
 		<div class="h-(--top-spacing) shrink-0"></div>
 		{#if doc.toc.length}
@@ -43,7 +45,8 @@
 					<h1 class="scroll-m-20 text-4xl font-semibold tracking-tight sm:text-3xl xl:text-4xl">
 						{doc.title}
 					</h1>
-					<div class="flex items-center gap-2">
+					<div class="flex items-center gap-2" data-llm-ignore>
+						<DocsCopyPage />
 						{#if neighbors.previous}
 							<Button
 								variant="secondary"

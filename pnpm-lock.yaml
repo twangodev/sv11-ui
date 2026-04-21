@@ -20,6 +20,9 @@ importers:
       '@fontsource-variable/geist-mono':
         specifier: ^5.2.7
         version: 5.2.7
+      '@icons-pack/svelte-simple-icons':
+        specifier: ^7.2.0
+        version: 7.2.0(@sveltejs/kit@2.57.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.2)(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.2)(typescript@5.9.3)(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.2)
       '@lucide/svelte':
         specifier: ^1.7.0
         version: 1.7.0(svelte@5.55.2)
@@ -604,6 +607,13 @@ packages:
 
   '@iconify/utils@3.1.0':
     resolution: {integrity: sha512-Zlzem1ZXhI1iHeeERabLNzBHdOa4VhQbqAcOQaMKuTuyZCpwKbC2R4Dd0Zo3g9EAc+Y4fiarO8HIHRAth7+skw==}
+
+  '@icons-pack/svelte-simple-icons@7.2.0':
+    resolution: {integrity: sha512-zH4YByltlMBipdijJ1ZN4YGmxn2LKLCt+wCDC1rF0+3yor95Df090lZ5wfsN/UN4JsLjr7e6nxp6MOsEfYv/cQ==}
+    engines: {node: '>=24', pnpm: '>=10'}
+    peerDependencies:
+      '@sveltejs/kit': ^2.5.0
+      svelte: ^5.0.0
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -3547,6 +3557,11 @@ snapshots:
       '@antfu/install-pkg': 1.1.0
       '@iconify/types': 2.0.0
       mlly: 1.8.2
+
+  '@icons-pack/svelte-simple-icons@7.2.0(@sveltejs/kit@2.57.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.2)(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.2)(typescript@5.9.3)(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.2)':
+    dependencies:
+      '@sveltejs/kit': 2.57.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.2)(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.2)(typescript@5.9.3)(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      svelte: 5.55.2
 
   '@img/colour@1.1.0': {}
 
