@@ -75,7 +75,7 @@
 		disconnect() {
 			clearTimers();
 		},
-		sendMessage(text: string) {
+		sendMessage() {
 			const reply = CANNED_REPLIES[replyIndex % CANNED_REPLIES.length];
 			replyIndex += 1;
 			timers.push(
