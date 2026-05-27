@@ -2,6 +2,7 @@ import type { Component } from "svelte";
 import MusicPlayer01 from "$lib/registry/blocks/music-player-01/index.js";
 import MusicPlayer02 from "$lib/registry/blocks/music-player-02/index.js";
 import Speaker01 from "$lib/registry/blocks/speaker-01/index.js";
+import Transcriber01 from "$lib/registry/blocks/transcriber-01/index.js";
 import VoiceChat01 from "$lib/registry/blocks/voice-chat-01/index.js";
 import VoiceChat02 from "$lib/registry/blocks/voice-chat-02/index.js";
 import VoiceChat03 from "$lib/registry/blocks/voice-chat-03/index.js";
@@ -58,6 +59,13 @@ export const blocks: BlockEntry[] = [
 		title: "Voice Form 01",
 		description: "Form with a voice-fill button that cycles through idle/recording/success states.",
 		component: VoiceForm01,
+	},
+	{
+		name: "transcriber-01",
+		title: "Transcriber 01",
+		description:
+			"Record-and-transcribe card with live waveform, timing, and a provider-agnostic transcription backend.",
+		component: Transcriber01,
 	},
 ];
 

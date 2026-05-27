@@ -799,6 +799,39 @@
 			]
 		},
 		{
+			"name": "transcriber-01",
+			"type": "registry:block",
+			"title": "Transcriber 01",
+			"description": "A record-and-transcribe card with live waveform, elapsed timing, copy-to-clipboard, and a provider-agnostic transcription backend (Web Speech API demo).",
+			"categories": ["audio"],
+			"dependencies": ["@lucide/svelte"],
+			"registryDependencies": [
+				"button",
+				"card",
+				"live-waveform",
+				"response",
+				"scroll-area",
+				"separator"
+			],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/transcriber-01/transcriber-01.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/transcriber-01/transcriber-01.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/transcriber-01/speech.ts",
+					"type": "registry:block",
+					"target": "components/blocks/transcriber-01/speech.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/transcriber-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/transcriber-01/index.ts"
+				}
+			]
+		},
+		{
 			"name": "all",
 			"type": "registry:block",
 			"title": "All Components",
