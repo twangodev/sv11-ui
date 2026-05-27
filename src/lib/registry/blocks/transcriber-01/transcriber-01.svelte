@@ -15,7 +15,7 @@
 	import CheckIcon from "@lucide/svelte/icons/check";
 	import MicIcon from "@lucide/svelte/icons/mic";
 	import SquareIcon from "@lucide/svelte/icons/square";
-	import { onDestroy } from "svelte";
+	import { onDestroy, onMount } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import { Button } from "$lib/registry/ui/button/index.js";
 	import {
@@ -41,7 +41,13 @@
 	let elapsed = $state<number | null>(null);
 	let copied = $state(false);
 
-	const supported = $derived(isSpeechRecognitionSupported() || typeof transcribe === "function");
+	// Optimistic until mounted so prerendered HTML doesn't flash the "unsupported"
+	// note before the client can feature-detect.
+	let mounted = $state(false);
+	onMount(() => (mounted = true));
+	const supported = $derived(
+		!mounted || isSpeechRecognitionSupported() || typeof transcribe === "function"
+	);
 
 	const session = new SpeechSession();
 	let mediaRecorder: MediaRecorder | null = null;

@@ -21,7 +21,7 @@
 </script>
 
 <script lang="ts">
-	import { onDestroy } from "svelte";
+	import { onDestroy, onMount } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import {
 		Card,
@@ -47,7 +47,11 @@
 	let error = $state("");
 	let lastHeard = $state("");
 
-	const supported = isSpeechRecognitionSupported();
+	// Optimistic until mounted so prerendered HTML doesn't flash the "unsupported"
+	// note before the client can feature-detect.
+	let mounted = $state(false);
+	onMount(() => (mounted = true));
+	const supported = $derived(!mounted || isSpeechRecognitionSupported());
 	const recognizer = new OneShotRecognizer();
 	let revertTimer: ReturnType<typeof setTimeout> | null = null;
 

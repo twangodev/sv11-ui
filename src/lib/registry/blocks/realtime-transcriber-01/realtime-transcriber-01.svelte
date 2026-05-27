@@ -19,7 +19,7 @@
 	import CheckIcon from "@lucide/svelte/icons/check";
 	import MicIcon from "@lucide/svelte/icons/mic";
 	import SquareIcon from "@lucide/svelte/icons/square";
-	import { onDestroy } from "svelte";
+	import { onDestroy, onMount } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import { Button } from "$lib/registry/ui/button/index.js";
 	import { Badge } from "$lib/registry/ui/badge/index.js";
@@ -46,8 +46,12 @@
 
 	let session: TranscriptionAdapter | null = null;
 
+	// Optimistic until mounted so prerendered HTML doesn't flash the "unsupported"
+	// note before the client can feature-detect.
+	let mounted = $state(false);
+	onMount(() => (mounted = true));
 	const usingDemo = $derived(!adapter);
-	const supported = $derived(!usingDemo || isSpeechRecognitionSupported());
+	const supported = $derived(!mounted || !usingDemo || isSpeechRecognitionSupported());
 	const selectedName = $derived(
 		LANGUAGES.find((l) => l.code === selectedCode)?.name ?? "Auto-detect"
 	);
