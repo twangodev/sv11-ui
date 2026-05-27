@@ -14,6 +14,7 @@ const config = {
 		mdsx(mdsxConfig),
 		componentPreviews(),
 		componentsList(),
+		colorPalette(),
 	],
 	extensions: [".svelte", ".md"],
 
@@ -275,6 +276,38 @@ function componentsList() {
 
 			const ms = new MagicString(content);
 			const importLine = `import ComponentsList from "$lib/components/components-list.svelte";`;
+
+			const scriptRegex = /<script(?:\s[^>]*)?>|<script>/g;
+			let scriptMatch;
+			while ((scriptMatch = scriptRegex.exec(content)) !== null) {
+				if (scriptMatch[0].includes("module")) continue;
+				const insertPos = scriptMatch.index + scriptMatch[0].length;
+				ms.appendRight(insertPos, "\n" + importLine);
+				break;
+			}
+
+			return { code: ms.toString(), map: ms.generateMap() };
+		},
+	};
+}
+
+/**
+ * Injects a ColorPalette import whenever `<ColorPalette />` appears in a .md
+ * doc. Mirrors componentsList().
+ *
+ * @returns {import("svelte/compiler").PreprocessorGroup}
+ */
+function colorPalette() {
+	const TARGET = "<ColorPalette";
+
+	return {
+		name: "inject-color-palette",
+		markup: ({ content, filename }) => {
+			if (!filename?.endsWith(".md") || !content.includes(TARGET)) return;
+			if (!content.includes("<script>") && !content.includes("<script ")) return;
+
+			const ms = new MagicString(content);
+			const importLine = `import ColorPalette from "$lib/components/color-palette.svelte";`;
 
 			const scriptRegex = /<script(?:\s[^>]*)?>|<script>/g;
 			let scriptMatch;
