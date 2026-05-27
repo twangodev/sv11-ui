@@ -609,6 +609,7 @@
 			"type": "registry:block",
 			"title": "Music Player 02",
 			"description": "A minimal single-track music player with play/pause, progress, time, and duration.",
+			"categories": ["audio"],
 			"registryDependencies": ["audio-player", "card"],
 			"files": [
 				{
@@ -633,6 +634,7 @@
 			"type": "registry:block",
 			"title": "Speaker 01",
 			"description": "A speaker-style music player with two audio-reactive Orbs, waveform strip, transport controls, and a volume slider.",
+			"categories": ["audio"],
 			"registryDependencies": ["audio-player", "button", "card", "orb", "waveform"],
 			"files": [
 				{
@@ -667,6 +669,7 @@
 			"type": "registry:block",
 			"title": "Voice Chat 01",
 			"description": "A full voice-and-text chat card: Orb header, scrollable conversation with copy actions, and a composer with send + call toggle.",
+			"categories": ["agents"],
 			"registryDependencies": [
 				"button",
 				"card",
@@ -696,6 +699,7 @@
 			"type": "registry:block",
 			"title": "Voice Chat 02",
 			"description": "A compact voice-chat card with an animated orb, connection status, and call toggle.",
+			"categories": ["agents"],
 			"registryDependencies": ["button", "card", "orb", "shimmering-text"],
 			"files": [
 				{
@@ -715,6 +719,7 @@
 			"type": "registry:block",
 			"title": "Voice Chat 03",
 			"description": "A tall voice-chat card with a conversation bar anchored at the bottom, an empty-state orb, and per-message copy buttons.",
+			"categories": ["agents"],
 			"registryDependencies": [
 				"button",
 				"card",
@@ -743,6 +748,7 @@
 			"type": "registry:block",
 			"title": "Voice Form 01",
 			"description": "A form with a voice-fill button that cycles through idle/recording/processing/success states.",
+			"categories": ["audio"],
 			"registryDependencies": ["card", "input", "label", "voice-button"],
 			"files": [
 				{
@@ -767,6 +773,7 @@
 			"type": "registry:block",
 			"title": "Music Player 01",
 			"description": "A music player with a scrollable song list and play/pause, progress, time, and duration controls.",
+			"categories": ["audio"],
 			"registryDependencies": ["audio-player", "button", "card", "scroll-area"],
 			"files": [
 				{
@@ -790,6 +797,32 @@
 					"target": "components/blocks/music-player-01/index.ts"
 				}
 			]
+		},
+		{
+			"name": "all",
+			"type": "registry:block",
+			"title": "All Components",
+			"description": "Installs every sv11-ui component in one command.",
+			"registryDependencies": [
+				"audio-player",
+				"bar-visualizer",
+				"conversation",
+				"conversation-bar",
+				"live-waveform",
+				"matrix",
+				"message",
+				"mic-selector",
+				"orb",
+				"response",
+				"scrub-bar",
+				"shimmering-text",
+				"speech-input",
+				"transcript-viewer",
+				"voice-button",
+				"voice-picker",
+				"waveform"
+			],
+			"files": []
 		}
 	]
 }
