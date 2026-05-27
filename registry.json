@@ -870,6 +870,37 @@
 			]
 		},
 		{
+			"name": "voice-nav-01",
+			"type": "registry:block",
+			"title": "Voice Nav 01",
+			"description": "A voice-driven site navigation block: speak a destination and an embedded frame navigates to it. Provider-agnostic intent resolver (keyword matching by default; swap in an LLM), with a Web Speech API demo.",
+			"categories": ["audio"],
+			"dependencies": ["@lucide/svelte"],
+			"registryDependencies": ["card", "voice-button"],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/voice-nav-01/voice-nav-01.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/voice-nav-01/voice-nav-01.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/voice-nav-01/destinations.ts",
+					"type": "registry:block",
+					"target": "components/blocks/voice-nav-01/destinations.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/voice-nav-01/speech.ts",
+					"type": "registry:block",
+					"target": "components/blocks/voice-nav-01/speech.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/voice-nav-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/voice-nav-01/index.ts"
+				}
+			]
+		},
+		{
 			"name": "all",
 			"type": "registry:block",
 			"title": "All Components",

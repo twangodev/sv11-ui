@@ -8,6 +8,7 @@ import VoiceChat01 from "$lib/registry/blocks/voice-chat-01/index.js";
 import VoiceChat02 from "$lib/registry/blocks/voice-chat-02/index.js";
 import VoiceChat03 from "$lib/registry/blocks/voice-chat-03/index.js";
 import VoiceForm01 from "$lib/registry/blocks/voice-form-01/index.js";
+import VoiceNav01 from "$lib/registry/blocks/voice-nav-01/index.js";
 
 export type BlockEntry = {
 	name: string;
@@ -74,6 +75,13 @@ export const blocks: BlockEntry[] = [
 		description:
 			"Streaming speech-to-text with a language selector, live partial results, and ⌘K toggle.",
 		component: RealtimeTranscriber01,
+	},
+	{
+		name: "voice-nav-01",
+		title: "Voice Nav 01",
+		description:
+			"Speak to navigate an embedded site frame, with a provider-agnostic intent resolver.",
+		component: VoiceNav01,
 	},
 ];
 
