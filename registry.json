@@ -832,6 +832,44 @@
 			]
 		},
 		{
+			"name": "realtime-transcriber-01",
+			"type": "registry:block",
+			"title": "Realtime Transcriber 01",
+			"description": "A streaming speech-to-text block with a language selector, live partial results, copy-to-clipboard, and a ⌘K toggle. Provider-agnostic via a TranscriptionAdapter (Web Speech API demo).",
+			"categories": ["audio"],
+			"dependencies": ["@lucide/svelte"],
+			"registryDependencies": [
+				"badge",
+				"button",
+				"command",
+				"popover",
+				"scroll-area",
+				"shimmering-text"
+			],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/realtime-transcriber-01/realtime-transcriber-01.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/realtime-transcriber-01/realtime-transcriber-01.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/realtime-transcriber-01/adapter.ts",
+					"type": "registry:block",
+					"target": "components/blocks/realtime-transcriber-01/adapter.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/realtime-transcriber-01/languages.ts",
+					"type": "registry:block",
+					"target": "components/blocks/realtime-transcriber-01/languages.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/realtime-transcriber-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/realtime-transcriber-01/index.ts"
+				}
+			]
+		},
+		{
 			"name": "all",
 			"type": "registry:block",
 			"title": "All Components",

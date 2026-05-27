@@ -1,6 +1,7 @@
 import type { Component } from "svelte";
 import MusicPlayer01 from "$lib/registry/blocks/music-player-01/index.js";
 import MusicPlayer02 from "$lib/registry/blocks/music-player-02/index.js";
+import RealtimeTranscriber01 from "$lib/registry/blocks/realtime-transcriber-01/index.js";
 import Speaker01 from "$lib/registry/blocks/speaker-01/index.js";
 import Transcriber01 from "$lib/registry/blocks/transcriber-01/index.js";
 import VoiceChat01 from "$lib/registry/blocks/voice-chat-01/index.js";
@@ -66,6 +67,13 @@ export const blocks: BlockEntry[] = [
 		description:
 			"Record-and-transcribe card with live waveform, timing, and a provider-agnostic transcription backend.",
 		component: Transcriber01,
+	},
+	{
+		name: "realtime-transcriber-01",
+		title: "Realtime Transcriber 01",
+		description:
+			"Streaming speech-to-text with a language selector, live partial results, and ⌘K toggle.",
+		component: RealtimeTranscriber01,
 	},
 ];
 
