@@ -901,6 +901,47 @@
 			]
 		},
 		{
+			"name": "pong-01",
+			"type": "registry:block",
+			"title": "Pong 01",
+			"description": "A retro Pong game rendered on the Matrix display: keyboard paddle control, AI opponent, Web Audio sound effects, and a local (localStorage) win counter. No backend.",
+			"categories": ["audio"],
+			"dependencies": [],
+			"registryDependencies": ["button", "card", "matrix"],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/pong-01/pong-game.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/pong-game.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/game-engine.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/game-engine.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/bitmaps.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/bitmaps.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/sound.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/sound.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/score-store.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/score-store.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/index.ts"
+				}
+			]
+		},
+		{
 			"name": "all",
 			"type": "registry:block",
 			"title": "All Components",

@@ -1,6 +1,7 @@
 import type { Component } from "svelte";
 import MusicPlayer01 from "$lib/registry/blocks/music-player-01/index.js";
 import MusicPlayer02 from "$lib/registry/blocks/music-player-02/index.js";
+import Pong01 from "$lib/registry/blocks/pong-01/index.js";
 import RealtimeTranscriber01 from "$lib/registry/blocks/realtime-transcriber-01/index.js";
 import Speaker01 from "$lib/registry/blocks/speaker-01/index.js";
 import Transcriber01 from "$lib/registry/blocks/transcriber-01/index.js";
@@ -82,6 +83,13 @@ export const blocks: BlockEntry[] = [
 		description:
 			"Speak to navigate an embedded site frame, with a provider-agnostic intent resolver.",
 		component: VoiceNav01,
+	},
+	{
+		name: "pong-01",
+		title: "Pong 01",
+		description:
+			"Retro Pong rendered on the Matrix display, with keyboard controls, sound, and a local win counter.",
+		component: Pong01,
 	},
 ];
 
