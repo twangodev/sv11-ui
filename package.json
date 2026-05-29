@@ -6,6 +6,7 @@
 	"packageManager": "pnpm@10.33.0",
 	"scripts": {
 		"dev": "vite dev",
+		"dev:host": "vite dev --host",
 		"changelog": "git-cliff --config cliff.toml --output content/changelog.md",
 		"build": "vite build",
 		"preview": "vite preview",
