@@ -14,62 +14,67 @@
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player.svelte"
+					"target": "audio-player/audio-player.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-button.svelte"
+					"target": "audio-player/audio-player-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-duration.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-duration.svelte"
+					"target": "audio-player/audio-player-duration.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-progress.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-progress.svelte"
+					"target": "audio-player/audio-player-progress.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-speed.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-speed.svelte"
+					"target": "audio-player/audio-player-speed.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-speed-button-group.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-speed-button-group.svelte"
+					"target": "audio-player/audio-player-speed-button-group.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-time.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-time.svelte"
+					"target": "audio-player/audio-player-time.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/context.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/context.svelte.ts"
+					"target": "audio-player/context.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-graph.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-graph.svelte.ts"
+					"target": "audio-player/audio-graph.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/utils.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/utils.ts"
+					"target": "audio-player/utils.ts"
+				},
+				{
+					"path": "src/lib/registry/ui/audio-player/waveform-sampler.ts",
+					"type": "registry:ui",
+					"target": "audio-player/waveform-sampler.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/example-tracks.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/example-tracks.ts"
+					"target": "audio-player/example-tracks.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/index.ts"
+					"target": "audio-player/index.ts"
 				}
 			]
 		},
@@ -84,17 +89,17 @@
 				{
 					"path": "src/lib/registry/ui/bar-visualizer/bar-visualizer.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/bar-visualizer/bar-visualizer.svelte"
+					"target": "bar-visualizer/bar-visualizer.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/bar-visualizer/utils.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/bar-visualizer/utils.ts"
+					"target": "bar-visualizer/utils.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/bar-visualizer/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/bar-visualizer/index.ts"
+					"target": "bar-visualizer/index.ts"
 				}
 			]
 		},
@@ -109,32 +114,32 @@
 				{
 					"path": "src/lib/registry/ui/conversation/conversation.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/conversation.svelte"
+					"target": "conversation/conversation.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/conversation-content.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/conversation-content.svelte"
+					"target": "conversation/conversation-content.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/conversation-empty-state.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/conversation-empty-state.svelte"
+					"target": "conversation/conversation-empty-state.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/conversation-scroll-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/conversation-scroll-button.svelte"
+					"target": "conversation/conversation-scroll-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/context.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/context.ts"
+					"target": "conversation/context.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/index.ts"
+					"target": "conversation/index.ts"
 				}
 			]
 		},
@@ -155,17 +160,17 @@
 				{
 					"path": "src/lib/registry/ui/conversation-bar/conversation-bar.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation-bar/conversation-bar.svelte"
+					"target": "conversation-bar/conversation-bar.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation-bar/types.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation-bar/types.ts"
+					"target": "conversation-bar/types.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation-bar/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation-bar/index.ts"
+					"target": "conversation-bar/index.ts"
 				}
 			]
 		},
@@ -180,12 +185,12 @@
 				{
 					"path": "src/lib/registry/ui/live-waveform/live-waveform.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/live-waveform/live-waveform.svelte"
+					"target": "live-waveform/live-waveform.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/live-waveform/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/live-waveform/index.ts"
+					"target": "live-waveform/index.ts"
 				}
 			]
 		},
@@ -200,17 +205,17 @@
 				{
 					"path": "src/lib/registry/ui/matrix/matrix.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/matrix/matrix.svelte"
+					"target": "matrix/matrix.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/matrix/presets.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/matrix/presets.ts"
+					"target": "matrix/presets.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/matrix/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/matrix/index.ts"
+					"target": "matrix/index.ts"
 				}
 			]
 		},
@@ -225,22 +230,22 @@
 				{
 					"path": "src/lib/registry/ui/message/message.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/message/message.svelte"
+					"target": "message/message.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/message/message-avatar.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/message/message-avatar.svelte"
+					"target": "message/message-avatar.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/message/message-content.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/message/message-content.svelte"
+					"target": "message/message-content.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/message/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/message/index.ts"
+					"target": "message/index.ts"
 				}
 			]
 		},
@@ -255,17 +260,17 @@
 				{
 					"path": "src/lib/registry/ui/mic-selector/mic-selector.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/mic-selector/mic-selector.svelte"
+					"target": "mic-selector/mic-selector.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/mic-selector/use-audio-devices.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/mic-selector/use-audio-devices.svelte.ts"
+					"target": "mic-selector/use-audio-devices.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/mic-selector/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/mic-selector/index.ts"
+					"target": "mic-selector/index.ts"
 				}
 			]
 		},
@@ -281,37 +286,37 @@
 				{
 					"path": "src/lib/registry/ui/orb/orb.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/orb/orb.svelte"
+					"target": "orb/orb.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/orb-scene.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/orb/orb-scene.svelte"
+					"target": "orb/orb-scene.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/types.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/orb/types.ts"
+					"target": "orb/types.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/shaders/orb.frag.glsl",
 					"type": "registry:file",
-					"target": "lib/components/ui/orb/shaders/orb.frag.glsl"
+					"target": "orb/shaders/orb.frag.glsl"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/shaders/orb.vert.glsl",
 					"type": "registry:file",
-					"target": "lib/components/ui/orb/shaders/orb.vert.glsl"
+					"target": "orb/shaders/orb.vert.glsl"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/shaders/glsl.d.ts",
 					"type": "registry:file",
-					"target": "lib/components/ui/orb/shaders/glsl.d.ts"
+					"target": "orb/shaders/glsl.d.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/orb/index.ts"
+					"target": "orb/index.ts"
 				}
 			]
 		},
@@ -326,12 +331,12 @@
 				{
 					"path": "src/lib/registry/ui/response/response.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/response/response.svelte"
+					"target": "response/response.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/response/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/response/index.ts"
+					"target": "response/index.ts"
 				}
 			]
 		},
@@ -346,37 +351,37 @@
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar.svelte"
+					"target": "scrub-bar/scrub-bar.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar-progress.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar-progress.svelte"
+					"target": "scrub-bar/scrub-bar-progress.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar-thumb.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar-thumb.svelte"
+					"target": "scrub-bar/scrub-bar-thumb.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar-time-label.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar-time-label.svelte"
+					"target": "scrub-bar/scrub-bar-time-label.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar-track.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar-track.svelte"
+					"target": "scrub-bar/scrub-bar-track.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/context.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/context.ts"
+					"target": "scrub-bar/context.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/index.ts"
+					"target": "scrub-bar/index.ts"
 				}
 			]
 		},
@@ -391,12 +396,12 @@
 				{
 					"path": "src/lib/registry/ui/shimmering-text/shimmering-text.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/shimmering-text/shimmering-text.svelte"
+					"target": "shimmering-text/shimmering-text.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/shimmering-text/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/shimmering-text/index.ts"
+					"target": "shimmering-text/index.ts"
 				}
 			]
 		},
@@ -411,42 +416,42 @@
 				{
 					"path": "src/lib/registry/ui/speech-input/speech-input.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/speech-input.svelte"
+					"target": "speech-input/speech-input.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/speech-input-cancel-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/speech-input-cancel-button.svelte"
+					"target": "speech-input/speech-input-cancel-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/speech-input-preview.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/speech-input-preview.svelte"
+					"target": "speech-input/speech-input-preview.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/speech-input-record-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/speech-input-record-button.svelte"
+					"target": "speech-input/speech-input-record-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/context.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/context.svelte.ts"
+					"target": "speech-input/context.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/types.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/types.ts"
+					"target": "speech-input/types.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/variants.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/variants.ts"
+					"target": "speech-input/variants.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/index.ts"
+					"target": "speech-input/index.ts"
 				}
 			]
 		},
@@ -461,47 +466,47 @@
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer.svelte"
+					"target": "transcript-viewer/transcript-viewer.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-audio.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-audio.svelte"
+					"target": "transcript-viewer/transcript-viewer-audio.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-play-pause-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-play-pause-button.svelte"
+					"target": "transcript-viewer/transcript-viewer-play-pause-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-scrub-bar.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-scrub-bar.svelte"
+					"target": "transcript-viewer/transcript-viewer-scrub-bar.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-word.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-word.svelte"
+					"target": "transcript-viewer/transcript-viewer-word.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-words.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-words.svelte"
+					"target": "transcript-viewer/transcript-viewer-words.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/context.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/context.svelte.ts"
+					"target": "transcript-viewer/context.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/utils.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/utils.ts"
+					"target": "transcript-viewer/utils.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/index.ts"
+					"target": "transcript-viewer/index.ts"
 				}
 			]
 		},
@@ -516,12 +521,12 @@
 				{
 					"path": "src/lib/registry/ui/voice-button/voice-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-button/voice-button.svelte"
+					"target": "voice-button/voice-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/voice-button/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-button/index.ts"
+					"target": "voice-button/index.ts"
 				}
 			]
 		},
@@ -542,22 +547,22 @@
 				{
 					"path": "src/lib/registry/ui/voice-picker/voice-picker.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-picker/voice-picker.svelte"
+					"target": "voice-picker/voice-picker.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/voice-picker/voice-picker-item.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-picker/voice-picker-item.svelte"
+					"target": "voice-picker/voice-picker-item.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/voice-picker/types.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-picker/types.ts"
+					"target": "voice-picker/types.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/voice-picker/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-picker/index.ts"
+					"target": "voice-picker/index.ts"
 				}
 			]
 		},
@@ -572,47 +577,47 @@
 				{
 					"path": "src/lib/registry/ui/waveform/waveform.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform.svelte"
+					"target": "waveform/waveform.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-live-microphone.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-live-microphone.svelte"
+					"target": "waveform/waveform-live-microphone.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-microphone.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-microphone.svelte"
+					"target": "waveform/waveform-microphone.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-recording.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-recording.svelte"
+					"target": "waveform/waveform-recording.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-scrolling.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-scrolling.svelte"
+					"target": "waveform/waveform-scrolling.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-scrubber.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-scrubber.svelte"
+					"target": "waveform/waveform-scrubber.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-static.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-static.svelte"
+					"target": "waveform/waveform-static.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/utils.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/utils.ts"
+					"target": "waveform/utils.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/index.ts"
+					"target": "waveform/index.ts"
 				}
 			]
 		},
