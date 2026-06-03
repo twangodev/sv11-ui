@@ -124,7 +124,11 @@
 
 	async function copy() {
 		if (!transcript) return;
-		await navigator.clipboard.writeText(transcript);
+		try {
+			await navigator.clipboard.writeText(transcript);
+		} catch {
+			return; // clipboard blocked (insecure context / denied) — leave UI untouched
+		}
 		copied = true;
 		setTimeout(() => (copied = false), 1500);
 	}
