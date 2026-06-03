@@ -242,11 +242,11 @@ function componentPreviews() {
 
 			// Find the instance <script> tag (not <script module>) to insert imports after it
 			// After mdsx processing, we have <script module>...</script> then <script>...</script>
-			const scriptRegex = /<script(?:\s[^>]*)?>|<script>/g;
+			const scriptRegex = /<script(?:\s[^>]*)?>/gi;
 			let scriptMatch;
 			while ((scriptMatch = scriptRegex.exec(content)) !== null) {
 				// Skip <script module> or <script context="module"> tags
-				if (scriptMatch[0].includes("module")) continue;
+				if (scriptMatch[0].toLowerCase().includes("module")) continue;
 				// Found instance script - inject imports right after the opening tag
 				const insertPos = scriptMatch.index + scriptMatch[0].length;
 				ms.appendRight(insertPos, "\n" + imports.join("\n"));
@@ -277,10 +277,10 @@ function componentsList() {
 			const ms = new MagicString(content);
 			const importLine = `import ComponentsList from "$lib/components/components-list.svelte";`;
 
-			const scriptRegex = /<script(?:\s[^>]*)?>|<script>/g;
+			const scriptRegex = /<script(?:\s[^>]*)?>/gi;
 			let scriptMatch;
 			while ((scriptMatch = scriptRegex.exec(content)) !== null) {
-				if (scriptMatch[0].includes("module")) continue;
+				if (scriptMatch[0].toLowerCase().includes("module")) continue;
 				const insertPos = scriptMatch.index + scriptMatch[0].length;
 				ms.appendRight(insertPos, "\n" + importLine);
 				break;
@@ -309,10 +309,10 @@ function colorPalette() {
 			const ms = new MagicString(content);
 			const importLine = `import ColorPalette from "$lib/components/color-palette.svelte";`;
 
-			const scriptRegex = /<script(?:\s[^>]*)?>|<script>/g;
+			const scriptRegex = /<script(?:\s[^>]*)?>/gi;
 			let scriptMatch;
 			while ((scriptMatch = scriptRegex.exec(content)) !== null) {
-				if (scriptMatch[0].includes("module")) continue;
+				if (scriptMatch[0].toLowerCase().includes("module")) continue;
 				const insertPos = scriptMatch.index + scriptMatch[0].length;
 				ms.appendRight(insertPos, "\n" + importLine);
 				break;
