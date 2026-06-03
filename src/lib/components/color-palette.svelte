@@ -2,12 +2,7 @@
 	import CheckIcon from "@lucide/svelte/icons/check";
 	import CopyIcon from "@lucide/svelte/icons/copy";
 	import { cn } from "$lib/utils.js";
-	import {
-		COLOR_GROUPS,
-		pairedSurface,
-		tokenUtility,
-		type ColorToken,
-	} from "./color-tokens.js";
+	import { COLOR_GROUPS, pairedSurface, tokenUtility, type ColorToken } from "./color-tokens.js";
 
 	let copied = $state<string | null>(null);
 	let resetTimer: ReturnType<typeof setTimeout> | null = null;
