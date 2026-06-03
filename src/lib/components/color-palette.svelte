@@ -7,6 +7,12 @@
 	let copied = $state<string | null>(null);
 	let resetTimer: ReturnType<typeof setTimeout> | null = null;
 
+	// Cancel a pending reset if the component unmounts mid-timeout, so it can't
+	// fire after teardown.
+	$effect(() => () => {
+		if (resetTimer) clearTimeout(resetTimer);
+	});
+
 	async function copyToken(token: ColorToken) {
 		// Copy the Tailwind class form (e.g. bg-primary / text-foreground) — what
 		// you'd actually type.
