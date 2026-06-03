@@ -1,4 +1,26 @@
 <script lang="ts" module>
+	import { tv } from "tailwind-variants";
+
+	export const transcriber01Variants = tv({
+		slots: {
+			root: "mx-auto w-full max-w-xl",
+			content: "flex flex-col gap-4",
+			stage:
+				"bg-muted/40 relative flex h-32 items-center justify-center overflow-hidden rounded-lg border",
+			scroll: "h-full w-full",
+			result: "p-4 text-sm",
+			errorText: "text-destructive",
+			emptyText: "text-muted-foreground",
+			copyButton: "absolute top-2 right-2 size-7",
+			waveform: "h-full w-full",
+			toolbar: "flex items-center justify-between gap-3",
+			timer: "text-muted-foreground font-mono text-xs tabular-nums",
+			kbd: "bg-muted text-muted-foreground ms-1 hidden rounded px-1.5 py-0.5 font-mono text-[10px] sm:inline",
+			note: "text-muted-foreground text-xs",
+			code: "bg-muted rounded px-1 py-0.5",
+		},
+	});
+
 	export type Transcriber01Props = {
 		/**
 		 * Provider-agnostic transcription backend. Receives the recorded audio
@@ -32,6 +54,8 @@
 	import { SpeechSession, isSpeechRecognitionSupported } from "./speech.js";
 
 	let { transcribe, class: className }: Transcriber01Props = $props();
+
+	const ui = transcriber01Variants();
 
 	type Status = "idle" | "recording" | "processing" | "done" | "error";
 
@@ -177,24 +201,22 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<Card class={cn("mx-auto w-full max-w-xl", className)}>
+<Card class={cn(ui.root(), className)}>
 	<CardHeader>
 		<CardTitle>Transcriber</CardTitle>
 		<CardDescription>Record a clip and transcribe it to text.</CardDescription>
 	</CardHeader>
-	<CardContent class="flex flex-col gap-4">
-		<div
-			class="bg-muted/40 relative flex h-32 items-center justify-center overflow-hidden rounded-lg border"
-		>
+	<CardContent class={ui.content()}>
+		<div class={ui.stage()}>
 			{#if status === "done" || status === "error"}
-				<ScrollArea class="h-full w-full">
-					<div class="p-4 text-sm">
+				<ScrollArea class={ui.scroll()}>
+					<div class={ui.result()}>
 						{#if error}
-							<p class="text-destructive">{error}</p>
+							<p class={ui.errorText()}>{error}</p>
 						{:else if transcript}
 							<Response content={transcript} />
 						{:else}
-							<p class="text-muted-foreground">No speech detected. Try again.</p>
+							<p class={ui.emptyText()}>No speech detected. Try again.</p>
 						{/if}
 					</div>
 				</ScrollArea>
@@ -202,7 +224,7 @@
 					<Button
 						variant="ghost"
 						size="icon"
-						class="absolute top-2 right-2 size-7"
+						class={ui.copyButton()}
 						onclick={copy}
 						aria-label="Copy transcript"
 					>
@@ -216,15 +238,15 @@
 					barColor="#71717a"
 					fadeEdges
 					sensitivity={0.8}
-					class={cn("h-full w-full", isProcessing && "opacity-60")}
+					class={cn(ui.waveform(), isProcessing && "opacity-60")}
 				/>
 			{/if}
 		</div>
 
 		<Separator />
 
-		<div class="flex items-center justify-between gap-3">
-			<span class="text-muted-foreground font-mono text-xs tabular-nums">
+		<div class={ui.toolbar()}>
+			<span class={ui.timer()}>
 				{#if status === "error"}
 					Error
 				{:else if elapsed !== null}
@@ -243,17 +265,14 @@
 				{:else}
 					<MicIcon class="size-4" /> {isProcessing ? "Transcribing…" : "Record"}
 				{/if}
-				<kbd
-					class="bg-muted text-muted-foreground ms-1 hidden rounded px-1.5 py-0.5 font-mono text-[10px] sm:inline"
-					>⌥Space</kbd
-				>
+				<kbd class={ui.kbd()}>⌥Space</kbd>
 			</Button>
 		</div>
 
 		{#if !supported}
-			<p class="text-muted-foreground text-xs">
+			<p class={ui.note()}>
 				This demo uses the browser Web Speech API (Chromium-based browsers). Pass a
-				<code class="bg-muted rounded px-1 py-0.5">transcribe</code> function to wire any provider.
+				<code class={ui.code()}>transcribe</code> function to wire any provider.
 			</p>
 		{/if}
 	</CardContent>
