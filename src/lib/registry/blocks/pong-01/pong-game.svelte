@@ -28,7 +28,7 @@
 	let raf = 0;
 	let lastTime = 0;
 	let winRecorded = false;
-	let container = $state<HTMLDivElement | null>(null);
+	let container: HTMLDivElement | null = null;
 
 	const hint = $derived(
 		{
@@ -132,6 +132,24 @@
 		if (event.key === "ArrowUp" || event.key === "ArrowDown") playerInput = 0;
 	}
 
+	// Attach key handling imperatively (rather than markup on:keydown) so the board
+	// is a focus-scoped, keyboard-driven widget: it only consumes arrow/space keys
+	// while focused, leaving page scrolling intact and avoiding window-wide key
+	// trapping on docs pages.
+	function focusableBoard(node: HTMLDivElement) {
+		container = node;
+		node.tabIndex = 0;
+		node.addEventListener("keydown", onKeydown);
+		node.addEventListener("keyup", onKeyup);
+		return {
+			destroy() {
+				container = null;
+				node.removeEventListener("keydown", onKeydown);
+				node.removeEventListener("keyup", onKeyup);
+			},
+		};
+	}
+
 	onMount(() => {
 		wins = getWins();
 	});
@@ -144,16 +162,10 @@
 	const canStart = $derived(gameState === "title" || gameState === "gameOver");
 </script>
 
-<!-- Keyboard handlers are scoped to this focusable container rather than
-	<svelte:window> so the game only consumes arrow/space keys while it's
-	focused, leaving normal page scrolling intact on docs pages. -->
 <div
-	bind:this={container}
+	use:focusableBoard
 	role="application"
 	aria-label="Pong game"
-	tabindex={0}
-	onkeydown={onKeydown}
-	onkeyup={onKeyup}
 	class="focus-visible:ring-ring/50 rounded-xl outline-none focus-visible:ring-2"
 >
 	<Card class={cn("mx-auto w-full max-w-2xl", className)}>
