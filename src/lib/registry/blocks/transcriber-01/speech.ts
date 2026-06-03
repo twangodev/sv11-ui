@@ -97,9 +97,26 @@ export class SpeechSession {
 		recognition.start();
 	}
 
-	stop(): void {
-		this.#recognition?.stop();
+	/**
+	 * Stop recognition and resolve once it has fully ended, so the caller can read
+	 * `committed` only after the final `onresult` has landed. Falls back to a short
+	 * timeout in case the browser never fires `onend`.
+	 */
+	stop(): Promise<void> {
+		const recognition = this.#recognition;
 		this.#recognition = null;
+		if (!recognition) return Promise.resolve();
+		return new Promise<void>((resolve) => {
+			let settled = false;
+			const finish = () => {
+				if (settled) return;
+				settled = true;
+				resolve();
+			};
+			recognition.onend = finish;
+			setTimeout(finish, 600);
+			recognition.stop();
+		});
 	}
 
 	abort(): void {

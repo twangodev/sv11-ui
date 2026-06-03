@@ -54,6 +54,10 @@
 	let chunks: Blob[] = [];
 	let stream: MediaStream | null = null;
 	let startedAt = 0;
+	// Bumped on every start/stop so a stop issued while getUserMedia() is still
+	// resolving invalidates that startup and the late stream is released instead
+	// of recording in the background with the UI already marked done.
+	let recordToken = 0;
 
 	const isRecording = $derived(status === "recording");
 	const isProcessing = $derived(status === "processing");
@@ -71,11 +75,18 @@
 		elapsed = null;
 		startedAt = Date.now();
 		status = "recording";
+		const token = ++recordToken;
 
 		try {
 			if (transcribe) {
 				// Real backend: capture audio for the adapter to transcribe.
-				stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+				const captured = await navigator.mediaDevices.getUserMedia({ audio: true });
+				if (token !== recordToken) {
+					// Stopped before the recorder was ready — release the late stream.
+					captured.getTracks().forEach((t) => t.stop());
+					return;
+				}
+				stream = captured;
 				const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
 					? "audio/webm;codecs=opus"
 					: "audio/webm";
@@ -90,26 +101,34 @@
 				});
 			}
 		} catch (err) {
-			fail(err instanceof Error ? err.message : "Could not access the microphone.");
+			if (token === recordToken) {
+				fail(err instanceof Error ? err.message : "Could not access the microphone.");
+			}
 		}
 	}
 
 	async function stop() {
+		// Invalidate any in-flight startup so a not-yet-ready recorder bails out.
+		recordToken++;
 		elapsed = (Date.now() - startedAt) / 1000;
 		status = "processing";
 		try {
-			if (transcribe && mediaRecorder) {
-				const blob = await new Promise<Blob>((resolve) => {
-					mediaRecorder!.onstop = () =>
-						resolve(new Blob(chunks, { type: mediaRecorder!.mimeType }));
-					mediaRecorder!.stop();
-				});
-				teardownStream();
-				transcript = (await transcribe(blob)).trim();
+			if (transcribe) {
+				if (mediaRecorder) {
+					const blob = await new Promise<Blob>((resolve) => {
+						mediaRecorder!.onstop = () =>
+							resolve(new Blob(chunks, { type: mediaRecorder!.mimeType }));
+						mediaRecorder!.stop();
+					});
+					teardownStream();
+					transcript = (await transcribe(blob)).trim();
+				} else {
+					// Stopped before getUserMedia()/MediaRecorder were ready — nothing captured.
+					teardownStream();
+					transcript = "";
+				}
 			} else {
-				session.stop();
-				// Give the recognizer a beat to flush its final result.
-				await new Promise((r) => setTimeout(r, 350));
+				await session.stop();
 				transcript = session.committed.trim();
 			}
 			status = "done";
