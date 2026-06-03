@@ -205,6 +205,51 @@ function docSugar() {
 }
 
 /**
+ * Append import line(s) immediately after the instance `<script>` opening tag —
+ * the first `<script>` that isn't `<script module>`. After mdsx processing a doc
+ * looks like `<script module>...</script>` then `<script>...</script>`. Shared by
+ * the import-injecting markdown preprocessors below.
+ *
+ * @param {MagicString} ms
+ * @param {string} content
+ * @param {string[]} importLines
+ */
+function appendAfterInstanceScript(ms, content, importLines) {
+	const scriptRegex = /<script(?:\s[^>]*)?>/gi;
+	let scriptMatch;
+	while ((scriptMatch = scriptRegex.exec(content)) !== null) {
+		if (scriptMatch[0].toLowerCase().includes("module")) continue;
+		const insertPos = scriptMatch.index + scriptMatch[0].length;
+		ms.appendRight(insertPos, "\n" + importLines.join("\n"));
+		break;
+	}
+}
+
+/**
+ * Build a preprocessor that injects a single component import whenever `target`
+ * appears in a .md doc, so docs can reference a shared display component by tag.
+ * Used for `<ComponentsList />` and `<ColorPalette />`.
+ *
+ * @param {string} name
+ * @param {string} target  e.g. "<ColorPalette"
+ * @param {string} importLine
+ * @returns {import("svelte/compiler").PreprocessorGroup}
+ */
+function injectComponentImport(name, target, importLine) {
+	return {
+		name,
+		markup: ({ content, filename }) => {
+			if (!filename?.endsWith(".md") || !content.includes(target)) return;
+			if (!content.includes("<script>") && !content.includes("<script ")) return;
+
+			const ms = new MagicString(content);
+			appendAfterInstanceScript(ms, content, [importLine]);
+			return { code: ms.toString(), map: ms.generateMap() };
+		},
+	};
+}
+
+/**
  * @returns {import("svelte/compiler").PreprocessorGroup}
  */
 function componentPreviews() {
@@ -240,19 +285,7 @@ function componentPreviews() {
 				imports.push(`import ${identifier} from "$lib/registry/examples/${name}.svelte";`);
 			}
 
-			// Find the instance <script> tag (not <script module>) to insert imports after it
-			// After mdsx processing, we have <script module>...</script> then <script>...</script>
-			const scriptRegex = /<script(?:\s[^>]*)?>/gi;
-			let scriptMatch;
-			while ((scriptMatch = scriptRegex.exec(content)) !== null) {
-				// Skip <script module> or <script context="module"> tags
-				if (scriptMatch[0].toLowerCase().includes("module")) continue;
-				// Found instance script - inject imports right after the opening tag
-				const insertPos = scriptMatch.index + scriptMatch[0].length;
-				ms.appendRight(insertPos, "\n" + imports.join("\n"));
-				break;
-			}
-
+			appendAfterInstanceScript(ms, content, imports);
 			return { code: ms.toString(), map: ms.generateMap() };
 		},
 	};
@@ -260,65 +293,27 @@ function componentPreviews() {
 
 /**
  * Injects a ComponentsList import whenever `<ComponentsList />` appears in a
- * .md doc. Mirrors componentPreviews(): runs after mdsx so the instance
- * <script> tag exists.
+ * .md doc. Runs after mdsx so the instance `<script>` tag exists.
  *
  * @returns {import("svelte/compiler").PreprocessorGroup}
  */
 function componentsList() {
-	const TARGET = "<ComponentsList";
-
-	return {
-		name: "inject-components-list",
-		markup: ({ content, filename }) => {
-			if (!filename?.endsWith(".md") || !content.includes(TARGET)) return;
-			if (!content.includes("<script>") && !content.includes("<script ")) return;
-
-			const ms = new MagicString(content);
-			const importLine = `import ComponentsList from "$lib/components/components-list.svelte";`;
-
-			const scriptRegex = /<script(?:\s[^>]*)?>/gi;
-			let scriptMatch;
-			while ((scriptMatch = scriptRegex.exec(content)) !== null) {
-				if (scriptMatch[0].toLowerCase().includes("module")) continue;
-				const insertPos = scriptMatch.index + scriptMatch[0].length;
-				ms.appendRight(insertPos, "\n" + importLine);
-				break;
-			}
-
-			return { code: ms.toString(), map: ms.generateMap() };
-		},
-	};
+	return injectComponentImport(
+		"inject-components-list",
+		"<ComponentsList",
+		`import ComponentsList from "$lib/components/components-list.svelte";`
+	);
 }
 
 /**
- * Injects a ColorPalette import whenever `<ColorPalette />` appears in a .md
- * doc. Mirrors componentsList().
+ * Injects a ColorPalette import whenever `<ColorPalette />` appears in a .md doc.
  *
  * @returns {import("svelte/compiler").PreprocessorGroup}
  */
 function colorPalette() {
-	const TARGET = "<ColorPalette";
-
-	return {
-		name: "inject-color-palette",
-		markup: ({ content, filename }) => {
-			if (!filename?.endsWith(".md") || !content.includes(TARGET)) return;
-			if (!content.includes("<script>") && !content.includes("<script ")) return;
-
-			const ms = new MagicString(content);
-			const importLine = `import ColorPalette from "$lib/components/color-palette.svelte";`;
-
-			const scriptRegex = /<script(?:\s[^>]*)?>/gi;
-			let scriptMatch;
-			while ((scriptMatch = scriptRegex.exec(content)) !== null) {
-				if (scriptMatch[0].toLowerCase().includes("module")) continue;
-				const insertPos = scriptMatch.index + scriptMatch[0].length;
-				ms.appendRight(insertPos, "\n" + importLine);
-				break;
-			}
-
-			return { code: ms.toString(), map: ms.generateMap() };
-		},
-	};
+	return injectComponentImport(
+		"inject-color-palette",
+		"<ColorPalette",
+		`import ColorPalette from "$lib/components/color-palette.svelte";`
+	);
 }
