@@ -55,4 +55,12 @@ export class PongSounds {
 		osc.start(now);
 		osc.stop(now + tone.duration + 0.02);
 	}
+
+	/** Release the AudioContext. Call from the host's teardown so repeated
+	 * mount/unmount cycles don't accumulate live contexts. */
+	destroy() {
+		const ctx = this.#ctx;
+		this.#ctx = null;
+		if (ctx && ctx.state !== "closed") void ctx.close().catch(() => {});
+	}
 }

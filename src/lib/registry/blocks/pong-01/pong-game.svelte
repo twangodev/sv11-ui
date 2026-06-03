@@ -28,6 +28,7 @@
 	let raf = 0;
 	let lastTime = 0;
 	let winRecorded = false;
+	let container = $state<HTMLDivElement | null>(null);
 
 	const hint = $derived(
 		{
@@ -91,6 +92,9 @@
 
 	function startGame() {
 		sounds.resume();
+		// Focus the board so the keyboard controls work straight away (handlers are
+		// scoped to the container, not the window, to avoid hijacking page scroll).
+		container?.focus();
 		winRecorded = false;
 		lastTime = 0;
 		engine.startGame();
@@ -134,46 +138,58 @@
 
 	onDestroy(() => {
 		if (raf) cancelAnimationFrame(raf);
+		sounds.destroy();
 	});
 
 	const canStart = $derived(gameState === "title" || gameState === "gameOver");
 </script>
 
-<svelte:window onkeydown={onKeydown} onkeyup={onKeyup} />
-
-<Card class={cn("mx-auto w-full max-w-2xl", className)}>
-	<CardContent class="flex flex-col items-center gap-5 py-6">
-		<div class="flex w-full max-w-md items-center justify-between">
-			<div class="flex flex-col items-center gap-1">
-				<Matrix rows={7} cols={5} pattern={digits[playerScore]} size={9} gap={2} />
-				<span class="text-muted-foreground text-[10px] tracking-widest">YOU</span>
+<!-- Keyboard handlers are scoped to this focusable container rather than
+	<svelte:window> so the game only consumes arrow/space keys while it's
+	focused, leaving normal page scrolling intact on docs pages. -->
+<div
+	bind:this={container}
+	role="application"
+	aria-label="Pong game"
+	tabindex={0}
+	onkeydown={onKeydown}
+	onkeyup={onKeyup}
+	class="focus-visible:ring-ring/50 rounded-xl outline-none focus-visible:ring-2"
+>
+	<Card class={cn("mx-auto w-full max-w-2xl", className)}>
+		<CardContent class="flex flex-col items-center gap-5 py-6">
+			<div class="flex w-full max-w-md items-center justify-between">
+				<div class="flex flex-col items-center gap-1">
+					<Matrix rows={7} cols={5} pattern={digits[playerScore]} size={9} gap={2} />
+					<span class="text-muted-foreground text-[10px] tracking-widest">YOU</span>
+				</div>
+				<span class="text-muted-foreground font-mono text-xs tracking-widest">
+					WINS {wins.toString().padStart(3, "0")}
+				</span>
+				<div class="flex flex-col items-center gap-1">
+					<Matrix rows={7} cols={5} pattern={digits[aiScore]} size={9} gap={2} />
+					<span class="text-muted-foreground text-[10px] tracking-widest">CPU</span>
+				</div>
 			</div>
-			<span class="text-muted-foreground font-mono text-xs tracking-widest">
-				WINS {wins.toString().padStart(3, "0")}
-			</span>
-			<div class="flex flex-col items-center gap-1">
-				<Matrix rows={7} cols={5} pattern={digits[aiScore]} size={9} gap={2} />
-				<span class="text-muted-foreground text-[10px] tracking-widest">CPU</span>
+
+			<Matrix
+				rows={ROWS}
+				cols={COLS}
+				pattern={frame}
+				size={16}
+				gap={3}
+				class="text-foreground"
+				aria-label="Pong game board"
+			/>
+
+			<div class="flex flex-col items-center gap-3">
+				<p class="text-muted-foreground h-4 text-center text-xs">{hint}</p>
+				{#if canStart}
+					<Button size="sm" onclick={startGame}>
+						{gameState === "title" ? "Start" : "Play again"}
+					</Button>
+				{/if}
 			</div>
-		</div>
-
-		<Matrix
-			rows={ROWS}
-			cols={COLS}
-			pattern={frame}
-			size={16}
-			gap={3}
-			class="text-foreground"
-			aria-label="Pong game board"
-		/>
-
-		<div class="flex flex-col items-center gap-3">
-			<p class="text-muted-foreground h-4 text-center text-xs">{hint}</p>
-			{#if canStart}
-				<Button size="sm" onclick={startGame}>
-					{gameState === "title" ? "Start" : "Play again"}
-				</Button>
-			{/if}
-		</div>
-	</CardContent>
-</Card>
+		</CardContent>
+	</Card>
+</div>

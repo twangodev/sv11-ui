@@ -6,8 +6,12 @@ const KEY = "sv11-pong-01-wins";
 
 export function getWins(): number {
 	if (typeof localStorage === "undefined") return 0;
-	const value = Number(localStorage.getItem(KEY));
-	return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+	try {
+		const value = Number(localStorage.getItem(KEY));
+		return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+	} catch {
+		return 0; // storage unavailable (private mode, blocked) — treat as no wins
+	}
 }
 
 export function recordWin(): number {
