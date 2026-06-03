@@ -13,7 +13,7 @@ The [`/llms.txt`](/llms.txt) file is an index of the entire documentation,
 following the [llmstxt.org](https://llmstxt.org) convention. It lists every page
 grouped by section, with links to the clean Markdown version of each.
 
-```
+```text
 https://sv11.ui.twango.dev/llms.txt
 ```
 
@@ -23,7 +23,7 @@ The [`/llms-full.txt`](/llms-full.txt) file inlines the full text of every
 documentation page into a single file — useful for dropping the whole corpus
 into a model's context window in one shot.
 
-```
+```text
 https://sv11.ui.twango.dev/llms-full.txt
 ```
 
@@ -31,7 +31,7 @@ https://sv11.ui.twango.dev/llms-full.txt
 
 Every documentation page has a plain-Markdown twin: append `.md` to any docs URL.
 
-```
+```text
 https://sv11.ui.twango.dev/docs/components/orb        # HTML page
 https://sv11.ui.twango.dev/docs/components/orb.md     # Markdown twin
 ```

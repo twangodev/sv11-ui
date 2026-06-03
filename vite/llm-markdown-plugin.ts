@@ -3,6 +3,7 @@ import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizePath, type Plugin } from "vite";
 import { extractAllProps } from "../scripts/extract-props.js";
+import { COLOR_GROUPS, tokenUtility } from "../src/lib/components/color-tokens.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -55,6 +56,7 @@ const USAGE_RE = /<Usage\s+component=["']([^"']+)["']\s*\/>/g;
 const API_RE = /<ComponentAPI\s+component=["']([^"']+)["']\s*\/>/g;
 const PREVIEW_RE = /<ComponentPreview\s+name=["']([^"']+)["'][^/]*\/>/g;
 const SOURCE_RE = /<ComponentSource\s+name=["']([^"']+)["'][^/]*\/>/g;
+const COLOR_PALETTE_RE = /<ColorPalette\s*\/>/g;
 
 const toPascal = (name: string) => name.replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
 const flatten = (s: string) => s.replace(/\s+/g, " ").trim();
@@ -112,6 +114,15 @@ function expandComponentPreview(name: string) {
 	}
 }
 
+function expandColorPalette(): string {
+	// The palette is an interactive Svelte component; serialize the token list to
+	// static markdown so the twin / llms-full.txt show real tokens, not raw Svelte.
+	return COLOR_GROUPS.map((group) => {
+		const rows = group.tokens.map((t) => `- \`--${t.name}\` → \`${tokenUtility(t)}\``);
+		return [`### ${group.title}`, "", ...rows].join("\n");
+	}).join("\n\n");
+}
+
 function parseFrontmatter(src: string) {
 	const match = src.match(/^---\n([\s\S]*?)\n---\n?/);
 	if (!match) return { body: src, title: undefined, description: undefined };
@@ -137,6 +148,7 @@ function transform(source: string): string {
 	out = out.replace(API_RE, (_, n) => expandComponentAPI(n));
 	out = out.replace(PREVIEW_RE, (_, n) => expandComponentPreview(n));
 	out = out.replace(SOURCE_RE, (_, n) => expandComponentPreview(n));
+	out = out.replace(COLOR_PALETTE_RE, () => expandColorPalette());
 	const header = [title && `# ${title}`, description && `> ${description}`]
 		.filter(Boolean)
 		.join("\n\n");
