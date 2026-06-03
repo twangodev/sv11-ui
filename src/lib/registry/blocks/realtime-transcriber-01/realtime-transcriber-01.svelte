@@ -79,7 +79,7 @@
 				},
 				onPartialTranscript: (text) => (partial = text),
 				onCommittedTranscript: (text) => {
-					committed = text;
+					if (text) committed = (committed ? committed + " " + text : text).trim();
 					partial = "";
 				},
 				onDisconnect: () => {

@@ -6,7 +6,8 @@
 export interface TranscriptionAdapterCallbacks {
 	/** Running interim text for the phrase currently being spoken. */
 	onPartialTranscript?: (text: string) => void;
-	/** Full committed transcript so far (accumulates across phrases). */
+	/** Fired once per finalized phrase, with just that phrase. The consumer
+	 * accumulates these into the running transcript. */
 	onCommittedTranscript?: (text: string) => void;
 	onConnect?: () => void;
 	onDisconnect?: () => void;
@@ -62,9 +63,11 @@ export const isSpeechRecognitionSupported = () => getSpeechRecognition() !== nul
  */
 export function createWebSpeechAdapter(lang = "en-US"): TranscriptionAdapter {
 	let recognition: SpeechRecognitionLike | null = null;
-	let committed = "";
 	let stopped = false;
 	let cb: TranscriptionAdapterCallbacks = {};
+	// Set while start() is pending; lets a startup error reject the start() Promise
+	// (e.g. permission denied fires onerror before onstart ever does).
+	let startup: { resolve: () => void; reject: (err: Error) => void } | null = null;
 
 	function build() {
 		const Ctor = getSpeechRecognition()!;
@@ -78,8 +81,8 @@ export function createWebSpeechAdapter(lang = "en-US"): TranscriptionAdapter {
 				const result = event.results[i];
 				const text = result[0].transcript;
 				if (result.isFinal) {
-					committed = (committed + " " + text).trim();
-					cb.onCommittedTranscript?.(committed);
+					// Emit only the phrase that finalized; the consumer accumulates.
+					cb.onCommittedTranscript?.(text.trim());
 				} else {
 					interim += text;
 				}
@@ -88,7 +91,16 @@ export function createWebSpeechAdapter(lang = "en-US"): TranscriptionAdapter {
 		};
 		r.onerror = (event) => {
 			if (event.error === "no-speech" || event.error === "aborted") return;
-			cb.onError?.(new Error(`Speech recognition error: ${event.error}`));
+			const err = new Error(`Speech recognition error: ${event.error}`);
+			// A failure before onstart means start() is still pending — reject it so
+			// `await adapter.start()` callers hit their catch instead of hanging.
+			if (startup) {
+				const pending = startup;
+				startup = null;
+				pending.reject(err);
+				return;
+			}
+			cb.onError?.(err);
 		};
 		r.onend = () => {
 			// Continuous mode can end on its own after silence; restart until the
@@ -109,7 +121,6 @@ export function createWebSpeechAdapter(lang = "en-US"): TranscriptionAdapter {
 	return {
 		start(callbacks) {
 			cb = callbacks;
-			committed = "";
 			stopped = false;
 			return new Promise<void>((resolve, reject) => {
 				const Ctor = getSpeechRecognition();
@@ -117,14 +128,25 @@ export function createWebSpeechAdapter(lang = "en-US"): TranscriptionAdapter {
 					reject(new Error("SpeechRecognition is not supported in this browser."));
 					return;
 				}
+				startup = {
+					resolve: () => {
+						startup = null;
+						resolve();
+					},
+					reject: (err) => {
+						startup = null;
+						reject(err);
+					},
+				};
 				recognition = build();
 				recognition.onstart = () => {
 					cb.onConnect?.();
-					resolve();
+					startup?.resolve();
 				};
 				try {
 					recognition.start();
 				} catch (err) {
+					startup = null;
 					reject(err instanceof Error ? err : new Error("Failed to start recognition."));
 				}
 			});
@@ -136,7 +158,6 @@ export function createWebSpeechAdapter(lang = "en-US"): TranscriptionAdapter {
 		},
 		cancel() {
 			stopped = true;
-			committed = "";
 			recognition?.abort();
 			recognition = null;
 		},
