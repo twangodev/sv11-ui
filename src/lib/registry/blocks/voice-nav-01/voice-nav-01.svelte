@@ -55,6 +55,17 @@
 	const recognizer = new OneShotRecognizer();
 	let revertTimer: ReturnType<typeof setTimeout> | null = null;
 
+	// A custom resolve() is untrusted input. Only load http(s) URLs or same-origin
+	// paths into the preview frame — never javascript:/data:/blob: schemes.
+	function isSafeUrl(value: string): boolean {
+		try {
+			const { protocol } = new URL(value, window.location.origin);
+			return protocol === "http:" || protocol === "https:";
+		} catch {
+			return false;
+		}
+	}
+
 	function revertSoon() {
 		if (revertTimer) clearTimeout(revertTimer);
 		revertTimer = setTimeout(() => {
@@ -81,13 +92,16 @@
 			lastHeard = transcript;
 			voiceState = "processing";
 			const dest = await Promise.resolve(resolve(transcript, destinations));
-			if (dest) {
+			if (!dest) {
+				error = `Couldn't match "${transcript}" to a page.`;
+				voiceState = "error";
+			} else if (!isSafeUrl(dest)) {
+				error = `Refused to open an unsafe URL.`;
+				voiceState = "error";
+			} else {
 				url = dest;
 				frameKey += 1;
 				voiceState = "success";
-			} else {
-				error = `Couldn't match "${transcript}" to a page.`;
-				voiceState = "error";
 			}
 		} catch (err) {
 			error = err instanceof Error ? err.message : "Voice navigation failed.";
@@ -98,6 +112,10 @@
 	}
 
 	function onKeydown(event: KeyboardEvent) {
+		// ⌥Space toggles voice nav — but not while typing in a field.
+		const target = event.target as HTMLElement | null;
+		if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable)
+			return;
 		if (event.altKey && event.code === "Space") {
 			event.preventDefault();
 			void handlePress();
