@@ -3,12 +3,45 @@ import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizePath, type Plugin } from "vite";
 import { extractAllProps } from "../scripts/extract-props.js";
+import { COLOR_GROUPS, tokenUtility } from "../src/lib/components/color-tokens.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
 const CONTENT_DIR = join(ROOT, "content");
-const OUTPUT_DIR = join(ROOT, "static", "docs");
+const STATIC_DIR = join(ROOT, "static");
+const OUTPUT_DIR = join(STATIC_DIR, "docs");
 const EXAMPLES_DIR = join(ROOT, "src", "lib", "registry", "examples");
+
+// Section grouping for llms.txt. Root-level docs are "Get Started"; nested
+// dirs become their own title-cased section. SECTION_ORDER pins the lead
+// sections; GET_STARTED_ORDER mirrors the sidebar order in navigation.ts.
+const SECTION_ORDER = ["Get Started", "Adapters", "Components"];
+const GET_STARTED_ORDER = [
+	"index",
+	"setup",
+	"usage",
+	"providers",
+	"theming",
+	"colors",
+	"dark-mode",
+	"troubleshooting",
+];
+
+const DEFAULT_ORIGIN = "https://sv11.ui.twango.dev";
+
+// Single source of truth for the public origin: registry.json's homepage, the
+// same value the shadcn registry build stamps into r/*.json.
+function siteOrigin(): string {
+	try {
+		const reg = JSON.parse(readFileSync(join(ROOT, "registry.json"), "utf-8")) as {
+			homepage?: unknown;
+		};
+		if (typeof reg.homepage === "string" && reg.homepage) return reg.homepage.replace(/\/+$/, "");
+	} catch {
+		/* fall through to default */
+	}
+	return DEFAULT_ORIGIN;
+}
 
 type Prop = {
 	name: string;
@@ -23,6 +56,7 @@ const USAGE_RE = /<Usage\s+component=["']([^"']+)["']\s*\/>/g;
 const API_RE = /<ComponentAPI\s+component=["']([^"']+)["']\s*\/>/g;
 const PREVIEW_RE = /<ComponentPreview\s+name=["']([^"']+)["'][^/]*\/>/g;
 const SOURCE_RE = /<ComponentSource\s+name=["']([^"']+)["'][^/]*\/>/g;
+const COLOR_PALETTE_RE = /<ColorPalette\s*\/>/g;
 
 const toPascal = (name: string) => name.replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
 const flatten = (s: string) => s.replace(/\s+/g, " ").trim();
@@ -80,6 +114,15 @@ function expandComponentPreview(name: string) {
 	}
 }
 
+function expandColorPalette(): string {
+	// The palette is an interactive Svelte component; serialize the token list to
+	// static markdown so the twin / llms-full.txt show real tokens, not raw Svelte.
+	return COLOR_GROUPS.map((group) => {
+		const rows = group.tokens.map((t) => `- \`--${t.name}\` → \`${tokenUtility(t)}\``);
+		return [`### ${group.title}`, "", ...rows].join("\n");
+	}).join("\n\n");
+}
+
 function parseFrontmatter(src: string) {
 	const match = src.match(/^---\n([\s\S]*?)\n---\n?/);
 	if (!match) return { body: src, title: undefined, description: undefined };
@@ -105,6 +148,7 @@ function transform(source: string): string {
 	out = out.replace(API_RE, (_, n) => expandComponentAPI(n));
 	out = out.replace(PREVIEW_RE, (_, n) => expandComponentPreview(n));
 	out = out.replace(SOURCE_RE, (_, n) => expandComponentPreview(n));
+	out = out.replace(COLOR_PALETTE_RE, () => expandColorPalette());
 	const header = [title && `# ${title}`, description && `> ${description}`]
 		.filter(Boolean)
 		.join("\n\n");
@@ -142,19 +186,127 @@ function outputPathFor(sourcePath: string): string {
 	return join(OUTPUT_DIR, rel);
 }
 
-function generateOne(sourcePath: string) {
-	const source = readFileSync(sourcePath, "utf-8");
+/** Public URL path of a source file's `.md` twin (mirrors outputPathFor). */
+function twinUrlPath(sourcePath: string): string {
 	const out = outputPathFor(sourcePath);
-	mkdirSync(dirname(out), { recursive: true });
-	writeFileSync(out, transform(source));
+	return "/" + relative(STATIC_DIR, out).split(sep).join("/");
+}
+
+/** "components/audio-player.md" → "Audio Player" (frontmatter title fallback). */
+function deriveTitle(relPosix: string): string {
+	const base = relPosix.replace(/\/index\.md$/, "").replace(/\.md$/, "");
+	const last = base.split("/").pop() || "index";
+	return last
+		.split("-")
+		.map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+		.join(" ");
+}
+
+function sectionFor(relPosix: string): string {
+	const parts = relPosix.split("/");
+	if (parts.length === 1) return "Get Started";
+	return parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+}
+
+type DocEntry = {
+	rel: string; // posix path relative to CONTENT_DIR, e.g. "components/orb.md"
+	url: string; // absolute URL of the .md twin
+	title: string;
+	description?: string;
+	section: string;
+	content: string; // transformed markdown twin
+};
+
+/** Slug used to match against GET_STARTED_ORDER: "setup.md" → "setup". */
+function slugOf(rel: string): string {
+	return rel.replace(/\/index\.md$/, "").replace(/\.md$/, "");
+}
+
+/** Order docs within a section: canonical Get Started order, else index-first + alpha. */
+function entrySort(a: DocEntry, b: DocEntry): number {
+	const ga = GET_STARTED_ORDER.indexOf(slugOf(a.rel));
+	const gb = GET_STARTED_ORDER.indexOf(slugOf(b.rel));
+	if (ga !== -1 || gb !== -1) return (ga === -1 ? 999 : ga) - (gb === -1 ? 999 : gb);
+	const ia = a.rel === "index.md" || a.rel.endsWith("/index.md");
+	const ib = b.rel === "index.md" || b.rel.endsWith("/index.md");
+	if (ia !== ib) return ia ? -1 : 1;
+	return a.title.localeCompare(b.title);
+}
+
+function sectionRank(name: string): number {
+	const i = SECTION_ORDER.indexOf(name);
+	return i === -1 ? 999 : i;
+}
+
+function buildLlmsTxt(origin: string, entries: DocEntry[]): string {
+	const intro = entries.find((e) => e.rel === "index.md");
+	const lines = [
+		"# sv11-ui",
+		"",
+		`> ${intro?.description ?? "A component registry for building AI agent interfaces with Svelte 5."}`,
+		"",
+		`This is an index for LLMs. Every linked page has a clean Markdown version (append \`.md\` to any docs URL). For the entire documentation in a single file, see ${origin}/llms-full.txt.`,
+	];
+
+	const sections = new Map<string, DocEntry[]>();
+	for (const e of entries) {
+		const list = sections.get(e.section);
+		if (list) list.push(e);
+		else sections.set(e.section, [e]);
+	}
+
+	const names = [...sections.keys()].sort(
+		(a, b) => sectionRank(a) - sectionRank(b) || a.localeCompare(b)
+	);
+	for (const name of names) {
+		lines.push("", `## ${name}`, "");
+		for (const e of sections.get(name)!.sort(entrySort)) {
+			lines.push(`- [${e.title}](${e.url})${e.description ? `: ${e.description}` : ""}`);
+		}
+	}
+	return lines.join("\n") + "\n";
+}
+
+function buildLlmsFull(origin: string, entries: DocEntry[]): string {
+	const ordered = [...entries].sort((a, b) => {
+		if (a.section !== b.section)
+			return sectionRank(a.section) - sectionRank(b.section) || a.section.localeCompare(b.section);
+		return entrySort(a, b);
+	});
+	const header = `# sv11-ui\n\n> Full documentation corpus. Generated from ${origin}/docs.\n`;
+	return header + "\n" + ordered.map((e) => e.content.trim()).join("\n\n---\n\n") + "\n";
 }
 
 function generateAll() {
 	rmSync(OUTPUT_DIR, { recursive: true, force: true });
-	rmSync(join(ROOT, "static", "docs.md"), { force: true });
+	rmSync(join(STATIC_DIR, "docs.md"), { force: true });
+	rmSync(join(STATIC_DIR, "llms.txt"), { force: true });
+	rmSync(join(STATIC_DIR, "llms-full.txt"), { force: true });
+
+	const origin = siteOrigin();
+	const entries: DocEntry[] = [];
+
 	for (const file of walkMd(CONTENT_DIR)) {
-		generateOne(file);
+		const source = readFileSync(file, "utf-8");
+		const { title, description } = parseFrontmatter(source);
+		const content = transform(source);
+		const out = outputPathFor(file);
+		mkdirSync(dirname(out), { recursive: true });
+		writeFileSync(out, content);
+
+		const rel = relative(CONTENT_DIR, file).split(sep).join("/");
+		entries.push({
+			rel,
+			url: origin + twinUrlPath(file),
+			title: title ?? deriveTitle(rel),
+			description,
+			section: sectionFor(rel),
+			content,
+		});
 	}
+
+	writeFileSync(join(STATIC_DIR, "llms.txt"), buildLlmsTxt(origin, entries));
+	writeFileSync(join(STATIC_DIR, "llms-full.txt"), buildLlmsFull(origin, entries));
 }
 
 export function llmMarkdownPlugin(): Plugin {

@@ -1,11 +1,15 @@
 import type { Component } from "svelte";
 import MusicPlayer01 from "$lib/registry/blocks/music-player-01/index.js";
 import MusicPlayer02 from "$lib/registry/blocks/music-player-02/index.js";
+import Pong01 from "$lib/registry/blocks/pong-01/index.js";
+import RealtimeTranscriber01 from "$lib/registry/blocks/realtime-transcriber-01/index.js";
 import Speaker01 from "$lib/registry/blocks/speaker-01/index.js";
+import Transcriber01 from "$lib/registry/blocks/transcriber-01/index.js";
 import VoiceChat01 from "$lib/registry/blocks/voice-chat-01/index.js";
 import VoiceChat02 from "$lib/registry/blocks/voice-chat-02/index.js";
 import VoiceChat03 from "$lib/registry/blocks/voice-chat-03/index.js";
 import VoiceForm01 from "$lib/registry/blocks/voice-form-01/index.js";
+import VoiceNav01 from "$lib/registry/blocks/voice-nav-01/index.js";
 
 export type BlockEntry = {
 	name: string;
@@ -58,6 +62,34 @@ export const blocks: BlockEntry[] = [
 		title: "Voice Form 01",
 		description: "Form with a voice-fill button that cycles through idle/recording/success states.",
 		component: VoiceForm01,
+	},
+	{
+		name: "transcriber-01",
+		title: "Transcriber 01",
+		description:
+			"Record-and-transcribe card with live waveform, timing, and a provider-agnostic transcription backend.",
+		component: Transcriber01,
+	},
+	{
+		name: "realtime-transcriber-01",
+		title: "Realtime Transcriber 01",
+		description:
+			"Streaming speech-to-text with a language selector, live partial results, and ⌘K toggle.",
+		component: RealtimeTranscriber01,
+	},
+	{
+		name: "voice-nav-01",
+		title: "Voice Nav 01",
+		description:
+			"Speak to navigate an embedded site frame, with a provider-agnostic intent resolver.",
+		component: VoiceNav01,
+	},
+	{
+		name: "pong-01",
+		title: "Pong 01",
+		description:
+			"Retro Pong rendered on the Matrix display, with keyboard controls, sound, and a local win counter.",
+		component: Pong01,
 	},
 ];
 

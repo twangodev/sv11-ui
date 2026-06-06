@@ -7,6 +7,7 @@ const GET_STARTED_ORDER = [
 	"usage",
 	"providers",
 	"theming",
+	"colors",
 	"dark-mode",
 	"troubleshooting",
 ];

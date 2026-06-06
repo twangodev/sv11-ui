@@ -14,62 +14,67 @@
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player.svelte"
+					"target": "audio-player/audio-player.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-button.svelte"
+					"target": "audio-player/audio-player-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-duration.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-duration.svelte"
+					"target": "audio-player/audio-player-duration.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-progress.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-progress.svelte"
+					"target": "audio-player/audio-player-progress.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-speed.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-speed.svelte"
+					"target": "audio-player/audio-player-speed.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-speed-button-group.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-speed-button-group.svelte"
+					"target": "audio-player/audio-player-speed-button-group.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-player-time.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-player-time.svelte"
+					"target": "audio-player/audio-player-time.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/context.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/context.svelte.ts"
+					"target": "audio-player/context.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/audio-graph.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/audio-graph.svelte.ts"
+					"target": "audio-player/audio-graph.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/utils.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/utils.ts"
+					"target": "audio-player/utils.ts"
+				},
+				{
+					"path": "src/lib/registry/ui/audio-player/waveform-sampler.ts",
+					"type": "registry:ui",
+					"target": "audio-player/waveform-sampler.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/example-tracks.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/example-tracks.ts"
+					"target": "audio-player/example-tracks.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/audio-player/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/audio-player/index.ts"
+					"target": "audio-player/index.ts"
 				}
 			]
 		},
@@ -84,17 +89,17 @@
 				{
 					"path": "src/lib/registry/ui/bar-visualizer/bar-visualizer.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/bar-visualizer/bar-visualizer.svelte"
+					"target": "bar-visualizer/bar-visualizer.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/bar-visualizer/utils.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/bar-visualizer/utils.ts"
+					"target": "bar-visualizer/utils.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/bar-visualizer/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/bar-visualizer/index.ts"
+					"target": "bar-visualizer/index.ts"
 				}
 			]
 		},
@@ -109,32 +114,32 @@
 				{
 					"path": "src/lib/registry/ui/conversation/conversation.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/conversation.svelte"
+					"target": "conversation/conversation.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/conversation-content.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/conversation-content.svelte"
+					"target": "conversation/conversation-content.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/conversation-empty-state.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/conversation-empty-state.svelte"
+					"target": "conversation/conversation-empty-state.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/conversation-scroll-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/conversation-scroll-button.svelte"
+					"target": "conversation/conversation-scroll-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/context.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/context.ts"
+					"target": "conversation/context.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation/index.ts"
+					"target": "conversation/index.ts"
 				}
 			]
 		},
@@ -144,22 +149,28 @@
 			"title": "Conversation Bar",
 			"description": "A composable input bar for voice and text conversations with mic toggle, live waveform, and submit.",
 			"dependencies": ["@lucide/svelte"],
-			"registryDependencies": ["button", "card", "live-waveform", "separator", "textarea"],
+			"registryDependencies": [
+				"button",
+				"card",
+				"https://sv11.ui.twango.dev/r/live-waveform.json",
+				"separator",
+				"textarea"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/ui/conversation-bar/conversation-bar.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation-bar/conversation-bar.svelte"
+					"target": "conversation-bar/conversation-bar.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation-bar/types.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation-bar/types.ts"
+					"target": "conversation-bar/types.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/conversation-bar/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/conversation-bar/index.ts"
+					"target": "conversation-bar/index.ts"
 				}
 			]
 		},
@@ -174,12 +185,12 @@
 				{
 					"path": "src/lib/registry/ui/live-waveform/live-waveform.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/live-waveform/live-waveform.svelte"
+					"target": "live-waveform/live-waveform.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/live-waveform/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/live-waveform/index.ts"
+					"target": "live-waveform/index.ts"
 				}
 			]
 		},
@@ -194,17 +205,17 @@
 				{
 					"path": "src/lib/registry/ui/matrix/matrix.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/matrix/matrix.svelte"
+					"target": "matrix/matrix.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/matrix/presets.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/matrix/presets.ts"
+					"target": "matrix/presets.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/matrix/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/matrix/index.ts"
+					"target": "matrix/index.ts"
 				}
 			]
 		},
@@ -219,22 +230,22 @@
 				{
 					"path": "src/lib/registry/ui/message/message.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/message/message.svelte"
+					"target": "message/message.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/message/message-avatar.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/message/message-avatar.svelte"
+					"target": "message/message-avatar.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/message/message-content.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/message/message-content.svelte"
+					"target": "message/message-content.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/message/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/message/index.ts"
+					"target": "message/index.ts"
 				}
 			]
 		},
@@ -244,22 +255,22 @@
 			"title": "Mic Selector",
 			"description": "A microphone device picker with live level preview and permission handling.",
 			"dependencies": ["@lucide/svelte"],
-			"registryDependencies": ["button", "live-waveform"],
+			"registryDependencies": ["button", "https://sv11.ui.twango.dev/r/live-waveform.json"],
 			"files": [
 				{
 					"path": "src/lib/registry/ui/mic-selector/mic-selector.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/mic-selector/mic-selector.svelte"
+					"target": "mic-selector/mic-selector.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/mic-selector/use-audio-devices.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/mic-selector/use-audio-devices.svelte.ts"
+					"target": "mic-selector/use-audio-devices.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/mic-selector/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/mic-selector/index.ts"
+					"target": "mic-selector/index.ts"
 				}
 			]
 		},
@@ -275,37 +286,37 @@
 				{
 					"path": "src/lib/registry/ui/orb/orb.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/orb/orb.svelte"
+					"target": "orb/orb.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/orb-scene.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/orb/orb-scene.svelte"
+					"target": "orb/orb-scene.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/types.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/orb/types.ts"
+					"target": "orb/types.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/shaders/orb.frag.glsl",
 					"type": "registry:file",
-					"target": "lib/components/ui/orb/shaders/orb.frag.glsl"
+					"target": "orb/shaders/orb.frag.glsl"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/shaders/orb.vert.glsl",
 					"type": "registry:file",
-					"target": "lib/components/ui/orb/shaders/orb.vert.glsl"
+					"target": "orb/shaders/orb.vert.glsl"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/shaders/glsl.d.ts",
 					"type": "registry:file",
-					"target": "lib/components/ui/orb/shaders/glsl.d.ts"
+					"target": "orb/shaders/glsl.d.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/orb/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/orb/index.ts"
+					"target": "orb/index.ts"
 				}
 			]
 		},
@@ -320,12 +331,12 @@
 				{
 					"path": "src/lib/registry/ui/response/response.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/response/response.svelte"
+					"target": "response/response.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/response/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/response/index.ts"
+					"target": "response/index.ts"
 				}
 			]
 		},
@@ -340,37 +351,37 @@
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar.svelte"
+					"target": "scrub-bar/scrub-bar.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar-progress.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar-progress.svelte"
+					"target": "scrub-bar/scrub-bar-progress.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar-thumb.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar-thumb.svelte"
+					"target": "scrub-bar/scrub-bar-thumb.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar-time-label.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar-time-label.svelte"
+					"target": "scrub-bar/scrub-bar-time-label.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/scrub-bar-track.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/scrub-bar-track.svelte"
+					"target": "scrub-bar/scrub-bar-track.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/context.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/context.ts"
+					"target": "scrub-bar/context.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/scrub-bar/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/scrub-bar/index.ts"
+					"target": "scrub-bar/index.ts"
 				}
 			]
 		},
@@ -385,12 +396,12 @@
 				{
 					"path": "src/lib/registry/ui/shimmering-text/shimmering-text.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/shimmering-text/shimmering-text.svelte"
+					"target": "shimmering-text/shimmering-text.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/shimmering-text/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/shimmering-text/index.ts"
+					"target": "shimmering-text/index.ts"
 				}
 			]
 		},
@@ -405,42 +416,42 @@
 				{
 					"path": "src/lib/registry/ui/speech-input/speech-input.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/speech-input.svelte"
+					"target": "speech-input/speech-input.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/speech-input-cancel-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/speech-input-cancel-button.svelte"
+					"target": "speech-input/speech-input-cancel-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/speech-input-preview.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/speech-input-preview.svelte"
+					"target": "speech-input/speech-input-preview.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/speech-input-record-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/speech-input-record-button.svelte"
+					"target": "speech-input/speech-input-record-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/context.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/context.svelte.ts"
+					"target": "speech-input/context.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/types.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/types.ts"
+					"target": "speech-input/types.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/variants.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/variants.ts"
+					"target": "speech-input/variants.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/speech-input/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/speech-input/index.ts"
+					"target": "speech-input/index.ts"
 				}
 			]
 		},
@@ -455,47 +466,47 @@
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer.svelte"
+					"target": "transcript-viewer/transcript-viewer.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-audio.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-audio.svelte"
+					"target": "transcript-viewer/transcript-viewer-audio.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-play-pause-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-play-pause-button.svelte"
+					"target": "transcript-viewer/transcript-viewer-play-pause-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-scrub-bar.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-scrub-bar.svelte"
+					"target": "transcript-viewer/transcript-viewer-scrub-bar.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-word.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-word.svelte"
+					"target": "transcript-viewer/transcript-viewer-word.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer-words.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/transcript-viewer-words.svelte"
+					"target": "transcript-viewer/transcript-viewer-words.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/context.svelte.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/context.svelte.ts"
+					"target": "transcript-viewer/context.svelte.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/utils.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/utils.ts"
+					"target": "transcript-viewer/utils.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/transcript-viewer/index.ts"
+					"target": "transcript-viewer/index.ts"
 				}
 			]
 		},
@@ -505,17 +516,17 @@
 			"title": "Voice Button",
 			"description": "A voice conversation toggle button with live mic waveform and start/stop state.",
 			"dependencies": ["@lucide/svelte"],
-			"registryDependencies": ["button", "live-waveform"],
+			"registryDependencies": ["button", "https://sv11.ui.twango.dev/r/live-waveform.json"],
 			"files": [
 				{
 					"path": "src/lib/registry/ui/voice-button/voice-button.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-button/voice-button.svelte"
+					"target": "voice-button/voice-button.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/voice-button/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-button/index.ts"
+					"target": "voice-button/index.ts"
 				}
 			]
 		},
@@ -525,27 +536,33 @@
 			"title": "Voice Picker",
 			"description": "A searchable voice selector with audio preview and orb visualization.",
 			"dependencies": ["@lucide/svelte"],
-			"registryDependencies": ["audio-player", "button", "command", "orb", "popover"],
+			"registryDependencies": [
+				"https://sv11.ui.twango.dev/r/audio-player.json",
+				"button",
+				"command",
+				"https://sv11.ui.twango.dev/r/orb.json",
+				"popover"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/ui/voice-picker/voice-picker.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-picker/voice-picker.svelte"
+					"target": "voice-picker/voice-picker.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/voice-picker/voice-picker-item.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-picker/voice-picker-item.svelte"
+					"target": "voice-picker/voice-picker-item.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/voice-picker/types.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-picker/types.ts"
+					"target": "voice-picker/types.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/voice-picker/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/voice-picker/index.ts"
+					"target": "voice-picker/index.ts"
 				}
 			]
 		},
@@ -560,47 +577,47 @@
 				{
 					"path": "src/lib/registry/ui/waveform/waveform.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform.svelte"
+					"target": "waveform/waveform.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-live-microphone.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-live-microphone.svelte"
+					"target": "waveform/waveform-live-microphone.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-microphone.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-microphone.svelte"
+					"target": "waveform/waveform-microphone.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-recording.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-recording.svelte"
+					"target": "waveform/waveform-recording.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-scrolling.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-scrolling.svelte"
+					"target": "waveform/waveform-scrolling.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-scrubber.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-scrubber.svelte"
+					"target": "waveform/waveform-scrubber.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/waveform-static.svelte",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/waveform-static.svelte"
+					"target": "waveform/waveform-static.svelte"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/utils.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/utils.ts"
+					"target": "waveform/utils.ts"
 				},
 				{
 					"path": "src/lib/registry/ui/waveform/index.ts",
 					"type": "registry:ui",
-					"target": "lib/components/ui/waveform/index.ts"
+					"target": "waveform/index.ts"
 				}
 			]
 		},
@@ -609,7 +626,8 @@
 			"type": "registry:block",
 			"title": "Music Player 02",
 			"description": "A minimal single-track music player with play/pause, progress, time, and duration.",
-			"registryDependencies": ["audio-player", "card"],
+			"categories": ["audio"],
+			"registryDependencies": ["https://sv11.ui.twango.dev/r/audio-player.json", "card"],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/music-player-02/music-player-02.svelte",
@@ -633,7 +651,14 @@
 			"type": "registry:block",
 			"title": "Speaker 01",
 			"description": "A speaker-style music player with two audio-reactive Orbs, waveform strip, transport controls, and a volume slider.",
-			"registryDependencies": ["audio-player", "button", "card", "orb", "waveform"],
+			"categories": ["audio"],
+			"registryDependencies": [
+				"https://sv11.ui.twango.dev/r/audio-player.json",
+				"button",
+				"card",
+				"https://sv11.ui.twango.dev/r/orb.json",
+				"https://sv11.ui.twango.dev/r/waveform.json"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/speaker-01/speaker-01.svelte",
@@ -667,15 +692,16 @@
 			"type": "registry:block",
 			"title": "Voice Chat 01",
 			"description": "A full voice-and-text chat card: Orb header, scrollable conversation with copy actions, and a composer with send + call toggle.",
+			"categories": ["agents"],
 			"registryDependencies": [
 				"button",
 				"card",
-				"conversation",
+				"https://sv11.ui.twango.dev/r/conversation.json",
 				"input",
-				"message",
-				"orb",
-				"response",
-				"shimmering-text",
+				"https://sv11.ui.twango.dev/r/message.json",
+				"https://sv11.ui.twango.dev/r/orb.json",
+				"https://sv11.ui.twango.dev/r/response.json",
+				"https://sv11.ui.twango.dev/r/shimmering-text.json",
 				"tooltip"
 			],
 			"files": [
@@ -696,7 +722,13 @@
 			"type": "registry:block",
 			"title": "Voice Chat 02",
 			"description": "A compact voice-chat card with an animated orb, connection status, and call toggle.",
-			"registryDependencies": ["button", "card", "orb", "shimmering-text"],
+			"categories": ["agents"],
+			"registryDependencies": [
+				"button",
+				"card",
+				"https://sv11.ui.twango.dev/r/orb.json",
+				"https://sv11.ui.twango.dev/r/shimmering-text.json"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/voice-chat-02/voice-chat-02.svelte",
@@ -715,14 +747,15 @@
 			"type": "registry:block",
 			"title": "Voice Chat 03",
 			"description": "A tall voice-chat card with a conversation bar anchored at the bottom, an empty-state orb, and per-message copy buttons.",
+			"categories": ["agents"],
 			"registryDependencies": [
 				"button",
 				"card",
-				"conversation",
-				"conversation-bar",
-				"message",
-				"orb",
-				"response",
+				"https://sv11.ui.twango.dev/r/conversation.json",
+				"https://sv11.ui.twango.dev/r/conversation-bar.json",
+				"https://sv11.ui.twango.dev/r/message.json",
+				"https://sv11.ui.twango.dev/r/orb.json",
+				"https://sv11.ui.twango.dev/r/response.json",
 				"tooltip"
 			],
 			"files": [
@@ -743,7 +776,13 @@
 			"type": "registry:block",
 			"title": "Voice Form 01",
 			"description": "A form with a voice-fill button that cycles through idle/recording/processing/success states.",
-			"registryDependencies": ["card", "input", "label", "voice-button"],
+			"categories": ["audio"],
+			"registryDependencies": [
+				"card",
+				"input",
+				"label",
+				"https://sv11.ui.twango.dev/r/voice-button.json"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/voice-form-01/voice-form-01.svelte",
@@ -767,7 +806,13 @@
 			"type": "registry:block",
 			"title": "Music Player 01",
 			"description": "A music player with a scrollable song list and play/pause, progress, time, and duration controls.",
-			"registryDependencies": ["audio-player", "button", "card", "scroll-area"],
+			"categories": ["audio"],
+			"registryDependencies": [
+				"https://sv11.ui.twango.dev/r/audio-player.json",
+				"button",
+				"card",
+				"scroll-area"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/music-player-01/music-player-01.svelte",
@@ -790,6 +835,175 @@
 					"target": "components/blocks/music-player-01/index.ts"
 				}
 			]
+		},
+		{
+			"name": "transcriber-01",
+			"type": "registry:block",
+			"title": "Transcriber 01",
+			"description": "A record-and-transcribe card with live waveform, elapsed timing, copy-to-clipboard, and a provider-agnostic transcription backend (Web Speech API demo).",
+			"categories": ["audio"],
+			"dependencies": ["@lucide/svelte"],
+			"registryDependencies": [
+				"button",
+				"card",
+				"https://sv11.ui.twango.dev/r/live-waveform.json",
+				"https://sv11.ui.twango.dev/r/response.json",
+				"scroll-area",
+				"separator"
+			],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/transcriber-01/transcriber-01.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/transcriber-01/transcriber-01.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/transcriber-01/speech.ts",
+					"type": "registry:block",
+					"target": "components/blocks/transcriber-01/speech.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/transcriber-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/transcriber-01/index.ts"
+				}
+			]
+		},
+		{
+			"name": "realtime-transcriber-01",
+			"type": "registry:block",
+			"title": "Realtime Transcriber 01",
+			"description": "A streaming speech-to-text block with a language selector, live partial results, copy-to-clipboard, and a ⌘K toggle. Provider-agnostic via a TranscriptionAdapter (Web Speech API demo).",
+			"categories": ["audio"],
+			"dependencies": ["@lucide/svelte"],
+			"registryDependencies": [
+				"badge",
+				"button",
+				"command",
+				"popover",
+				"scroll-area",
+				"https://sv11.ui.twango.dev/r/shimmering-text.json"
+			],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/realtime-transcriber-01/realtime-transcriber-01.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/realtime-transcriber-01/realtime-transcriber-01.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/realtime-transcriber-01/adapter.ts",
+					"type": "registry:block",
+					"target": "components/blocks/realtime-transcriber-01/adapter.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/realtime-transcriber-01/languages.ts",
+					"type": "registry:block",
+					"target": "components/blocks/realtime-transcriber-01/languages.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/realtime-transcriber-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/realtime-transcriber-01/index.ts"
+				}
+			]
+		},
+		{
+			"name": "voice-nav-01",
+			"type": "registry:block",
+			"title": "Voice Nav 01",
+			"description": "A voice-driven site navigation block: speak a destination and an embedded frame navigates to it. Provider-agnostic intent resolver (keyword matching by default; swap in an LLM), with a Web Speech API demo.",
+			"categories": ["audio"],
+			"dependencies": ["@lucide/svelte"],
+			"registryDependencies": ["card", "https://sv11.ui.twango.dev/r/voice-button.json"],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/voice-nav-01/voice-nav-01.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/voice-nav-01/voice-nav-01.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/voice-nav-01/destinations.ts",
+					"type": "registry:block",
+					"target": "components/blocks/voice-nav-01/destinations.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/voice-nav-01/speech.ts",
+					"type": "registry:block",
+					"target": "components/blocks/voice-nav-01/speech.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/voice-nav-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/voice-nav-01/index.ts"
+				}
+			]
+		},
+		{
+			"name": "pong-01",
+			"type": "registry:block",
+			"title": "Pong 01",
+			"description": "A retro Pong game rendered on the Matrix display: keyboard paddle control, AI opponent, Web Audio sound effects, and a local (localStorage) win counter. No backend.",
+			"categories": ["audio"],
+			"dependencies": [],
+			"registryDependencies": ["button", "card", "https://sv11.ui.twango.dev/r/matrix.json"],
+			"files": [
+				{
+					"path": "src/lib/registry/blocks/pong-01/pong-game.svelte",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/pong-game.svelte"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/game-engine.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/game-engine.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/bitmaps.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/bitmaps.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/sound.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/sound.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/score-store.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/score-store.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/pong-01/index.ts",
+					"type": "registry:block",
+					"target": "components/blocks/pong-01/index.ts"
+				}
+			]
+		},
+		{
+			"name": "all",
+			"type": "registry:block",
+			"title": "All Components",
+			"description": "Installs every sv11-ui component in one command.",
+			"registryDependencies": [
+				"https://sv11.ui.twango.dev/r/audio-player.json",
+				"https://sv11.ui.twango.dev/r/bar-visualizer.json",
+				"https://sv11.ui.twango.dev/r/conversation.json",
+				"https://sv11.ui.twango.dev/r/conversation-bar.json",
+				"https://sv11.ui.twango.dev/r/live-waveform.json",
+				"https://sv11.ui.twango.dev/r/matrix.json",
+				"https://sv11.ui.twango.dev/r/message.json",
+				"https://sv11.ui.twango.dev/r/mic-selector.json",
+				"https://sv11.ui.twango.dev/r/orb.json",
+				"https://sv11.ui.twango.dev/r/response.json",
+				"https://sv11.ui.twango.dev/r/scrub-bar.json",
+				"https://sv11.ui.twango.dev/r/shimmering-text.json",
+				"https://sv11.ui.twango.dev/r/speech-input.json",
+				"https://sv11.ui.twango.dev/r/transcript-viewer.json",
+				"https://sv11.ui.twango.dev/r/voice-button.json",
+				"https://sv11.ui.twango.dev/r/voice-picker.json",
+				"https://sv11.ui.twango.dev/r/waveform.json"
+			],
+			"files": []
 		}
 	]
 }
