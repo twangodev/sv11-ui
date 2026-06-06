@@ -164,7 +164,7 @@
 
 <div
 	use:focusableBoard
-	role="application"
+	role="group"
 	aria-label="Pong game"
 	class="focus-visible:ring-ring/50 rounded-xl outline-none focus-visible:ring-2"
 >
