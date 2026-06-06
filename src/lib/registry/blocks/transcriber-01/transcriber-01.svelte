@@ -175,7 +175,10 @@
 	}
 
 	function onKeydown(event: KeyboardEvent) {
-		// ⌥Space (Alt+Space) toggles recording.
+		// ⌥Space (Alt+Space) toggles recording — but not while typing in a field.
+		const target = event.target as HTMLElement | null;
+		if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable)
+			return;
 		if (event.altKey && event.code === "Space") {
 			event.preventDefault();
 			toggle();

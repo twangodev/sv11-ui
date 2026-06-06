@@ -149,7 +149,8 @@
 	function onKeydown(event: KeyboardEvent) {
 		// ⌘K / Ctrl+K toggles, except while typing in a field (e.g. the search box).
 		const target = event.target as HTMLElement | null;
-		if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+		if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable)
+			return;
 		if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
 			event.preventDefault();
 			toggle();
