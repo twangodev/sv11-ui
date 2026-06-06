@@ -153,11 +153,15 @@ export function createWebSpeechAdapter(lang = "en-US"): TranscriptionAdapter {
 		},
 		stop() {
 			stopped = true;
+			// Settle a still-pending start() so `await adapter.start()` can't hang if
+			// we stop before onstart fires.
+			startup?.resolve();
 			recognition?.stop();
 			recognition = null;
 		},
 		cancel() {
 			stopped = true;
+			startup?.resolve();
 			recognition?.abort();
 			recognition = null;
 		},
