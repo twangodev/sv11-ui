@@ -80,10 +80,10 @@
 	let scrollViewport = $state<HTMLElement | null>(null);
 
 	let session: TranscriptionAdapter | null = null;
+	let closing: Promise<void> | null = null;
 	let requestId = 0;
 
-	// Optimistic until mounted so prerendered HTML doesn't flash the "unsupported"
-	// note before the client can feature-detect.
+	// Avoid an unsupported-browser flash before hydration.
 	let mounted = $state(false);
 	let shortcut = $state("Ctrl+K");
 	onMount(() => {
@@ -103,22 +103,40 @@
 	const isEmpty = $derived(!committed && !partial);
 	const transcript = $derived((committed + (partial ? " " + partial : "")).trim());
 
-	// Auto-scroll the transcript to the bottom as new text streams in.
 	$effect(() => {
 		void committed;
 		void partial;
 		if (scrollViewport) scrollViewport.scrollTop = scrollViewport.scrollHeight;
 	});
 
+	function cancelSession(current: TranscriptionAdapter | null): Promise<void> {
+		if (session === current) session = null;
+		if (!current) return closing ?? Promise.resolve();
+		const cleanup = Promise.resolve()
+			.then(() => current.cancel())
+			.catch(() => {
+				/* Retain the original error during teardown. */
+			});
+		closing = cleanup;
+		void cleanup.then(() => {
+			if (closing === cleanup) closing = null;
+		});
+		return cleanup;
+	}
+
 	async function start() {
 		const id = ++requestId;
+		const current =
+			adapter ?? createWebSpeechAdapter(selectedCode ?? navigator.language ?? "en-US");
 		error = "";
 		committed = "";
 		partial = "";
 		connectionState = "connecting";
-		session = adapter ?? createWebSpeechAdapter(selectedCode ?? navigator.language ?? "en-US");
+		await closing;
+		if (id !== requestId) return;
+		session = current;
 		try {
-			await session.start({
+			await current.start({
 				onConnect: () => {
 					if (id === requestId && connectionState === "connecting") connectionState = "connected";
 				},
@@ -131,40 +149,47 @@
 					partial = "";
 				},
 				onDisconnect: () => {
-					if (id === requestId && connectionState !== "error" && connectionState !== "stopping")
-						connectionState = "idle";
+					if (id !== requestId || connectionState === "stopping") return;
+					++requestId;
+					connectionState = "idle";
+					void cancelSession(current);
 				},
 				onError: (err) => {
 					if (id !== requestId) return;
+					++requestId;
 					error = err.message;
 					connectionState = "error";
-					void session?.cancel();
-					session = null;
+					void cancelSession(current);
 				},
 			});
 			if (id === requestId && connectionState === "connecting") connectionState = "connected";
 		} catch (err) {
 			if (id !== requestId) return;
+			++requestId;
 			error = err instanceof Error ? err.message : "Could not start transcription.";
 			connectionState = "error";
-			session = null;
+			await cancelSession(current);
 		}
 	}
 
 	async function stop() {
-		const id = requestId,
+		const cancelStartup = connectionState === "connecting";
+		const id = cancelStartup ? ++requestId : requestId,
 			current = session;
 		connectionState = "stopping";
 		try {
-			await current?.stop();
+			if (cancelStartup) await cancelSession(current);
+			else await current?.stop();
 			if (id !== requestId) return;
 			if (partial.trim()) committed = (committed + " " + partial).trim();
 			partial = "";
 			connectionState = "idle";
 		} catch (cause) {
 			if (id === requestId) {
+				++requestId;
 				error = cause instanceof Error ? cause.message : "Could not finish transcription.";
 				connectionState = "error";
+				await cancelSession(current);
 			}
 		} finally {
 			if (id === requestId) {
@@ -181,7 +206,6 @@
 	}
 
 	function onKeydown(event: KeyboardEvent) {
-		// ⌘K / Ctrl+K toggles, except while typing in a field (e.g. the search box).
 		const target = event.target as HTMLElement | null;
 		if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable)
 			return;
@@ -196,7 +220,7 @@
 		try {
 			await navigator.clipboard.writeText(transcript);
 		} catch {
-			return; // clipboard blocked (insecure context / denied) — leave UI untouched
+			return;
 		}
 		copied = true;
 		setTimeout(() => (copied = false), 1500);
@@ -209,7 +233,8 @@
 
 	onDestroy(() => {
 		++requestId;
-		void session?.cancel();
+		void cancelSession(session);
+		session = null;
 	});
 </script>
 

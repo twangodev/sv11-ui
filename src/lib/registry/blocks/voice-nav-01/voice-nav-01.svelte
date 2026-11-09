@@ -25,6 +25,7 @@
 
 <script lang="ts">
 	import { AudioRecorder } from "$lib/registry/ui/voice-session/recording.js";
+	import type { TranscribeAudio } from "$lib/registry/ui/voice-session/types.js";
 	import { onDestroy, onMount } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import { Card, CardDescription, CardHeader, CardTitle } from "$lib/registry/ui/card/index.js";
@@ -45,19 +46,38 @@
 	let frameKey = $state(0);
 	let error = $state("");
 
-	// Optimistic until mounted so prerendered HTML doesn't flash the "unsupported"
-	// note before the client can feature-detect.
+	// Avoid an unsupported-browser flash before hydration.
 	let mounted = $state(false);
 	onMount(() => (mounted = true));
 	const supported = $derived(!mounted || !!transcribe || isSpeechRecognitionSupported());
 	const recognizer = new OneShotRecognizer();
 	const recorder = new AudioRecorder();
-	let request: AbortController | undefined;
-	let revertTimer: ReturnType<typeof setTimeout> | null = null;
+	type NavigationAttempt = {
+		controller: AbortController;
+		resolve: VoiceNavResolver;
+		destinations: VoiceNavDestination[];
+	} & ({ mode: "recorded"; transcribe: TranscribeAudio } | { mode: "browser" });
+	let activeAttempt = $state.raw<NavigationAttempt>();
+	let revertTimer: ReturnType<typeof setTimeout> | undefined;
+	const isCurrent = (attempt: NavigationAttempt) =>
+		activeAttempt === attempt && !attempt.controller.signal.aborted;
 
-	// A custom resolve() is untrusted input. Only load http(s) URLs or same-origin
-	// paths into the preview frame — never javascript:/data:/blob: schemes.
-	function isSafeUrl(value: string): boolean {
+	function cancelAttempt() {
+		activeAttempt?.controller.abort();
+		activeAttempt = undefined;
+		recorder.cancel();
+		recognizer.abort();
+		clearTimeout(revertTimer);
+	}
+
+	$effect(() => {
+		if (!transcribe && activeAttempt?.mode === "recorded") {
+			cancelAttempt();
+			voiceState = "idle";
+		}
+	});
+
+	function isHttpUrl(value: string): boolean {
 		try {
 			const { protocol } = new URL(value, window.location.origin);
 			return protocol === "http:" || protocol === "https:";
@@ -66,77 +86,90 @@
 		}
 	}
 
-	function revertSoon() {
-		if (revertTimer) clearTimeout(revertTimer);
-		revertTimer = setTimeout(() => {
-			if (voiceState === "success" || voiceState === "error") voiceState = "idle";
-		}, 1800);
-	}
-
-	async function navigate(transcript: string, current: AbortController) {
-		if (!transcript || current.signal.aborted) return;
-		voiceState = "processing";
-		const dest = await resolve(transcript, destinations, current.signal);
-		if (current.signal.aborted) return;
-		if (!dest) {
-			error = `Couldn't match "${transcript}" to a page.`;
-			voiceState = "error";
-		} else if (!isSafeUrl(dest)) {
-			error = "Refused to open an unsafe URL.";
-			voiceState = "error";
-		} else {
-			url = dest;
-			frameKey += 1;
-			voiceState = "success";
-		}
-	}
-	async function handlePress() {
-		if (!supported || voiceState === "processing") return;
-		if (voiceState === "recording" && !transcribe) {
-			request?.abort();
-			recognizer.abort();
-			voiceState = "idle";
-			return;
-		}
-		if (voiceState !== "recording") {
-			request?.abort();
-			request = new AbortController();
-			error = "";
-			voiceState = "recording";
-			if (transcribe) {
-				try {
-					await recorder.start();
-				} catch (cause) {
-					if (!request.signal.aborted) {
-						error = cause instanceof Error ? cause.message : "Could not record audio.";
-						voiceState = "error";
-					}
-				}
-				return;
-			}
-		}
-		const current = request!;
+	async function completeAttempt(current: NavigationAttempt) {
 		try {
 			let transcript: string;
-			if (transcribe) {
+			if (current.mode === "recorded") {
 				voiceState = "processing";
 				const audio = await recorder.stop();
-				transcript = await transcribe(audio, current.signal);
+				if (!isCurrent(current)) return;
+				transcript = await current.transcribe(audio, current.controller.signal);
 			} else transcript = await recognizer.start(navigator.language || "en-US");
-			if (!transcript && !current.signal.aborted) voiceState = "idle";
-			await navigate(transcript, current);
+			if (!isCurrent(current)) return;
+			if (!transcript) {
+				activeAttempt = undefined;
+				voiceState = "idle";
+				return;
+			}
+			voiceState = "processing";
+			const destination = await current.resolve(
+				transcript,
+				current.destinations,
+				current.controller.signal
+			);
+			if (!isCurrent(current)) return;
+			if (!destination) {
+				error = `Couldn't match "${transcript}" to a page.`;
+				voiceState = "error";
+			} else if (!isHttpUrl(destination)) {
+				error = "Refused to open an unsafe URL.";
+				voiceState = "error";
+			} else {
+				url = destination;
+				frameKey += 1;
+				voiceState = "success";
+			}
 		} catch (cause) {
-			if (!current.signal.aborted) {
+			if (isCurrent(current)) {
 				error = cause instanceof Error ? cause.message : "Voice navigation failed.";
 				voiceState = "error";
 			}
 		} finally {
-			if (!current.signal.aborted) revertSoon();
+			if (isCurrent(current))
+				revertTimer = setTimeout(() => {
+					if (isCurrent(current)) {
+						activeAttempt = undefined;
+						voiceState = "idle";
+					}
+				}, 1800);
+		}
+	}
+
+	async function handlePress() {
+		if (voiceState === "processing") return;
+		if (voiceState === "recording" && activeAttempt) {
+			if (activeAttempt.mode === "browser") {
+				cancelAttempt();
+				voiceState = "idle";
+			} else await completeAttempt(activeAttempt);
+			return;
+		}
+		if (!supported) return;
+		cancelAttempt();
+		const current: NavigationAttempt = {
+			controller: new AbortController(),
+			resolve,
+			destinations,
+			...(transcribe ? { mode: "recorded", transcribe } : { mode: "browser" }),
+		};
+		activeAttempt = current;
+		error = "";
+		voiceState = "recording";
+		if (current.mode === "browser") {
+			await completeAttempt(current);
+			return;
+		}
+		try {
+			await recorder.start();
+		} catch (cause) {
+			if (isCurrent(current)) {
+				error = cause instanceof Error ? cause.message : "Could not record audio.";
+				voiceState = "error";
+			}
 		}
 	}
 
 	function onKeydown(event: KeyboardEvent) {
-		// ⌥Space toggles voice nav — but not while typing in a field.
 		const target = event.target as HTMLElement | null;
 		if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable)
 			return;
@@ -146,12 +179,7 @@
 		}
 	}
 
-	onDestroy(() => {
-		request?.abort();
-		recorder.cancel();
-		recognizer.abort();
-		if (revertTimer) clearTimeout(revertTimer);
-	});
+	onDestroy(cancelAttempt);
 </script>
 
 <svelte:window onkeydown={onKeydown} />
@@ -169,7 +197,7 @@
 					</div>
 					<VoiceButton
 						state={voiceState}
-						getLevel={transcribe ? recorder.getLevel : undefined}
+						getLevel={activeAttempt?.mode === "recorded" ? recorder.getLevel : undefined}
 						onPress={handlePress}
 						disabled={!supported}
 						label="Voice Nav"

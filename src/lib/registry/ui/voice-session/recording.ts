@@ -1,86 +1,117 @@
+type Capture = {
+	recorder: MediaRecorder;
+	stream: MediaStream | null;
+	context: AudioContext | null;
+	analyser: AnalyserNode | null;
+	chunks: Blob[];
+	stopped: Promise<void>;
+	stopping?: Promise<Blob>;
+	error?: Error;
+};
+
 /** Owns one microphone capture and releases late permission grants after cancellation. */
 export class AudioRecorder {
 	#attempt = 0;
-	#recorder: MediaRecorder | null = null;
-	#stream: MediaStream | null = null;
-	#context: AudioContext | null = null;
-	#analyser: AnalyserNode | null = null;
-	#chunks: Blob[] = [];
+	#capture: Capture | null = null;
+
 	async start(deviceId?: string): Promise<void> {
 		this.cancel();
-		const id = ++this.#attempt;
+		const attempt = ++this.#attempt;
 		const stream = await navigator.mediaDevices.getUserMedia({
 			audio: deviceId ? { deviceId: { exact: deviceId } } : true,
 		});
-		if (id !== this.#attempt) {
-			stream.getTracks().forEach((t) => t.stop());
+		if (attempt !== this.#attempt) {
+			stream.getTracks().forEach((track) => track.stop());
 			throw new DOMException("Recording cancelled", "AbortError");
 		}
-		this.#stream = stream;
+		let capture: Capture | undefined;
 		try {
 			const mimeType = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find((type) =>
 				MediaRecorder.isTypeSupported(type)
 			);
-			const recorder = (this.#recorder = new MediaRecorder(
+			const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+			let stopped!: () => void;
+			capture = {
+				recorder,
 				stream,
-				mimeType ? { mimeType } : undefined
-			));
-			const chunks: Blob[] = (this.#chunks = []);
-			recorder.ondataavailable = (event) => {
-				if (event.data.size) chunks.push(event.data);
+				context: null,
+				analyser: null,
+				chunks: [],
+				stopped: new Promise<void>((resolve) => (stopped = resolve)),
 			};
+			const current = (this.#capture = capture);
+			recorder.ondataavailable = (event) => {
+				if (event.data.size) current.chunks.push(event.data);
+			};
+			recorder.onerror = () => {
+				current.error = new Error("Audio recording failed.");
+			};
+			recorder.onstop = stopped;
 			recorder.start();
 			try {
-				this.#context = new AudioContext();
-				this.#analyser = this.#context.createAnalyser();
-				this.#context.createMediaStreamSource(stream).connect(this.#analyser);
+				current.context = new AudioContext();
+				current.analyser = current.context.createAnalyser();
+				current.context.createMediaStreamSource(stream).connect(current.analyser);
 			} catch {
 				/* Recording remains available if metering is unavailable. */
 			}
 		} catch (error) {
-			this.cancel();
+			if (capture) this.cancel();
+			else stream.getTracks().forEach((track) => track.stop());
 			throw error;
 		}
 	}
-	async stop(): Promise<Blob> {
-		const recorder = this.#recorder;
-		if (!recorder) {
+
+	/** Concurrent callers share completion after the recorder's final data and stop events. */
+	stop(): Promise<Blob> {
+		const capture = this.#capture;
+		if (!capture) {
 			this.cancel();
-			throw new Error("Recording has not started.");
+			return Promise.reject(new Error("Recording has not started."));
 		}
-		const id = this.#attempt,
-			chunks = this.#chunks;
-		try {
-			await new Promise<void>((resolve, reject) => {
-				recorder.onstop = () => resolve();
-				recorder.onerror = () => reject(new Error("Audio recording failed."));
-				if (recorder.state === "inactive") resolve();
-				else recorder.stop();
-			});
-			if (id !== this.#attempt) throw new DOMException("Recording cancelled", "AbortError");
-			return new Blob(chunks, { type: recorder.mimeType });
-		} finally {
-			if (this.#recorder === recorder) this.#release();
-		}
+		if (capture.stopping) return capture.stopping;
+		const attempt = this.#attempt;
+		capture.stopping = (async () => {
+			try {
+				if (capture.recorder.state !== "inactive") capture.recorder.stop();
+				await capture.stopped;
+				if (attempt !== this.#attempt) throw new DOMException("Recording cancelled", "AbortError");
+				if (capture.error) throw capture.error;
+				return new Blob(capture.chunks, { type: capture.recorder.mimeType });
+			} finally {
+				if (this.#capture === capture) this.#capture = null;
+				this.#release(capture);
+			}
+		})();
+		return capture.stopping;
 	}
-	#release() {
-		this.#stream?.getTracks().forEach((track) => track.stop());
-		this.#stream = null;
-		void this.#context?.close().catch(() => {});
-		this.#context = null;
-		this.#analyser = null;
-		this.#recorder = null;
+
+	#release(capture: Capture) {
+		capture.stream?.getTracks().forEach((track) => track.stop());
+		capture.stream = null;
+		void capture.context?.close().catch(() => {});
+		capture.context = null;
+		capture.analyser = null;
 	}
+
 	cancel() {
 		++this.#attempt;
-		if (this.#recorder?.state === "recording") this.#recorder.stop();
-		this.#release();
-		this.#chunks = [];
+		const capture = this.#capture;
+		this.#capture = null;
+		if (!capture) return;
+		try {
+			if (capture.recorder.state !== "inactive") capture.recorder.stop();
+		} catch {
+			/* Track cleanup still releases an already-ended recording. */
+		}
+		this.#release(capture);
 	}
+
 	getLevel = () => {
-		if (!this.#analyser) return 0;
-		const data = new Uint8Array(this.#analyser.frequencyBinCount);
-		this.#analyser.getByteFrequencyData(data);
+		const analyser = this.#capture?.analyser;
+		if (!analyser) return 0;
+		const data = new Uint8Array(analyser.frequencyBinCount);
+		analyser.getByteFrequencyData(data);
 		return data.reduce((sum, value) => sum + value, 0) / data.length / 255;
 	};
 }

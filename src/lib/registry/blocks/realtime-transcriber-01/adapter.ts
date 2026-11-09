@@ -1,8 +1,3 @@
-// Streaming transcription adapter. The interface mirrors the one shipped with
-// the `speech-input` component, so adapters are interchangeable between the two.
-// Wire a real provider (ElevenLabs Scribe, Deepgram, etc.) by implementing this
-// interface; the bundled Web Speech adapter is a zero-backend demo default.
-
 import type {
 	TranscriptionAdapter,
 	TranscriptionAdapterCallbacks,
@@ -42,114 +37,169 @@ export function getSpeechRecognition(): SpeechRecognitionCtor | null {
 
 export const isSpeechRecognitionSupported = () => getSpeechRecognition() !== null;
 
-/**
- * Demo TranscriptionAdapter backed by the browser SpeechRecognition. Runs fully
- * client-side with no API key (Chromium-based browsers). Continuous recognition
- * is kept alive by restarting on unexpected `onend` until `stop()`/`cancel()`.
- */
+/** Browser SpeechRecognition fallback (Chromium); restarts after silence until stop or cancel. */
 export function createWebSpeechAdapter(lang = "en-US"): TranscriptionAdapter {
-	let recognition: SpeechRecognitionLike | null = null;
-	let stopped = false;
-	let cb: TranscriptionAdapterCallbacks = {};
-	// Set while start() is pending; lets a startup error reject the start() Promise
-	// (e.g. permission denied fires onerror before onstart ever does).
-	let startup: { resolve: () => void; reject: (err: Error) => void } | null = null;
+	type RecognitionRun = {
+		recognition: SpeechRecognitionLike;
+		callbacks: TranscriptionAdapterCallbacks;
+		opening: { resolve: () => void; reject: (error: Error) => void } | null;
+		stopping: boolean;
+		stopPromise?: Promise<void>;
+		finishStop?: (error?: Error, abort?: boolean) => void;
+	};
+	let active: RecognitionRun | undefined;
+	const asError = (error: unknown) => (error instanceof Error ? error : new Error(String(error)));
 
-	function build() {
-		const Ctor = getSpeechRecognition()!;
-		const r = new Ctor();
-		r.continuous = true;
-		r.interimResults = true;
-		r.lang = lang;
-		r.onresult = (event) => {
-			let interim = "";
-			for (let i = event.resultIndex; i < event.results.length; i++) {
-				const result = event.results[i];
-				const text = result[0].transcript;
-				if (result.isFinal) {
-					// Emit only the phrase that finalized; the consumer accumulates.
-					cb.onCommittedTranscript?.(text.trim());
-				} else {
-					interim += text;
-				}
+	function release(current: RecognitionRun, abort: boolean) {
+		if (active === current) active = undefined;
+		const recognition = current.recognition;
+		recognition.onstart = recognition.onresult = recognition.onerror = recognition.onend = null;
+		if (abort) {
+			try {
+				recognition.abort();
+			} catch {
+				/* Already ended. */
 			}
-			cb.onPartialTranscript?.(interim.trim());
-		};
-		r.onerror = (event) => {
-			if (event.error === "no-speech" || event.error === "aborted") return;
-			const err = new Error(`Speech recognition error: ${event.error}`);
-			// A failure before onstart means start() is still pending — reject it so
-			// `await adapter.start()` callers hit their catch instead of hanging.
-			if (startup) {
-				const pending = startup;
-				startup = null;
-				pending.reject(err);
-				return;
-			}
-			cb.onError?.(err);
-		};
-		r.onend = () => {
-			// Continuous mode can end on its own after silence; restart until the
-			// caller explicitly stops, so the session feels live.
-			if (!stopped) {
-				try {
-					r.start();
-				} catch {
-					cb.onDisconnect?.();
-				}
-			} else {
-				cb.onDisconnect?.();
-			}
-		};
-		return r;
+		}
+	}
+
+	function cancel() {
+		const current = active;
+		if (!current) return;
+		current.stopping = true;
+		release(current, true);
+		current.opening?.resolve();
+		current.opening = null;
+		current.finishStop?.(new DOMException("Transcription cancelled", "AbortError"));
 	}
 
 	return {
 		start(callbacks) {
-			cb = callbacks;
-			stopped = false;
+			cancel();
 			return new Promise<void>((resolve, reject) => {
 				const Ctor = getSpeechRecognition();
 				if (!Ctor) {
 					reject(new Error("SpeechRecognition is not supported in this browser."));
 					return;
 				}
-				startup = {
-					resolve: () => {
-						startup = null;
-						resolve();
-					},
-					reject: (err) => {
-						startup = null;
-						reject(err);
-					},
+				const recognition = new Ctor();
+				const current: RecognitionRun = {
+					recognition,
+					callbacks,
+					opening: { resolve, reject },
+					stopping: false,
 				};
-				recognition = build();
+				active = current;
+				recognition.continuous = true;
+				recognition.interimResults = true;
+				recognition.lang = lang;
 				recognition.onstart = () => {
-					cb.onConnect?.();
-					startup?.resolve();
+					if (active !== current) return;
+					if (current.stopping) {
+						try {
+							recognition.stop();
+						} catch (error) {
+							current.finishStop?.(asError(error), true);
+						}
+						return;
+					}
+					const opening = current.opening;
+					current.opening = null;
+					callbacks.onConnect?.();
+					opening?.resolve();
+				};
+				recognition.onresult = (event) => {
+					if (active !== current) return;
+					let interim = "";
+					for (let i = event.resultIndex; i < event.results.length; i++) {
+						const result = event.results[i];
+						const text = result[0].transcript;
+						if (result.isFinal) callbacks.onCommittedTranscript?.(text.trim());
+						else interim += text;
+					}
+					callbacks.onPartialTranscript?.(interim.trim());
+				};
+				recognition.onerror = (event) => {
+					if (active !== current || event.error === "no-speech" || event.error === "aborted")
+						return;
+					const error = new Error(`Speech recognition error: ${event.error}`);
+					const opening = current.opening;
+					current.opening = null;
+					if (opening) {
+						release(current, true);
+						opening.reject(error);
+					} else {
+						const finish = current.finishStop;
+						callbacks.onError?.(error);
+						if (finish) finish(error, true);
+						else release(current, true);
+					}
+				};
+				recognition.onend = () => {
+					if (active !== current) return;
+					if (current.stopping) {
+						current.finishStop?.();
+						return;
+					}
+					try {
+						recognition.start();
+					} catch (error) {
+						const opening = current.opening;
+						current.opening = null;
+						release(current, false);
+						if (opening) opening.reject(asError(error));
+						else callbacks.onDisconnect?.();
+					}
 				};
 				try {
 					recognition.start();
-				} catch (err) {
-					startup = null;
-					reject(err instanceof Error ? err : new Error("Failed to start recognition."));
+				} catch (error) {
+					current.opening = null;
+					release(current, true);
+					reject(asError(error));
 				}
 			});
 		},
 		stop() {
-			stopped = true;
-			// Settle a still-pending start() so `await adapter.start()` can't hang if
-			// we stop before onstart fires.
-			startup?.resolve();
-			recognition?.stop();
-			recognition = null;
+			const current = active;
+			if (!current) return Promise.resolve();
+			if (current.stopPromise) return current.stopPromise;
+			current.stopping = true;
+			const opening = current.opening;
+			current.opening = null;
+			opening?.resolve();
+			current.stopPromise = new Promise<void>((resolve, reject) => {
+				let finished = false;
+				const finish = (error?: Error, abort = false) => {
+					if (finished) return;
+					finished = true;
+					clearTimeout(timer);
+					current.finishStop = undefined;
+					release(current, abort);
+					if (error) reject(error);
+					else {
+						try {
+							current.callbacks.onDisconnect?.();
+							resolve();
+						} catch (cause) {
+							reject(asError(cause));
+						}
+					}
+				};
+				// Final results precede onend. Bound completion if the browser never ends.
+				const timer = setTimeout(
+					() => finish(new Error("Timed out waiting for transcription to finalize."), true),
+					600
+				);
+				current.finishStop = finish;
+				try {
+					current.recognition.stop();
+				} catch (error) {
+					finish(opening ? undefined : asError(error), true);
+				}
+			});
+			return current.stopPromise;
 		},
-		cancel() {
-			stopped = true;
-			startup?.resolve();
-			recognition?.abort();
-			recognition = null;
-		},
+		cancel,
 	};
 }

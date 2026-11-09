@@ -31,19 +31,42 @@
 	const recorder = new AudioRecorder();
 	let voiceState = $state<VoiceButtonState>("idle");
 	let error = $state("");
-	let request: AbortController | undefined;
+	type RecordingAttempt = {
+		controller: AbortController;
+		transcribe: TranscribeAudio;
+		extractFields: ExtractFields<ExampleFormValues>;
+	};
+	let activeRecording = $state.raw<RecordingAttempt>();
 	let feedback: ReturnType<typeof setTimeout> | undefined;
+	const isCurrent = (attempt: RecordingAttempt) =>
+		activeRecording === attempt && !attempt.controller.signal.aborted;
+
+	function cancelRecording() {
+		activeRecording?.controller.abort();
+		activeRecording = undefined;
+		recorder.cancel();
+		clearTimeout(feedback);
+	}
+
+	$effect(() => {
+		if ((!transcribe || !extractFields) && activeRecording) {
+			cancelRecording();
+			voiceState = "idle";
+		}
+	});
+
 	async function handleVoiceToggle() {
-		if (!transcribe || !extractFields) return;
-		if (voiceState === "recording") {
+		if (voiceState === "processing") return;
+		if (voiceState === "recording" && activeRecording) {
+			const current = activeRecording;
 			voiceState = "processing";
-			const current = request!;
 			try {
 				const audio = await recorder.stop();
-				const transcript = await transcribe(audio, current.signal);
-				if (current.signal.aborted) return;
-				const fields = await extractFields(transcript, current.signal);
-				if (current.signal.aborted) return;
+				if (!isCurrent(current)) return;
+				const transcript = await current.transcribe(audio, current.controller.signal);
+				if (!isCurrent(current)) return;
+				const fields = await current.extractFields(transcript, current.controller.signal);
+				if (!isCurrent(current)) return;
 				values = {
 					firstName: typeof fields.firstName === "string" ? fields.firstName : values.firstName,
 					lastName: typeof fields.lastName === "string" ? fields.lastName : values.lastName,
@@ -51,34 +74,42 @@
 				onValuesChange?.(values);
 				voiceState = "success";
 			} catch (cause) {
-				if (!current.signal.aborted) {
+				if (isCurrent(current)) {
 					error = cause instanceof Error ? cause.message : "Voice fill failed.";
 					voiceState = "error";
 				}
 			} finally {
-				if (!current.signal.aborted) feedback = setTimeout(() => (voiceState = "idle"), 1800);
+				if (isCurrent(current))
+					feedback = setTimeout(() => {
+						if (isCurrent(current)) {
+							activeRecording = undefined;
+							voiceState = "idle";
+						}
+					}, 1800);
 			}
-		} else {
-			clearTimeout(feedback);
-			request?.abort();
-			request = new AbortController();
-			error = "";
-			voiceState = "recording";
-			try {
-				await recorder.start();
-			} catch (cause) {
-				if (!request.signal.aborted) {
-					error = cause instanceof Error ? cause.message : "Could not record audio.";
-					voiceState = "error";
-				}
+			return;
+		}
+		if (!transcribe || !extractFields) return;
+		cancelRecording();
+		const current: RecordingAttempt = {
+			controller: new AbortController(),
+			transcribe,
+			extractFields,
+		};
+		activeRecording = current;
+		error = "";
+		voiceState = "recording";
+		try {
+			await recorder.start();
+		} catch (cause) {
+			if (isCurrent(current)) {
+				error = cause instanceof Error ? cause.message : "Could not record audio.";
+				voiceState = "error";
 			}
 		}
 	}
-	onDestroy(() => {
-		request?.abort();
-		recorder.cancel();
-		clearTimeout(feedback);
-	});
+	onDestroy(cancelRecording);
+
 	function onSubmit(event: SubmitEvent) {
 		event.preventDefault();
 	}
