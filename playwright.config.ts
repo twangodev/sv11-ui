@@ -18,7 +18,8 @@ export default defineConfig({
 		{ name: "mobile", use: { ...devices["Pixel 7"], defaultBrowserType: "chromium" } },
 	],
 	webServer: {
-		command: "pnpm exec vite --config tests/browser/vite.config.ts",
+		command:
+			"pnpm exec vite build --config tests/browser/vite.config.ts && pnpm exec vite preview --config tests/browser/vite.config.ts",
 		url: "http://127.0.0.1:4174",
 		timeout: 60000,
 		reuseExistingServer: false,

@@ -8,5 +8,7 @@ export default defineConfig({
 	publicDir: path.resolve("static"),
 	plugins: [svelte({ configFile: false }), tailwindcss()],
 	resolve: { alias: { $lib: path.resolve("src/lib") } },
+	build: { outDir: path.resolve(".svelte-kit/browser-fixture"), emptyOutDir: true },
+	preview: { host: "127.0.0.1", port: 4174, strictPort: true },
 	server: { host: "127.0.0.1", port: 4174, strictPort: true, fs: { allow: [path.resolve(".")] } },
 });

@@ -17,7 +17,8 @@
 	import * as Transcript from "../../../src/lib/registry/ui/transcript-viewer/index.js";
 	import * as Scrub from "../../../src/lib/registry/ui/scrub-bar/index.js";
 	import * as Speech from "../../../src/lib/registry/ui/speech-input/index.js";
-	import type { Component } from "svelte";
+	import { onMount, tick, type Component } from "svelte";
+	import inventory from "../../fixtures/upstream-parity.json";
 	import type {
 		ConversationAdapter,
 		TranscriptionAdapter,
@@ -41,7 +42,10 @@
 	};
 	const params = new URL(location.href).searchParams;
 	const name = params.get("component") ?? "orb";
-	const theme = params.get("theme") === "dark" ? "dark" : "light";
+	const theme = params.get("theme") ?? "light";
+	if (![...inventory.ui, ...inventory.blocks.map((block) => `block-${block}`)].includes(name))
+		throw new Error(`Unknown visual fixture: ${name}`);
+	if (theme !== "light" && theme !== "dark") throw new Error(`Unknown fixture theme: ${theme}`);
 	const blocks = import.meta.glob("../../../src/lib/registry/blocks/*/index.ts");
 	const block = name.startsWith("block-") ? name.slice(6) : undefined;
 	const blockProps = {
@@ -54,6 +58,16 @@
 	const loadBlock = block
 		? blocks[`../../../src/lib/registry/blocks/${block}/index.ts`]
 		: undefined;
+	if (block && !loadBlock) throw new Error(`Missing visual fixture: ${name}`);
+	let Block = $state.raw<Component>();
+	let ready = $state(false);
+	onMount(() => {
+		void (async () => {
+			if (loadBlock) Block = ((await loadBlock()) as { default: Component }).default;
+			await tick();
+			ready = true;
+		})();
+	});
 	const samples = Array.from({ length: 80 }, (_, i) => 0.12 + Math.abs(Math.sin(i * 0.45)) * 0.75);
 	const pattern = Array.from({ length: 7 }, (_, row) =>
 		Array.from({ length: 7 }, (_, col) => (row === col || row + col === 6 ? 1 : 0))
@@ -70,12 +84,16 @@
 </script>
 
 <ModeWatcher defaultMode={theme} disableTransitions />
-<main class="mx-auto w-full max-w-3xl p-8" data-testid="visual-stage" data-component={name}>
+<main
+	class="mx-auto w-full max-w-3xl p-8"
+	data-testid="visual-stage"
+	data-component={name}
+	data-visual-ready={ready}
+>
 	{#if loadBlock}
-		{#await loadBlock() then module}
-			{@const Block = (module as { default: Component }).default}
+		{#if Block}
 			<Block {...blockProps} />
-		{/await}
+		{/if}
 	{:else if name === "orb"}
 		<div class="mx-auto size-48">
 			<Orb seed={1000} volumeMode="manual" manualInput={0} manualOutput={0} />

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { ConversationProvider } from "@elevenlabs/react";
 import { Orb } from "./registry/elevenlabs-ui/ui/orb";
@@ -19,9 +19,14 @@ import * as Transcript from "./registry/elevenlabs-ui/ui/transcript-viewer";
 import * as Scrub from "./registry/elevenlabs-ui/ui/scrub-bar";
 import * as Speech from "./registry/elevenlabs-ui/ui/speech-input";
 import "./style.css";
+import inventory from "./upstream-parity.json";
 const params = new URL(location.href).searchParams;
 const name = params.get("component") ?? "orb";
-document.documentElement.classList.toggle("dark", params.get("theme") === "dark");
+const theme = params.get("theme") ?? "light";
+if (![...inventory.ui, ...inventory.blocks.map((block) => `block-${block}`)].includes(name))
+	throw new Error(`Unknown visual fixture: ${name}`);
+if (theme !== "light" && theme !== "dark") throw new Error(`Unknown fixture theme: ${theme}`);
+document.documentElement.classList.toggle("dark", theme === "dark");
 const blocks = import.meta.glob("./registry/elevenlabs-ui/blocks/*/page.tsx");
 const block = name.startsWith("block-") ? name.slice(6) : undefined;
 const Block = block ? lazy(blocks[`./registry/elevenlabs-ui/blocks/${block}/page.tsx`]) : undefined;
@@ -39,12 +44,7 @@ const markdown =
 	"Hello **world**. Here is a [link](https://example.com).\n\n- First item\n- Second item\n\n> A useful quote.";
 function Fixture() {
 	const [value, setValue] = useState(30);
-	if (Block)
-		return (
-			<Suspense>
-				<Block />
-			</Suspense>
-		);
+	if (Block) return <Block />;
 	switch (name) {
 		case "orb":
 			return (
@@ -168,8 +168,24 @@ function Fixture() {
 			);
 	}
 }
+function Ready() {
+	useEffect(() => {
+		document
+			.querySelector('[data-testid="visual-stage"]')!
+			.setAttribute("data-visual-ready", "true");
+	}, []);
+	return null;
+}
 createRoot(document.getElementById("root")!).render(
-	<main className="mx-auto w-full max-w-3xl p-8" data-testid="visual-stage" data-component={name}>
-		<Fixture />
+	<main
+		className="mx-auto w-full max-w-3xl p-8"
+		data-testid="visual-stage"
+		data-component={name}
+		data-visual-ready="false"
+	>
+		<Suspense fallback={null}>
+			<Fixture />
+			<Ready />
+		</Suspense>
 	</main>
 );

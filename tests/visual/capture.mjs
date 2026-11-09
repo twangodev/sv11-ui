@@ -12,12 +12,23 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 const inventory = JSON.parse(
 	await readFile(path.join(root, "tests/fixtures/upstream-parity.json"), "utf8")
 );
-const names = process.env.COMPONENTS?.split(",") ?? [
+const availableComponents = [
 	...inventory.ui,
 	...inventory.blocks.map((n) => "block-" + n),
 	"voice-picker-open",
 	"mic-selector-open",
 ];
+const names = process.env.COMPONENTS?.split(",").map((name) => name.trim()) ?? availableComponents;
+for (const name of names)
+	if (!availableComponents.includes(name)) throw new Error(`Unknown visual fixture: ${name}`);
+function select(name, choices) {
+	const value = process.env[name];
+	if (value === undefined) return choices;
+	if (!choices.includes(value)) throw new Error(`${name} must be one of: ${choices.join(", ")}`);
+	return [value];
+}
+const viewports = select("VIEWPORT", ["desktop", "mobile"]);
+const themes = select("THEME", ["light", "dark"]);
 const out = process.env.VISUAL_OUTPUT ?? path.join(root, "test-results/visual");
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch({
@@ -27,10 +38,8 @@ const rows = [];
 for (const [viewport, width] of [
 	["desktop", 1280],
 	["mobile", 390],
-].filter(([name]) => !process.env.VIEWPORT || process.env.VIEWPORT === name))
-	for (const theme of ["light", "dark"].filter(
-		(name) => !process.env.THEME || process.env.THEME === name
-	)) {
+].filter(([name]) => viewports.includes(name)))
+	for (const theme of themes) {
 		const context = await browser.newContext({
 			viewport: { width, height: 900 },
 			deviceScaleFactor: 1,
@@ -71,7 +80,13 @@ for (const [viewport, width] of [
 						`http://127.0.0.1:${port}/?scenario=visual&component=${component}&theme=${theme}`,
 						{ waitUntil: "load", timeout: 20000 }
 					);
-					await page.locator('[data-testid="visual-stage"]').waitFor({ timeout: 10000 });
+					await page
+						.locator('[data-testid="visual-stage"][data-visual-ready="true"]')
+						.waitFor({ timeout: 20000 });
+					await page.waitForFunction(
+						(theme) => document.documentElement.classList.contains("dark") === (theme === "dark"),
+						theme
+					);
 					await page.evaluate(() => document.fonts.ready);
 					if (expanded) {
 						await page.locator('[data-testid="visual-stage"] button').first().click();
@@ -79,7 +94,8 @@ for (const [viewport, width] of [
 							.locator('[data-slot="popover-content"], [data-slot="dropdown-menu-content"]')
 							.waitFor();
 					}
-					await page.waitForTimeout(900);
+					// TextureLoader images can load outside the DOM after a canvas has mounted.
+					await page.waitForLoadState("networkidle", { timeout: 15000 });
 					await page.evaluate(async () => {
 						for (const animation of document.getAnimations()) {
 							if (animation.effect?.getComputedTiming().iterations !== Infinity) animation.finish();

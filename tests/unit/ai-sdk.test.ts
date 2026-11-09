@@ -24,7 +24,7 @@ describe("AI SDK task factories", () => {
 		});
 		const transcribe = createAiSdkTranscriber(model);
 		expect(await transcribe(new Blob([new Uint8Array([1, 2, 3])]))).toBe("Grace Hopper");
-		expect(received).toBeDefined();
+		expect(received).toEqual(new Uint8Array([1, 2, 3]));
 	});
 	function model(text: string) {
 		return new MockLanguageModelV4({
