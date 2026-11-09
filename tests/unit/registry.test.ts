@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import ts from "typescript";
+import { parse, print } from "svelte/compiler";
 
 const registry = JSON.parse(readFileSync("registry.json", "utf8")) as {
 	items: {
@@ -31,11 +32,15 @@ describe("registry dependency closure", () => {
 			);
 			for (const file of item.files ?? []) {
 				expect(existsSync(file.path), file.path).toBe(true);
-				if (!/\.(ts|svelte)$/.test(file.path)) continue;
+				if (!file.path.endsWith(".ts") && !file.path.endsWith(".svelte")) continue;
 				const source = readFileSync(file.path, "utf8");
-				const scripts = file.path.endsWith(".svelte")
-					? [...source.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]).join("\n")
-					: source;
+				let scripts = source;
+				if (file.path.endsWith(".svelte")) {
+					const component = parse(source, { modern: true, filename: file.path });
+					scripts = [component.module, component.instance]
+						.flatMap((script) => (script ? [print(script.content).code] : []))
+						.join("\n");
+				}
 				const ast = ts.createSourceFile(file.path + ".ts", scripts, ts.ScriptTarget.Latest, true);
 				const imports: string[] = [];
 				function visit(node: ts.Node) {
@@ -63,7 +68,7 @@ describe("registry dependency closure", () => {
 					else continue;
 					const candidates = [
 						target,
-						target.replace(/\.js$/, ".ts"),
+						target.endsWith(".js") ? `${target.slice(0, -3)}.ts` : target,
 						path.join(target, "index.ts"),
 					];
 					if (candidates.some((candidate) => shipped.has(candidate))) continue;
