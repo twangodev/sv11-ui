@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { onDestroy, untrack } from "svelte";
 	import Music from "@lucide/svelte/icons/music";
 	import SkipBack from "@lucide/svelte/icons/skip-back";
 	import SkipForward from "@lucide/svelte/icons/skip-forward";
@@ -165,10 +165,11 @@
 		audioEl.addEventListener("play", handleStart);
 		return () => {
 			audioEl.removeEventListener("play", handleStart);
-			graph.destroy();
 			scrub.reset();
+			graph.destroy();
 		};
 	});
+	onDestroy(() => scrub.dispose());
 
 	$effect(() => {
 		let animationId: number;

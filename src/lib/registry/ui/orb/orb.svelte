@@ -17,6 +17,8 @@
 		seed?: number;
 		/** Delay canvas resizing after container changes, in milliseconds. @default 100 */
 		resizeDebounce?: number;
+		/** Noise texture URL. Defaults to the hosted sv11-ui texture. */
+		textureUrl?: string;
 		/**
 		 * Drives the orb's visual behavior to reflect the agent lifecycle.
 		 * Pass `null` to render the idle state.
@@ -54,6 +56,7 @@
 		colors = ["#CADCFC", "#A0B9D1"],
 		seed,
 		resizeDebounce = 100,
+		textureUrl = "https://sv11.ui.twango.dev/orbs/perlin-noise.png",
 		agentState = null,
 		volumeMode = "auto",
 		manualInput,
@@ -64,11 +67,14 @@
 		...restProps
 	}: OrbProps = $props();
 
-	// Stable per-instance fallback seed if none is passed
 	const instanceSeed = Math.floor(Math.random() * 2 ** 32);
 	const resolvedSeed = $derived(seed ?? instanceSeed);
 	let container = $state<HTMLDivElement>();
 	let measured = $state<{ width: number; height: number }>();
+	let failedTextureUrl = $state<string | null>(null);
+	$effect(() => {
+		if (failedTextureUrl !== textureUrl) failedTextureUrl = null;
+	});
 	$effect(() => {
 		if (!container) return;
 		const delay = Math.max(0, resizeDebounce);
@@ -111,16 +117,29 @@
 					premultipliedAlpha: true,
 				})}
 		>
-			<OrbScene
-				{colors}
-				seed={resolvedSeed}
-				{agentState}
-				{volumeMode}
-				{manualInput}
-				{manualOutput}
-				{getInputVolume}
-				{getOutputVolume}
-			/>
+			{#key textureUrl}
+				<OrbScene
+					{colors}
+					{textureUrl}
+					onTextureError={(url) => (failedTextureUrl = url)}
+					seed={resolvedSeed}
+					{agentState}
+					{volumeMode}
+					{manualInput}
+					{manualOutput}
+					{getInputVolume}
+					{getOutputVolume}
+				/>
+			{/key}
 		</Canvas>
 	</div>
+	{#if failedTextureUrl === textureUrl}
+		<div
+			data-slot="orb-fallback"
+			role="img"
+			aria-label="Orb texture unavailable"
+			class="pointer-events-none absolute inset-0 rounded-full"
+			style:background={`radial-gradient(circle at 35% 30%, ${colors[0]}, ${colors[1]} 65%, transparent 72%)`}
+		></div>
+	{/if}
 </div>

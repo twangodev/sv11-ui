@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import { getComputedBarColor, heightToCssSize } from "./utils.js";
 	import type { ScrollingWaveformProps } from "./waveform-scrolling.svelte";
@@ -43,32 +44,28 @@
 		...restProps
 	}: LiveMicrophoneWaveformProps = $props();
 
-	// Reactive state
 	let internalDragOffset = $state(0);
 	let playbackPosition = $state<number | null>(null);
 
-	// Element bindings
 	let canvasEl: HTMLCanvasElement | null = $state(null);
 	let containerEl: HTMLDivElement | null = $state(null);
 
-	// Non-reactive refs — plain objects/lets, not $state.
 	const internalHistoryRef = { current: [] as number[] };
 	let analyserRef: AnalyserNode | null = null;
-	let audioContextRef: AudioContext | null = null;
-	let streamRef: MediaStream | null = null;
+	let playbackContext: AudioContext | null = null;
+	let captureGeneration = 0;
+	let disposed = false;
+	let cancelDrag: (() => void) | null = null;
 	let animationRef: number | null = null;
 	let lastUpdateRef = 0;
 	let dragStartXRef = 0;
 	let dragStartOffsetRef = 0;
 	let playbackStartTimeRef = 0;
 
-	let mediaRecorderRef: MediaRecorder | null = null;
-	let audioChunksRef: Blob[] = [];
 	let audioBufferRef: AudioBuffer | null = null;
 	let sourceNodeRef: AudioBufferSourceNode | null = null;
 	let scrubSourceRef: AudioBufferSourceNode | null = null;
 
-	// Derived ref aliases — match React's `savedHistoryRef || internalHistoryRef` pattern.
 	const historyRef = $derived(savedHistoryRef ?? internalHistoryRef);
 	const dragOffset = $derived(externalDragOffset ?? internalDragOffset);
 	const setDragOffset = (offset: number) => {
@@ -78,32 +75,64 @@
 
 	const heightStyle = $derived(heightToCssSize(height));
 
-	// --- Helpers ---
-
-	async function processAudioBlob(blob: Blob) {
+	async function processAudioBlob(blob: Blob, generation: number) {
+		if (!blob.size) return;
 		try {
-			const arrayBuffer = await blob.arrayBuffer();
-			if (audioContextRef) {
-				const audioBuffer = await audioContextRef.decodeAudioData(arrayBuffer);
-				audioBufferRef = audioBuffer;
-			}
+			const decoder = new OfflineAudioContext(1, 1, 44100);
+			const buffer = await decoder.decodeAudioData(await blob.arrayBuffer());
+			if (!disposed && generation === captureGeneration) audioBufferRef = buffer;
 		} catch (error) {
-			console.error("Error processing audio:", error);
+			if (!disposed && generation === captureGeneration) onError?.(error as Error);
 		}
 	}
 
+	function ensurePlaybackContext(): AudioContext {
+		playbackContext ??= new AudioContext();
+		if (playbackContext.state === "suspended") {
+			void playbackContext.resume().catch((error) => onError?.(error));
+		}
+		return playbackContext;
+	}
+
+	function stopPlayback(): void {
+		for (const source of [sourceNodeRef, scrubSourceRef]) {
+			if (!source) continue;
+			source.onended = null;
+			try {
+				source.stop();
+			} catch {
+				// Buffer sources can only be stopped after they start.
+			}
+			source.disconnect();
+		}
+		sourceNodeRef = null;
+		scrubSourceRef = null;
+		playbackPosition = null;
+	}
+
+	onDestroy(() => {
+		disposed = true;
+		captureGeneration += 1;
+		cancelDrag?.();
+		stopPlayback();
+		void playbackContext?.close().catch(() => {});
+		playbackContext = null;
+	});
+
 	function playScrubSound(position: number, direction: number) {
-		if (!enableAudioPlayback || !audioBufferRef || !audioContextRef) return;
+		if (!enableAudioPlayback || !audioBufferRef) return;
+		const context = ensurePlaybackContext();
 
 		if (scrubSourceRef) {
 			try {
 				scrubSourceRef.stop();
+				scrubSourceRef.disconnect();
 			} catch {
 				// ignore — source may already be stopped
 			}
 		}
 
-		const source = audioContextRef.createBufferSource();
+		const source = context.createBufferSource();
 		source.buffer = audioBufferRef;
 
 		const speed = Math.abs(direction);
@@ -111,49 +140,58 @@
 
 		source.playbackRate.value = rate;
 
-		const filter = audioContextRef.createBiquadFilter();
+		const filter = context.createBiquadFilter();
 		filter.type = "lowpass";
 		filter.frequency.value = Math.max(200, 2000 - speed * 100);
 
 		source.connect(filter);
-		filter.connect(audioContextRef.destination);
+		filter.connect(context.destination);
 
 		const startTime = Math.max(0, Math.min(position, audioBufferRef.duration - 0.1));
 		source.start(0, startTime, 0.1);
 		scrubSourceRef = source;
+		source.onended = () => {
+			source.disconnect();
+			filter.disconnect();
+			if (scrubSourceRef === source) scrubSourceRef = null;
+		};
 	}
 
 	function playFromPosition(position: number) {
-		if (!enableAudioPlayback || !audioBufferRef || !audioContextRef) return;
+		if (!enableAudioPlayback || !audioBufferRef) return;
+		const context = ensurePlaybackContext();
 
 		if (sourceNodeRef) {
 			try {
+				sourceNodeRef.onended = null;
 				sourceNodeRef.stop();
+				sourceNodeRef.disconnect();
 			} catch {
 				// ignore — source may already be stopped
 			}
 		}
 
-		const source = audioContextRef.createBufferSource();
+		const source = context.createBufferSource();
 		source.buffer = audioBufferRef;
 		source.playbackRate.value = playbackRate;
-		source.connect(audioContextRef.destination);
+		source.connect(context.destination);
 
 		const startTime = Math.max(0, Math.min(position, audioBufferRef.duration));
 		source.start(0, startTime);
 		sourceNodeRef = source;
 
-		playbackStartTimeRef = audioContextRef.currentTime - startTime;
+		playbackStartTimeRef = context.currentTime;
 		playbackPosition = startTime;
 
 		source.onended = () => {
-			playbackPosition = null;
+			source.disconnect();
+			if (sourceNodeRef === source) {
+				sourceNodeRef = null;
+				playbackPosition = null;
+			}
 		};
 	}
 
-	// --- Effects ---
-
-	// 1. ResizeObserver — runs once on mount.
 	$effect(() => {
 		const canvas = canvasEl;
 		const container = containerEl;
@@ -178,105 +216,97 @@
 		return () => resizeObserver.disconnect();
 	});
 
-	// 2. Mic setup + MediaRecorder.
+	// Capture resources belong to this effect; playback uses its own context.
 	$effect(() => {
-		const _active = active;
-		const _fftSize = fftSize;
-		const _smoothingTimeConstant = smoothingTimeConstant;
-		const _onError = onError;
-		const _enableAudioPlayback = enableAudioPlayback;
-		const _historyRef = historyRef;
-
-		if (!_active) {
-			if (mediaRecorderRef && mediaRecorderRef.state !== "inactive") {
-				mediaRecorderRef.stop();
-			}
-			if (streamRef) {
-				streamRef.getTracks().forEach((track) => track.stop());
-			}
-			if (_enableAudioPlayback && audioChunksRef.length > 0) {
-				const audioBlob = new Blob(audioChunksRef, { type: "audio/webm" });
-				processAudioBlob(audioBlob);
-			}
-			return;
-		}
-
+		if (!active) return;
+		const generation = ++captureGeneration;
+		const captureFftSize = fftSize;
+		const captureSmoothing = smoothingTimeConstant;
+		const recordPlayback = enableAudioPlayback;
+		const reportError = onError;
 		setDragOffset(0);
-		_historyRef.current = [];
-		audioChunksRef = [];
+		historyRef.current = [];
 		audioBufferRef = null;
-		playbackPosition = null;
+		cancelDrag?.();
+		stopPlayback();
+		void playbackContext?.close().catch(() => {});
+		playbackContext = null;
 
 		let cancelled = false;
+		let stream: MediaStream | null = null;
+		let context: AudioContext | null = null;
+		let source: MediaStreamAudioSourceNode | null = null;
+		let analyser: AnalyserNode | null = null;
+		let recorder: MediaRecorder | null = null;
+		const chunks: Blob[] = [];
 
-		const setupMicrophone = async () => {
+		function releaseCapture() {
+			source?.disconnect();
+			analyser?.disconnect();
+			if (analyserRef === analyser) analyserRef = null;
+			stream?.getTracks().forEach((track) => track.stop());
+			if (context && context.state !== "closed") void context.close().catch(() => {});
+			source = null;
+			context = null;
+			stream = null;
+		}
+
+		async function setupMicrophone() {
 			try {
-				const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+				stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 				if (cancelled) {
-					stream.getTracks().forEach((track) => track.stop());
+					releaseCapture();
 					return;
 				}
-				streamRef = stream;
-
-				const AudioContextCtor =
-					window.AudioContext ||
-					(window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-				const audioContext = new AudioContextCtor();
-				const analyser = audioContext.createAnalyser();
-				analyser.fftSize = _fftSize;
-				analyser.smoothingTimeConstant = _smoothingTimeConstant;
-
-				const source = audioContext.createMediaStreamSource(stream);
+				context = new AudioContext();
+				analyser = context.createAnalyser();
+				analyser.fftSize = captureFftSize;
+				analyser.smoothingTimeConstant = captureSmoothing;
+				source = context.createMediaStreamSource(stream);
 				source.connect(analyser);
-
-				audioContextRef = audioContext;
 				analyserRef = analyser;
 
-				if (_enableAudioPlayback) {
-					const mediaRecorder = new MediaRecorder(stream);
-					mediaRecorderRef = mediaRecorder;
-
-					mediaRecorder.ondataavailable = (event) => {
-						if (event.data.size > 0) {
-							audioChunksRef.push(event.data);
+				if (recordPlayback) {
+					recorder = new MediaRecorder(stream);
+					const recording = recorder;
+					recording.ondataavailable = (event) => {
+						if (event.data.size > 0) chunks.push(event.data);
+					};
+					recording.onstop = () => {
+						// The final dataavailable event precedes stop.
+						const blob = new Blob(chunks, { type: recording.mimeType });
+						recording.ondataavailable = null;
+						recording.onstop = null;
+						recording.onerror = null;
+						if (!disposed && generation === captureGeneration) {
+							void processAudioBlob(blob, generation);
 						}
 					};
-
-					mediaRecorder.start(100);
+					recording.onerror = () => {
+						if (!disposed && generation === captureGeneration) {
+							reportError?.(new Error("Microphone recording failed"));
+						}
+						releaseCapture();
+					};
+					recording.start(100);
 				}
 			} catch (error) {
-				_onError?.(error as Error);
+				releaseCapture();
+				if (!cancelled) reportError?.(error as Error);
 			}
-		};
+		}
 
-		setupMicrophone();
-
+		void setupMicrophone();
 		return () => {
 			cancelled = true;
-			if (mediaRecorderRef && mediaRecorderRef.state !== "inactive") {
-				mediaRecorderRef.stop();
-			}
-			if (streamRef) {
-				streamRef.getTracks().forEach((track) => track.stop());
-			}
-			if (sourceNodeRef) {
-				try {
-					sourceNodeRef.stop();
-				} catch {
-					// ignore
-				}
-			}
-			if (scrubSourceRef) {
-				try {
-					scrubSourceRef.stop();
-				} catch {
-					// ignore
-				}
+			try {
+				if (recorder && recorder.state !== "inactive") recorder.stop();
+			} finally {
+				releaseCapture();
 			}
 		};
 	});
 
-	// 3. Playback visual sync — keyed on playbackPosition.
 	$effect(() => {
 		if (playbackPosition === null || !audioBufferRef) return;
 
@@ -289,8 +319,8 @@
 		let animationId: number | null = null;
 
 		const updatePlaybackVisual = () => {
-			if (audioContextRef && sourceNodeRef && audioBufferRef) {
-				const elapsed = audioContextRef.currentTime - playbackStartTimeRef;
+			if (playbackContext && sourceNodeRef && audioBufferRef) {
+				const elapsed = playbackContext.currentTime - playbackStartTimeRef;
 				const currentPos = _playbackPosition + elapsed * _playbackRate;
 
 				if (currentPos < audioBufferRef.duration) {
@@ -325,7 +355,6 @@
 		};
 	});
 
-	// 4. Canvas render RAF loop.
 	$effect(() => {
 		const canvas = canvasEl;
 		if (!canvas) return;
@@ -455,12 +484,11 @@
 		};
 	});
 
-	// --- Drag handling (replaces the isDragging useEffect) ---
-
 	function handlePointerDown(event: PointerEvent) {
 		if (active || historyRef.current.length === 0) return;
 
 		event.preventDefault();
+		cancelDrag?.();
 		dragStartXRef = event.clientX;
 		dragStartOffsetRef = dragOffset;
 
@@ -468,8 +496,9 @@
 		let lastMouseX = dragStartXRef;
 
 		const handleMove = (moveEvent: PointerEvent) => {
+			if (moveEvent.pointerId !== event.pointerId) return;
 			const deltaX = moveEvent.clientX - dragStartXRef;
-			const newOffset = dragStartOffsetRef - deltaX * 0.5; // reduce sensitivity
+			const newOffset = dragStartOffsetRef - deltaX * 0.5;
 
 			const step = barWidth + barGap;
 			const maxBars = historyRef.current.length;
@@ -497,8 +526,9 @@
 			}
 		};
 
-		const handleUp = () => {
-			if (enableAudioPlayback && audioBufferRef) {
+		const handleUp = (upEvent: PointerEvent) => {
+			if (upEvent.pointerId !== event.pointerId) return;
+			if (upEvent.type === "pointerup" && enableAudioPlayback && audioBufferRef) {
 				const step = barWidth + barGap;
 				const maxBars = historyRef.current.length;
 				const offsetBars = Math.floor(dragOffset / step);
@@ -507,20 +537,27 @@
 				playFromPosition(Math.max(0, Math.min(audioBufferRef.duration - 0.1, audioPosition)));
 			}
 
+			cancelDrag?.();
+		};
+
+		cancelDrag = () => {
 			if (scrubSourceRef) {
 				try {
 					scrubSourceRef.stop();
 				} catch {
-					// ignore
+					// The scratch slice may have already ended.
 				}
+				scrubSourceRef.disconnect();
+				scrubSourceRef = null;
 			}
-
 			window.removeEventListener("pointermove", handleMove);
 			window.removeEventListener("pointerup", handleUp);
+			window.removeEventListener("pointercancel", handleUp);
+			cancelDrag = null;
 		};
-
 		window.addEventListener("pointermove", handleMove);
-		window.addEventListener("pointerup", handleUp, { once: true });
+		window.addEventListener("pointerup", handleUp);
+		window.addEventListener("pointercancel", handleUp);
 	}
 </script>
 

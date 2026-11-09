@@ -41,14 +41,22 @@ export function useScratchableWaveform<T = unknown>(opts: ScratchableWaveformOpt
 
 	let scratchBuffer: AudioBuffer | null = null;
 	let scratchSource: AudioBufferSourceNode | null = null;
+	let scratchFilter: BiquadFilterNode | null = null;
+	let removePointerListeners: (() => void) | null = null;
+	let momentumFrame: number | null = null;
+	let resumeTimer: ReturnType<typeof setTimeout> | null = null;
+	let generation = 0;
+	let disposed = false;
 
 	function warmScratchBuffer(): void {
 		if (scratchBuffer) return;
 		const url = opts.trackUrl();
 		const ctx = opts.graph.ensureContext();
 		if (!url || !ctx) return;
+		const request = generation;
 		void getScratchBuffer(url, ctx).then((buf) => {
-			if (buf && opts.trackUrl() === url) scratchBuffer = buf;
+			if (!disposed && request === generation && buf && opts.trackUrl() === url)
+				scratchBuffer = buf;
 		});
 	}
 
@@ -82,6 +90,15 @@ export function useScratchableWaveform<T = unknown>(opts: ScratchableWaveformOpt
 			filter.connect(ctx.destination);
 			source.start(0, startTime, 0.06);
 			scratchSource = source;
+			scratchFilter = filter;
+			source.onended = () => {
+				source.disconnect();
+				filter.disconnect();
+				if (scratchSource === source) {
+					scratchSource = null;
+					scratchFilter = null;
+				}
+			};
 		} catch (error) {
 			console.error("scratch playback failed:", error);
 		}
@@ -94,12 +111,28 @@ export function useScratchableWaveform<T = unknown>(opts: ScratchableWaveformOpt
 		} catch {
 			// already stopped
 		}
+		scratchSource.disconnect();
+		scratchFilter?.disconnect();
 		scratchSource = null;
+		scratchFilter = null;
+	}
+
+	function cancelInteraction(): void {
+		removePointerListeners?.();
+		removePointerListeners = null;
+		if (momentumFrame !== null) cancelAnimationFrame(momentumFrame);
+		momentumFrame = null;
+		if (resumeTimer !== null) clearTimeout(resumeTimer);
+		resumeTimer = null;
+		isScrubbing = false;
+		isMomentumActive = false;
+		stopScratch();
 	}
 
 	function handlePointerDown(e: PointerEvent): void {
-		if (e.pointerType === "mouse" && e.button !== 0) return;
+		if (disposed || (e.pointerType === "mouse" && e.button !== 0)) return;
 		e.preventDefault();
+		cancelInteraction();
 		warmScratchBuffer();
 
 		isScrubbing = true;
@@ -145,12 +178,12 @@ export function useScratchableWaveform<T = unknown>(opts: ScratchableWaveformOpt
 
 		const onEnd = (ev: PointerEvent) => {
 			if (ev.pointerId !== e.pointerId) return;
-			document.removeEventListener("pointermove", onMove);
-			document.removeEventListener("pointerup", onEnd);
-			document.removeEventListener("pointercancel", onEnd);
+			removePointerListeners?.();
+			removePointerListeners = null;
 
 			isScrubbing = false;
 			stopScratch();
+			if (ev.type === "pointercancel") return;
 
 			if (Math.abs(velocity) <= 0.1) {
 				if (wasPlaying) void opts.player.play();
@@ -163,12 +196,18 @@ export function useScratchableWaveform<T = unknown>(opts: ScratchableWaveformOpt
 			let lastFrame = 0;
 
 			const step = () => {
+				momentumFrame = null;
 				if (Math.abs(v) <= 0.5) {
 					stopScratch();
 					isMomentumActive = false;
 					// Delay the resume so the final scratch slice releases
 					// before the media element starts — prevents a crackle.
-					if (wasPlaying) setTimeout(() => void opts.player.play(), 10);
+					if (wasPlaying) {
+						resumeTimer = setTimeout(() => {
+							resumeTimer = null;
+							void opts.player.play();
+						}, 10);
+					}
 					return;
 				}
 				current += v;
@@ -184,14 +223,19 @@ export function useScratchableWaveform<T = unknown>(opts: ScratchableWaveformOpt
 					if (speed > 0.1) playScratch(posAt(clamped), speed);
 					lastFrame = now;
 				}
-				requestAnimationFrame(step);
+				momentumFrame = requestAnimationFrame(step);
 			};
-			requestAnimationFrame(step);
+			momentumFrame = requestAnimationFrame(step);
 		};
 
 		document.addEventListener("pointermove", onMove);
 		document.addEventListener("pointerup", onEnd);
 		document.addEventListener("pointercancel", onEnd);
+		removePointerListeners = () => {
+			document.removeEventListener("pointermove", onMove);
+			document.removeEventListener("pointerup", onEnd);
+			document.removeEventListener("pointercancel", onEnd);
+		};
 	}
 
 	function handleKeyDown(e: KeyboardEvent): void {
@@ -210,8 +254,14 @@ export function useScratchableWaveform<T = unknown>(opts: ScratchableWaveformOpt
 	}
 
 	function reset(): void {
+		generation += 1;
+		cancelInteraction();
 		scratchBuffer = null;
-		stopScratch();
+	}
+
+	function dispose(): void {
+		disposed = true;
+		reset();
 	}
 
 	return {
@@ -230,5 +280,6 @@ export function useScratchableWaveform<T = unknown>(opts: ScratchableWaveformOpt
 		handlePointerDown,
 		handleKeyDown,
 		reset,
+		dispose,
 	};
 }
