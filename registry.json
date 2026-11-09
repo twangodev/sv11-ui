@@ -4,6 +4,46 @@
 	"homepage": "https://sv11.ui.twango.dev",
 	"items": [
 		{
+			"name": "voice-session",
+			"type": "registry:ui",
+			"title": "Voice Session",
+			"description": "Shared provider-neutral conversation state, media recording, and HTTP voice tasks.",
+			"dependencies": [],
+			"registryDependencies": [],
+			"files": [
+				{
+					"path": "src/lib/registry/ui/voice-session/http.ts",
+					"type": "registry:ui",
+					"target": "voice-session/http.ts"
+				},
+				{
+					"path": "src/lib/registry/ui/voice-session/index.ts",
+					"type": "registry:ui",
+					"target": "voice-session/index.ts"
+				},
+				{
+					"path": "src/lib/registry/ui/voice-session/recording.ts",
+					"type": "registry:ui",
+					"target": "voice-session/recording.ts"
+				},
+				{
+					"path": "src/lib/registry/ui/voice-session/session.ts",
+					"type": "registry:ui",
+					"target": "voice-session/session.ts"
+				},
+				{
+					"path": "src/lib/registry/ui/voice-session/types.ts",
+					"type": "registry:ui",
+					"target": "voice-session/types.ts"
+				},
+				{
+					"path": "src/lib/registry/ui/voice-session/use-conversation.svelte.ts",
+					"type": "registry:ui",
+					"target": "voice-session/use-conversation.svelte.ts"
+				}
+			]
+		},
+		{
 			"name": "audio-player",
 			"type": "registry:ui",
 			"title": "Audio Player",
@@ -154,7 +194,8 @@
 				"card",
 				"https://sv11.ui.twango.dev/r/live-waveform.json",
 				"separator",
-				"textarea"
+				"textarea",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
 			],
 			"files": [
 				{
@@ -255,7 +296,12 @@
 			"title": "Mic Selector",
 			"description": "A microphone device picker with live level preview and permission handling.",
 			"dependencies": ["@lucide/svelte"],
-			"registryDependencies": ["button", "https://sv11.ui.twango.dev/r/live-waveform.json"],
+			"registryDependencies": [
+				"button",
+				"https://sv11.ui.twango.dev/r/live-waveform.json",
+				"dropdown-menu",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/ui/mic-selector/mic-selector.svelte",
@@ -411,7 +457,11 @@
 			"title": "Speech Input",
 			"description": "A push-to-record speech input with preview, cancel, and a pluggable transcription adapter.",
 			"dependencies": ["@lucide/svelte", "tailwind-variants"],
-			"registryDependencies": ["button", "skeleton"],
+			"registryDependencies": [
+				"button",
+				"skeleton",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/ui/speech-input/speech-input.svelte",
@@ -461,7 +511,11 @@
 			"title": "Transcript Viewer",
 			"description": "A word-synced transcript viewer with integrated audio playback and scrub bar.",
 			"dependencies": ["@lucide/svelte"],
-			"registryDependencies": ["button"],
+			"registryDependencies": [
+				"button",
+				"https://sv11.ui.twango.dev/r/scrub-bar.json",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/ui/transcript-viewer/transcript-viewer.svelte",
@@ -632,17 +686,17 @@
 				{
 					"path": "src/lib/registry/blocks/music-player-02/music-player-02.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/music-player-02/music-player-02.svelte"
+					"target": "blocks/music-player-02/music-player-02.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/music-player-02/music-player-02-demo.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/music-player-02/music-player-02-demo.svelte"
+					"target": "blocks/music-player-02/music-player-02-demo.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/music-player-02/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/music-player-02/index.ts"
+					"target": "blocks/music-player-02/index.ts"
 				}
 			]
 		},
@@ -663,29 +717,30 @@
 				{
 					"path": "src/lib/registry/blocks/speaker-01/speaker-01.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/speaker-01/speaker-01.svelte"
+					"target": "blocks/speaker-01/speaker-01.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/speaker-01/speaker-inner.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/speaker-01/speaker-inner.svelte"
+					"target": "blocks/speaker-01/speaker-inner.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/speaker-01/speaker-orb.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/speaker-01/speaker-orb.svelte"
+					"target": "blocks/speaker-01/speaker-orb.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/speaker-01/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/speaker-01/index.ts"
+					"target": "blocks/speaker-01/index.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/speaker-01/use-scratchable-waveform.svelte.ts",
 					"type": "registry:block",
-					"target": "components/blocks/speaker-01/use-scratchable-waveform.svelte.ts"
+					"target": "blocks/speaker-01/use-scratchable-waveform.svelte.ts"
 				}
-			]
+			],
+			"dependencies": ["@lucide/svelte"]
 		},
 		{
 			"name": "voice-chat-01",
@@ -702,20 +757,22 @@
 				"https://sv11.ui.twango.dev/r/orb.json",
 				"https://sv11.ui.twango.dev/r/response.json",
 				"https://sv11.ui.twango.dev/r/shimmering-text.json",
-				"tooltip"
+				"tooltip",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
 			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/voice-chat-01/voice-chat-01.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/voice-chat-01/voice-chat-01.svelte"
+					"target": "blocks/voice-chat-01/voice-chat-01.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/voice-chat-01/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/voice-chat-01/index.ts"
+					"target": "blocks/voice-chat-01/index.ts"
 				}
-			]
+			],
+			"dependencies": ["@lucide/svelte"]
 		},
 		{
 			"name": "voice-chat-02",
@@ -727,20 +784,22 @@
 				"button",
 				"card",
 				"https://sv11.ui.twango.dev/r/orb.json",
-				"https://sv11.ui.twango.dev/r/shimmering-text.json"
+				"https://sv11.ui.twango.dev/r/shimmering-text.json",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
 			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/voice-chat-02/voice-chat-02.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/voice-chat-02/voice-chat-02.svelte"
+					"target": "blocks/voice-chat-02/voice-chat-02.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/voice-chat-02/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/voice-chat-02/index.ts"
+					"target": "blocks/voice-chat-02/index.ts"
 				}
-			]
+			],
+			"dependencies": ["@lucide/svelte"]
 		},
 		{
 			"name": "voice-chat-03",
@@ -756,48 +815,51 @@
 				"https://sv11.ui.twango.dev/r/message.json",
 				"https://sv11.ui.twango.dev/r/orb.json",
 				"https://sv11.ui.twango.dev/r/response.json",
-				"tooltip"
+				"tooltip",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
 			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/voice-chat-03/voice-chat-03.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/voice-chat-03/voice-chat-03.svelte"
+					"target": "blocks/voice-chat-03/voice-chat-03.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/voice-chat-03/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/voice-chat-03/index.ts"
+					"target": "blocks/voice-chat-03/index.ts"
 				}
-			]
+			],
+			"dependencies": ["@lucide/svelte"]
 		},
 		{
 			"name": "voice-form-01",
 			"type": "registry:block",
 			"title": "Voice Form 01",
-			"description": "A form with a voice-fill button that cycles through idle/recording/processing/success states.",
+			"description": "A voice-fill form with real recording and injectable transcription and structured field extraction.",
 			"categories": ["audio"],
 			"registryDependencies": [
 				"card",
 				"input",
 				"label",
-				"https://sv11.ui.twango.dev/r/voice-button.json"
+				"https://sv11.ui.twango.dev/r/voice-button.json",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
 			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/voice-form-01/voice-form-01.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/voice-form-01/voice-form-01.svelte"
+					"target": "blocks/voice-form-01/voice-form-01.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/voice-form-01/schema.ts",
 					"type": "registry:block",
-					"target": "components/blocks/voice-form-01/schema.ts"
+					"target": "blocks/voice-form-01/schema.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/voice-form-01/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/voice-form-01/index.ts"
+					"target": "blocks/voice-form-01/index.ts"
 				}
 			]
 		},
@@ -817,24 +879,25 @@
 				{
 					"path": "src/lib/registry/blocks/music-player-01/music-player-01.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/music-player-01/music-player-01.svelte"
+					"target": "blocks/music-player-01/music-player-01.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/music-player-01/music-player-01-player.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/music-player-01/music-player-01-player.svelte"
+					"target": "blocks/music-player-01/music-player-01-player.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/music-player-01/music-player-01-song.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/music-player-01/music-player-01-song.svelte"
+					"target": "blocks/music-player-01/music-player-01-song.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/music-player-01/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/music-player-01/index.ts"
+					"target": "blocks/music-player-01/index.ts"
 				}
-			]
+			],
+			"dependencies": ["@lucide/svelte"]
 		},
 		{
 			"name": "transcriber-01",
@@ -842,30 +905,31 @@
 			"title": "Transcriber 01",
 			"description": "A record-and-transcribe card with live waveform, elapsed timing, copy-to-clipboard, and a provider-agnostic transcription backend (Web Speech API demo).",
 			"categories": ["audio"],
-			"dependencies": ["@lucide/svelte"],
+			"dependencies": ["@lucide/svelte", "tailwind-variants"],
 			"registryDependencies": [
 				"button",
 				"card",
 				"https://sv11.ui.twango.dev/r/live-waveform.json",
 				"https://sv11.ui.twango.dev/r/response.json",
 				"scroll-area",
-				"separator"
+				"separator",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
 			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/transcriber-01/transcriber-01.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/transcriber-01/transcriber-01.svelte"
+					"target": "blocks/transcriber-01/transcriber-01.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/transcriber-01/speech.ts",
 					"type": "registry:block",
-					"target": "components/blocks/transcriber-01/speech.ts"
+					"target": "blocks/transcriber-01/speech.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/transcriber-01/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/transcriber-01/index.ts"
+					"target": "blocks/transcriber-01/index.ts"
 				}
 			]
 		},
@@ -873,37 +937,43 @@
 			"name": "realtime-transcriber-01",
 			"type": "registry:block",
 			"title": "Realtime Transcriber 01",
-			"description": "A streaming speech-to-text block with a language selector, live partial results, copy-to-clipboard, and a ⌘K toggle. Provider-agnostic via a TranscriptionAdapter (Web Speech API demo).",
+			"description": "A streaming speech-to-text block with a language selector, live partial results, copy-to-clipboard, and a \u2318K toggle. Provider-agnostic via a TranscriptionAdapter (Web Speech API demo).",
 			"categories": ["audio"],
-			"dependencies": ["@lucide/svelte"],
+			"dependencies": ["@lucide/svelte", "tailwind-variants"],
 			"registryDependencies": [
 				"badge",
 				"button",
 				"command",
 				"popover",
 				"scroll-area",
-				"https://sv11.ui.twango.dev/r/shimmering-text.json"
+				"https://sv11.ui.twango.dev/r/shimmering-text.json",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
 			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/realtime-transcriber-01/realtime-transcriber-01.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/realtime-transcriber-01/realtime-transcriber-01.svelte"
+					"target": "blocks/realtime-transcriber-01/realtime-transcriber-01.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/realtime-transcriber-01/adapter.ts",
 					"type": "registry:block",
-					"target": "components/blocks/realtime-transcriber-01/adapter.ts"
+					"target": "blocks/realtime-transcriber-01/adapter.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/realtime-transcriber-01/languages.ts",
 					"type": "registry:block",
-					"target": "components/blocks/realtime-transcriber-01/languages.ts"
+					"target": "blocks/realtime-transcriber-01/languages.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/realtime-transcriber-01/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/realtime-transcriber-01/index.ts"
+					"target": "blocks/realtime-transcriber-01/index.ts"
+				},
+				{
+					"path": "src/lib/registry/blocks/realtime-transcriber-01/background-aura.svelte",
+					"type": "registry:component",
+					"target": "blocks/realtime-transcriber-01/background-aura.svelte"
 				}
 			]
 		},
@@ -914,27 +984,31 @@
 			"description": "A voice-driven site navigation block: speak a destination and an embedded frame navigates to it. Provider-agnostic intent resolver (keyword matching by default; swap in an LLM), with a Web Speech API demo.",
 			"categories": ["audio"],
 			"dependencies": ["@lucide/svelte"],
-			"registryDependencies": ["card", "https://sv11.ui.twango.dev/r/voice-button.json"],
+			"registryDependencies": [
+				"card",
+				"https://sv11.ui.twango.dev/r/voice-button.json",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
+			],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/voice-nav-01/voice-nav-01.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/voice-nav-01/voice-nav-01.svelte"
+					"target": "blocks/voice-nav-01/voice-nav-01.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/voice-nav-01/destinations.ts",
 					"type": "registry:block",
-					"target": "components/blocks/voice-nav-01/destinations.ts"
+					"target": "blocks/voice-nav-01/destinations.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/voice-nav-01/speech.ts",
 					"type": "registry:block",
-					"target": "components/blocks/voice-nav-01/speech.ts"
+					"target": "blocks/voice-nav-01/speech.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/voice-nav-01/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/voice-nav-01/index.ts"
+					"target": "blocks/voice-nav-01/index.ts"
 				}
 			]
 		},
@@ -945,37 +1019,37 @@
 			"description": "A retro Pong game rendered on the Matrix display: keyboard paddle control, AI opponent, Web Audio sound effects, and a local (localStorage) win counter. No backend.",
 			"categories": ["audio"],
 			"dependencies": [],
-			"registryDependencies": ["button", "card", "https://sv11.ui.twango.dev/r/matrix.json"],
+			"registryDependencies": ["button", "https://sv11.ui.twango.dev/r/matrix.json"],
 			"files": [
 				{
 					"path": "src/lib/registry/blocks/pong-01/pong-game.svelte",
 					"type": "registry:block",
-					"target": "components/blocks/pong-01/pong-game.svelte"
+					"target": "blocks/pong-01/pong-game.svelte"
 				},
 				{
 					"path": "src/lib/registry/blocks/pong-01/game-engine.ts",
 					"type": "registry:block",
-					"target": "components/blocks/pong-01/game-engine.ts"
+					"target": "blocks/pong-01/game-engine.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/pong-01/bitmaps.ts",
 					"type": "registry:block",
-					"target": "components/blocks/pong-01/bitmaps.ts"
+					"target": "blocks/pong-01/bitmaps.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/pong-01/sound.ts",
 					"type": "registry:block",
-					"target": "components/blocks/pong-01/sound.ts"
+					"target": "blocks/pong-01/sound.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/pong-01/score-store.ts",
 					"type": "registry:block",
-					"target": "components/blocks/pong-01/score-store.ts"
+					"target": "blocks/pong-01/score-store.ts"
 				},
 				{
 					"path": "src/lib/registry/blocks/pong-01/index.ts",
 					"type": "registry:block",
-					"target": "components/blocks/pong-01/index.ts"
+					"target": "blocks/pong-01/index.ts"
 				}
 			]
 		},
@@ -1001,9 +1075,70 @@
 				"https://sv11.ui.twango.dev/r/transcript-viewer.json",
 				"https://sv11.ui.twango.dev/r/voice-button.json",
 				"https://sv11.ui.twango.dev/r/voice-picker.json",
-				"https://sv11.ui.twango.dev/r/waveform.json"
+				"https://sv11.ui.twango.dev/r/waveform.json",
+				"https://sv11.ui.twango.dev/r/voice-session.json"
 			],
 			"files": []
+		},
+		{
+			"name": "adapter-elevenlabs",
+			"type": "registry:ui",
+			"title": "elevenlabs adapter",
+			"description": "Optional elevenlabs integration for voice sessions and tasks.",
+			"dependencies": ["@elevenlabs/client"],
+			"registryDependencies": ["https://sv11.ui.twango.dev/r/voice-session.json"],
+			"files": [
+				{
+					"path": "src/lib/registry/ui/voice-session/adapters/elevenlabs.ts",
+					"type": "registry:ui",
+					"target": "voice-session/adapters/elevenlabs.ts"
+				}
+			]
+		},
+		{
+			"name": "adapter-pipecat",
+			"type": "registry:ui",
+			"title": "pipecat adapter",
+			"description": "Optional pipecat integration for voice sessions and tasks.",
+			"dependencies": ["@pipecat-ai/client-js"],
+			"registryDependencies": ["https://sv11.ui.twango.dev/r/voice-session.json"],
+			"files": [
+				{
+					"path": "src/lib/registry/ui/voice-session/adapters/pipecat.ts",
+					"type": "registry:ui",
+					"target": "voice-session/adapters/pipecat.ts"
+				}
+			]
+		},
+		{
+			"name": "adapter-livekit",
+			"type": "registry:ui",
+			"title": "livekit adapter",
+			"description": "Optional livekit integration for voice sessions and tasks.",
+			"dependencies": ["livekit-client"],
+			"registryDependencies": ["https://sv11.ui.twango.dev/r/voice-session.json"],
+			"files": [
+				{
+					"path": "src/lib/registry/ui/voice-session/adapters/livekit.ts",
+					"type": "registry:ui",
+					"target": "voice-session/adapters/livekit.ts"
+				}
+			]
+		},
+		{
+			"name": "adapter-ai-sdk",
+			"type": "registry:ui",
+			"title": "ai-sdk adapter",
+			"description": "Optional ai-sdk integration for voice sessions and tasks.",
+			"dependencies": ["ai"],
+			"registryDependencies": ["https://sv11.ui.twango.dev/r/voice-session.json"],
+			"files": [
+				{
+					"path": "src/lib/registry/ui/voice-session/adapters/ai-sdk.server.ts",
+					"type": "registry:ui",
+					"target": "voice-session/adapters/ai-sdk.server.ts"
+				}
+			]
 		}
 	]
 }

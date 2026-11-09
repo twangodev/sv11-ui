@@ -1,0 +1,36 @@
+{
+	"repository": "https://github.com/elevenlabs/ui",
+	"revision": "3a28ebab197f8cfa599934f52db12ad1396e54f4",
+	"ui": [
+		"orb",
+		"waveform",
+		"live-waveform",
+		"shimmering-text",
+		"audio-player",
+		"message",
+		"conversation",
+		"response",
+		"bar-visualizer",
+		"matrix",
+		"voice-picker",
+		"voice-button",
+		"conversation-bar",
+		"mic-selector",
+		"transcript-viewer",
+		"scrub-bar",
+		"speech-input"
+	],
+	"blocks": [
+		"speaker-01",
+		"transcriber-01",
+		"realtime-transcriber-01",
+		"voice-chat-01",
+		"voice-chat-02",
+		"voice-chat-03",
+		"music-player-01",
+		"music-player-02",
+		"voice-form-01",
+		"voice-nav-01",
+		"pong-01"
+	]
+}
