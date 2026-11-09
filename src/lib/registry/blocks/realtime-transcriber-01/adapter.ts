@@ -3,25 +3,11 @@
 // Wire a real provider (ElevenLabs Scribe, Deepgram, etc.) by implementing this
 // interface; the bundled Web Speech adapter is a zero-backend demo default.
 
-export interface TranscriptionAdapterCallbacks {
-	/** Running interim text for the phrase currently being spoken. */
-	onPartialTranscript?: (text: string) => void;
-	/** Fired once per finalized phrase, with just that phrase. The consumer
-	 * accumulates these into the running transcript. */
-	onCommittedTranscript?: (text: string) => void;
-	onConnect?: () => void;
-	onDisconnect?: () => void;
-	onError?: (error: Error) => void;
-}
-
-export interface TranscriptionAdapter {
-	/** Open the connection and start capturing. Resolves once streaming. */
-	start(callbacks: TranscriptionAdapterCallbacks): Promise<void>;
-	/** Stop cleanly, flushing any in-flight phrase. */
-	stop(): void;
-	/** Stop and discard any in-flight phrase. */
-	cancel(): void;
-}
+import type {
+	TranscriptionAdapter,
+	TranscriptionAdapterCallbacks,
+} from "$lib/registry/ui/voice-session/types.js";
+export type { TranscriptionAdapter, TranscriptionAdapterCallbacks };
 
 // --- Web Speech API (not in the default TS DOM lib) ---
 

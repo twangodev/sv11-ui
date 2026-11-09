@@ -4,32 +4,34 @@
 
 	export const realtimeTranscriber01Variants = tv({
 		slots: {
-			root: "bg-card relative flex min-h-[420px] w-full flex-col items-center justify-center overflow-hidden rounded-xl border p-6",
+			root: "relative mx-auto flex h-full w-full max-w-4xl flex-col items-center justify-center",
 			glow: "from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-b to-transparent",
-			panel: "z-10 flex max-w-sm flex-col items-center gap-5 text-center",
-			heading: "space-y-1.5",
+			panel: "absolute inset-0 z-10 flex items-center justify-center",
+			heading: "flex flex-col items-center gap-2 text-center",
 			title: "text-2xl font-semibold tracking-tight",
 			subtitle: "text-muted-foreground text-sm",
 			kbd: "bg-muted rounded px-1.5 py-0.5 font-mono text-[10px]",
-			langButton: "gap-2",
-			chevron: "text-muted-foreground size-3.5",
-			popover: "w-56 p-0",
-			startButton: "gap-2",
+			langButton: "w-full justify-start gap-2",
+			chevron: "text-muted-foreground ml-auto size-4",
+			popover: "w-[var(--bits-popover-anchor-width)] p-0",
+			startButton: "bg-foreground/95 hover:bg-foreground/90 w-full justify-center gap-3",
 			errorText: "text-destructive text-sm",
 			note: "text-muted-foreground max-w-xs text-xs",
 			code: "bg-muted rounded px-1 py-0.5",
-			badge: "text-muted-foreground font-normal",
-			shimmer: "z-10 text-lg",
-			transcript: "relative z-10 flex h-full max-h-[340px] w-full max-w-2xl flex-col",
+			badge: "text-foreground/60 h-auto rounded-md font-medium",
+			shimmer: "z-10 text-3xl font-light tracking-wide",
+			transcript: "absolute inset-0 z-10 flex flex-col",
 			scroll: "flex-1",
-			viewport: "max-h-[300px] overflow-y-auto px-2 py-1",
-			transcriptText: "text-xl leading-relaxed",
+			viewport: "max-h-[350px] overflow-y-auto px-12 py-8",
+			transcriptText: "text-foreground/90 w-full text-xl leading-relaxed font-light",
 			partialText: "text-foreground/40",
-			copyRow: "flex justify-end pt-2",
-			copyButton: "size-7",
-			stopWrap: "absolute bottom-6 left-1/2 z-10 -translate-x-1/2",
-			stopButton: "gap-2 shadow-sm",
-			stopKbd: "bg-background/60 rounded px-1.5 py-0.5 font-mono text-[10px]",
+			copyRow: "absolute top-4 right-4",
+			copyButton: "size-8 opacity-50 transition-opacity hover:opacity-100",
+			stopWrap: "fixed bottom-8 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2",
+			stopButton:
+				"bg-foreground text-background border-foreground/10 gap-2 rounded-lg border px-3 py-2 shadow-lg transition-opacity hover:opacity-90",
+			stopKbd:
+				"border-background/20 bg-background/10 inline-flex h-5 items-center rounded border px-1.5 font-mono text-xs",
 		},
 	});
 
@@ -49,8 +51,6 @@
 	import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
 	import CopyIcon from "@lucide/svelte/icons/copy";
 	import CheckIcon from "@lucide/svelte/icons/check";
-	import MicIcon from "@lucide/svelte/icons/mic";
-	import SquareIcon from "@lucide/svelte/icons/square";
 	import { onDestroy, onMount } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import { Button } from "$lib/registry/ui/button/index.js";
@@ -61,12 +61,13 @@
 	import * as Popover from "$lib/registry/ui/popover/index.js";
 	import { createWebSpeechAdapter, isSpeechRecognitionSupported } from "./adapter.js";
 	import { LANGUAGES } from "./languages.js";
+	import BackgroundAura from "./background-aura.svelte";
 
 	let { adapter, class: className }: RealtimeTranscriber01Props = $props();
 
 	const ui = realtimeTranscriber01Variants();
 
-	type ConnectionState = "idle" | "connecting" | "connected" | "error";
+	type ConnectionState = "idle" | "connecting" | "connected" | "stopping" | "error";
 
 	let connectionState = $state<ConnectionState>("idle");
 	let committed = $state("");
@@ -79,17 +80,26 @@
 	let scrollViewport = $state<HTMLElement | null>(null);
 
 	let session: TranscriptionAdapter | null = null;
+	let requestId = 0;
 
 	// Optimistic until mounted so prerendered HTML doesn't flash the "unsupported"
 	// note before the client can feature-detect.
 	let mounted = $state(false);
-	onMount(() => (mounted = true));
+	let shortcut = $state("Ctrl+K");
+	onMount(() => {
+		mounted = true;
+		shortcut = /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent) ? "⌘K" : "Ctrl+K";
+	});
 	const usingDemo = $derived(!adapter);
 	const supported = $derived(!mounted || !usingDemo || isSpeechRecognitionSupported());
 	const selectedName = $derived(
 		LANGUAGES.find((l) => l.code === selectedCode)?.name ?? "Auto-detect"
 	);
-	const isActive = $derived(connectionState === "connecting" || connectionState === "connected");
+	const isActive = $derived(
+		connectionState === "connecting" ||
+			connectionState === "connected" ||
+			connectionState === "stopping"
+	);
 	const isEmpty = $derived(!committed && !partial);
 	const transcript = $derived((committed + (partial ? " " + partial : "")).trim());
 
@@ -101,6 +111,7 @@
 	});
 
 	async function start() {
+		const id = ++requestId;
 		error = "";
 		committed = "";
 		partial = "";
@@ -109,40 +120,63 @@
 		try {
 			await session.start({
 				onConnect: () => {
-					if (connectionState === "connecting") connectionState = "connected";
+					if (id === requestId && connectionState === "connecting") connectionState = "connected";
 				},
-				onPartialTranscript: (text) => (partial = text),
+				onPartialTranscript: (text) => {
+					if (id === requestId) partial = text;
+				},
 				onCommittedTranscript: (text) => {
+					if (id !== requestId) return;
 					if (text) committed = (committed ? committed + " " + text : text).trim();
 					partial = "";
 				},
 				onDisconnect: () => {
-					if (connectionState !== "error") connectionState = "idle";
+					if (id === requestId && connectionState !== "error" && connectionState !== "stopping")
+						connectionState = "idle";
 				},
 				onError: (err) => {
+					if (id !== requestId) return;
 					error = err.message;
 					connectionState = "error";
-					session?.cancel();
+					void session?.cancel();
 					session = null;
 				},
 			});
+			if (id === requestId && connectionState === "connecting") connectionState = "connected";
 		} catch (err) {
+			if (id !== requestId) return;
 			error = err instanceof Error ? err.message : "Could not start transcription.";
 			connectionState = "error";
 			session = null;
 		}
 	}
 
-	function stop() {
-		session?.stop();
-		session = null;
-		connectionState = "idle";
-		partial = "";
+	async function stop() {
+		const id = requestId,
+			current = session;
+		connectionState = "stopping";
+		try {
+			await current?.stop();
+			if (id !== requestId) return;
+			if (partial.trim()) committed = (committed + " " + partial).trim();
+			partial = "";
+			connectionState = "idle";
+		} catch (cause) {
+			if (id === requestId) {
+				error = cause instanceof Error ? cause.message : "Could not finish transcription.";
+				connectionState = "error";
+			}
+		} finally {
+			if (id === requestId) {
+				++requestId;
+				session = null;
+			}
+		}
 	}
 
 	function toggle() {
-		if (!supported) return;
-		if (isActive) stop();
+		if (!supported || connectionState === "stopping") return;
+		if (isActive) void stop();
 		else void start();
 	}
 
@@ -173,121 +207,143 @@
 		langOpen = false;
 	}
 
-	onDestroy(() => session?.cancel());
+	onDestroy(() => {
+		++requestId;
+		void session?.cancel();
+	});
 </script>
 
 <svelte:window onkeydown={onKeydown} />
 
-<div class={cn(ui.root(), className)}>
-	{#if isActive}
-		<div class={ui.glow()} aria-hidden="true"></div>
-	{/if}
+<div data-slot="realtime-transcriber-01" class={cn(ui.root(), className)}>
+	<BackgroundAura active={isActive} connected={connectionState === "connected"} />
+	<div
+		class="relative flex h-full w-full flex-col items-center justify-center gap-8 overflow-hidden px-8 py-12"
+	>
+		<div
+			class="relative flex min-h-[350px] w-full flex-1 items-center justify-center overflow-hidden"
+		>
+			{#if (connectionState === "idle" && isEmpty) || connectionState === "error"}
+				<div class={ui.panel()}>
+					<div class="flex w-full max-w-sm flex-col gap-4 px-8">
+						<div class="flex flex-col items-center gap-6">
+							<div class={ui.heading()}>
+								<h2 class={ui.title()}>Realtime Speech to Text</h2>
+								<p class={ui.subtitle()}>Transcribe your voice in real-time with high accuracy</p>
+							</div>
 
-	{#if connectionState === "idle" || connectionState === "error"}
-		<div class={ui.panel()}>
-			<div class={ui.heading()}>
-				<h2 class={ui.title()}>Realtime Speech to Text</h2>
-				<p class={ui.subtitle()}>
-					Transcribe your voice live as you speak. Press the button or
-					<kbd class={ui.kbd()}>⌘K</kbd> to start.
-				</p>
-			</div>
+							{#if usingDemo}
+								<div class="w-full space-y-2">
+									<label for="transcription-language" class="text-foreground/70 text-sm font-medium"
+										>Language</label
+									>
+									<Popover.Root bind:open={langOpen}>
+										<Popover.Trigger>
+											{#snippet child({ props })}
+												<Button
+													{...props}
+													id="transcription-language"
+													variant="outline"
+													class={ui.langButton()}
+												>
+													<GlobeIcon class="size-4" />
+													{selectedName}
+													<ChevronDownIcon class={ui.chevron()} />
+												</Button>
+											{/snippet}
+										</Popover.Trigger>
+										<Popover.Content class={ui.popover()} align="center">
+											<Command.Root>
+												<Command.Input placeholder="Search language..." />
+												<Command.List>
+													<Command.Empty>No language found.</Command.Empty>
+													<Command.Group>
+														{#each LANGUAGES as language (language.code ?? "auto")}
+															<Command.Item
+																value={`${language.name} ${language.code ?? "auto"}`}
+																onSelect={() => selectLanguage(language.code)}
+															>
+																<CheckIcon
+																	class={cn(
+																		"size-4",
+																		selectedCode === language.code ? "opacity-100" : "opacity-0"
+																	)}
+																/>
+																{language.name}
+															</Command.Item>
+														{/each}
+													</Command.Group>
+												</Command.List>
+											</Command.Root>
+										</Popover.Content>
+									</Popover.Root>
+								</div>
+							{/if}
 
-			{#if usingDemo}
-				<Popover.Root bind:open={langOpen}>
-					<Popover.Trigger>
-						{#snippet child({ props })}
-							<Button {...props} variant="outline" size="sm" class={ui.langButton()}>
-								<GlobeIcon class="size-3.5" />
-								{selectedName}
-								<ChevronDownIcon class={ui.chevron()} />
+							<Button size="lg" onclick={toggle} disabled={!supported} class={ui.startButton()}>
+								<span>Start Transcribing</span>
+								<kbd
+									class="border-background/20 bg-background/10 hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-xs sm:inline-flex"
+									>{shortcut}</kbd
+								>
 							</Button>
-						{/snippet}
-					</Popover.Trigger>
-					<Popover.Content class={ui.popover()} align="center">
-						<Command.Root>
-							<Command.Input placeholder="Search language..." />
-							<Command.List>
-								<Command.Empty>No language found.</Command.Empty>
-								<Command.Group>
-									{#each LANGUAGES as language (language.code ?? "auto")}
-										<Command.Item
-											value={`${language.name} ${language.code ?? "auto"}`}
-											onSelect={() => selectLanguage(language.code)}
-										>
-											<CheckIcon
-												class={cn(
-													"size-4",
-													selectedCode === language.code ? "opacity-100" : "opacity-0"
-												)}
-											/>
-											{language.name}
-										</Command.Item>
-									{/each}
-								</Command.Group>
-							</Command.List>
-						</Command.Root>
-					</Popover.Content>
-				</Popover.Root>
-			{/if}
 
-			<Button size="lg" onclick={toggle} disabled={!supported} class={ui.startButton()}>
-				<MicIcon class="size-4" />
-				Start Transcribing
-			</Button>
+							{#if connectionState === "error"}
+								<p class={ui.errorText()}>{error}</p>
+							{/if}
 
-			{#if connectionState === "error"}
-				<p class={ui.errorText()}>{error}</p>
-			{/if}
-
-			{#if !supported}
-				<p class={ui.note()}>
-					This demo uses the browser Web Speech API (Chromium-based browsers). Pass an
-					<code class={ui.code()}>adapter</code> to wire any provider.
-				</p>
+							{#if !supported}
+								<p class={ui.note()}>
+									This demo uses the browser Web Speech API (Chromium-based browsers). Pass an
+									<code class={ui.code()}>adapter</code> to wire any provider.
+								</p>
+							{:else}
+								<Badge variant="outline" class={ui.badge()}>
+									{usingDemo ? "Powered by the Web Speech API" : "Streaming speech to text"}
+								</Badge>
+							{/if}
+						</div>
+					</div>
+				</div>
+			{:else if connectionState === "connecting"}
+				<ShimmeringText text="Connecting..." class={ui.shimmer()} />
+			{:else if isEmpty}
+				<ShimmeringText text="Say something aloud..." class={ui.shimmer()} />
 			{:else}
-				<Badge variant="secondary" class={ui.badge()}>
-					{usingDemo ? "Powered by the Web Speech API" : "Streaming speech to text"}
-				</Badge>
+				<div class={ui.transcript()}>
+					<ScrollArea class={ui.scroll()}>
+						<div bind:this={scrollViewport} class={ui.viewport()}>
+							<p class={ui.transcriptText()}>
+								<span>{committed}</span>
+								{#if partial}
+									<span class={ui.partialText()}>{committed ? " " : ""}{partial}</span>
+								{/if}
+							</p>
+						</div>
+					</ScrollArea>
+					<div class={ui.copyRow()}>
+						<Button
+							variant="ghost"
+							size="icon"
+							class={ui.copyButton()}
+							onclick={copy}
+							aria-label="Copy transcript"
+						>
+							{#if copied}<CheckIcon class="size-3.5" />{:else}<CopyIcon class="size-3.5" />{/if}
+						</Button>
+					</div>
+				</div>
 			{/if}
 		</div>
-	{:else if connectionState === "connecting"}
-		<ShimmeringText text="Connecting..." class={ui.shimmer()} />
-	{:else if isEmpty}
-		<ShimmeringText text="Say something aloud..." class={ui.shimmer()} />
-	{:else}
-		<div class={ui.transcript()}>
-			<ScrollArea class={ui.scroll()}>
-				<div bind:this={scrollViewport} class={ui.viewport()}>
-					<p class={ui.transcriptText()}>
-						<span>{committed}</span>
-						{#if partial}
-							<span class={ui.partialText()}>{committed ? " " : ""}{partial}</span>
-						{/if}
-					</p>
-				</div>
-			</ScrollArea>
-			<div class={ui.copyRow()}>
-				<Button
-					variant="ghost"
-					size="icon"
-					class={ui.copyButton()}
-					onclick={copy}
-					aria-label="Copy transcript"
-				>
-					{#if copied}<CheckIcon class="size-3.5" />{:else}<CopyIcon class="size-3.5" />{/if}
+		{#if connectionState === "idle" && !isEmpty}
+			<div class={ui.stopWrap()}><Button onclick={toggle}>Start Transcribing</Button></div>
+		{:else if connectionState === "connected"}
+			<div class={ui.stopWrap()}>
+				<Button variant="secondary" size="sm" onclick={toggle} class={ui.stopButton()}>
+					Stop
+					<kbd class={ui.stopKbd()}>{shortcut}</kbd>
 				</Button>
 			</div>
-		</div>
-	{/if}
-
-	{#if connectionState === "connected"}
-		<div class={ui.stopWrap()}>
-			<Button variant="secondary" size="sm" onclick={toggle} class={ui.stopButton()}>
-				<SquareIcon class="size-3.5" />
-				Stop
-				<kbd class={ui.stopKbd()}>⌘K</kbd>
-			</Button>
-		</div>
-	{/if}
+		{/if}
+	</div>
 </div>
