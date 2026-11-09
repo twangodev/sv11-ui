@@ -1,0 +1,21 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwind from "@tailwindcss/vite";
+import path from "node:path";
+const root = import.meta.dirname;
+export default defineConfig({
+	plugins: [react(), tailwind()],
+	resolve: {
+		alias: [
+			{ find: /.*\/actions\/get-scribe-token$/, replacement: path.join(root, "stubs.ts") },
+			{ find: /.*\/actions\/transcribe$/, replacement: path.join(root, "stubs.ts") },
+			{ find: /.*\/actions\/voice-to-form$/, replacement: path.join(root, "stubs.ts") },
+			{ find: /.*\/actions\/voice-to-site$/, replacement: path.join(root, "stubs.ts") },
+			{ find: /.*\/pong-01\/actions$/, replacement: path.join(root, "stubs.ts") },
+			{ find: "next/link", replacement: path.join(root, "link.tsx") },
+			{ find: "@", replacement: root },
+		],
+	},
+	define: { "process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID": JSON.stringify("visual-fixture") },
+	server: { host: "127.0.0.1", port: 4176, strictPort: true },
+});

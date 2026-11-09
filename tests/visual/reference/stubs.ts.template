@@ -1,0 +1,9 @@
+export const getScribeToken = async () => ({ token: "fixture" });
+export const transcribeAudio = async () => ({ text: "fixture transcript" });
+export const voiceToFormAction = async () => ({ data: { firstName: "Grace" } });
+export const voiceToSiteAction = async () => ({ data: { url: "https://example.com" } });
+export const heartbeat = async () => 1;
+export const getWinCount = async () => 0;
+export const recordWin = async () => 1;
+
+export const updatePlayerHeartbeat = async () => 1;
