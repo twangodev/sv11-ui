@@ -16,15 +16,20 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"lint:fix": "prettier --write . && eslint . --fix",
-		"build:registry": "pnpm shadcn-svelte registry build"
+		"build:registry": "pnpm shadcn-svelte registry build",
+		"test": "vitest run",
+		"test:browser": "playwright test"
 	},
 	"devDependencies": {
+		"@elevenlabs/client": "1.35.0",
 		"@eslint/compat": "^1.3.0",
 		"@eslint/js": "^9.29.0",
 		"@fontsource-variable/geist": "^5.2.8",
 		"@fontsource-variable/geist-mono": "^5.2.7",
 		"@icons-pack/svelte-simple-icons": "^7.2.0",
 		"@lucide/svelte": "^1.7.0",
+		"@pipecat-ai/client-js": "1.16.0",
+		"@playwright/test": "^1.65.0",
 		"@prettier/sync": "^0.6.1",
 		"@shikijs/langs": "^4.0.2",
 		"@shikijs/themes": "^4.0.2",
@@ -37,6 +42,7 @@
 		"@threlte/extras": "^9.14.6",
 		"@types/node": "^25.6.0",
 		"@types/three": "^0.183.1",
+		"ai": "7.0.165",
 		"bits-ui": "^2.18.0",
 		"clsx": "^2.1.1",
 		"eslint": "^9.18.0",
@@ -44,6 +50,7 @@
 		"eslint-plugin-svelte": "^3.9.2",
 		"git-cliff": "^2.12.0",
 		"globals": "^17.5.0",
+		"livekit-client": "2.23.0",
 		"magic-string": "^0.30.21",
 		"mdsx": "^0.0.7",
 		"mode-watcher": "^1.1.0",
@@ -74,7 +81,9 @@
 		"unist-util-visit": "^5.1.0",
 		"velite": "^0.3.1",
 		"vite": "^8.0.8",
-		"vite-plugin-devtools-json": "^1.0.0"
+		"vite-plugin-devtools-json": "^1.0.0",
+		"vitest": "^4.1.12",
+		"zod": "^4.6.7"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [

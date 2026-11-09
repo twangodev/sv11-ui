@@ -44,3 +44,6 @@ vite.config.ts.timestamp-*
 # IDE
 .idea
 .vscode
+# Browser validation
+/test-results
+/playwright-report
