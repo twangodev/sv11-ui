@@ -5,9 +5,9 @@
 	import MusicPlayer01 from "$lib/registry/blocks/music-player-01/index.js";
 	import MusicPlayer02 from "$lib/registry/blocks/music-player-02/index.js";
 	import Speaker01 from "$lib/registry/blocks/speaker-01/index.js";
-	import VoiceChat01 from "$lib/registry/blocks/voice-chat-01/index.js";
-	import VoiceChat02 from "$lib/registry/blocks/voice-chat-02/index.js";
-	import VoiceForm from "$lib/registry/blocks/voice-form-01/index.js";
+	import VoiceChat01 from "$lib/registry/examples/voice-chat-01-demo.svelte";
+	import VoiceChat02 from "$lib/registry/examples/voice-chat-02-demo.svelte";
+	import VoiceForm from "$lib/registry/examples/voice-form-01-demo.svelte";
 	import ConversationDemo from "$lib/registry/examples/conversation-demo.svelte";
 	import OrbDemo from "$lib/registry/examples/orb-demo.svelte";
 	import VoicePickerDemo from "$lib/registry/examples/voice-picker-demo.svelte";

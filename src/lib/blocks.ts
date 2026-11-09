@@ -5,10 +5,10 @@ import Pong01 from "$lib/registry/blocks/pong-01/index.js";
 import RealtimeTranscriber01 from "$lib/registry/blocks/realtime-transcriber-01/index.js";
 import Speaker01 from "$lib/registry/blocks/speaker-01/index.js";
 import Transcriber01 from "$lib/registry/blocks/transcriber-01/index.js";
-import VoiceChat01 from "$lib/registry/blocks/voice-chat-01/index.js";
-import VoiceChat02 from "$lib/registry/blocks/voice-chat-02/index.js";
-import VoiceChat03 from "$lib/registry/blocks/voice-chat-03/index.js";
-import VoiceForm01 from "$lib/registry/blocks/voice-form-01/index.js";
+import VoiceChat01 from "$lib/registry/examples/voice-chat-01-demo.svelte";
+import VoiceChat02 from "$lib/registry/examples/voice-chat-02-demo.svelte";
+import VoiceChat03 from "$lib/registry/examples/voice-chat-03-demo.svelte";
+import VoiceForm01 from "$lib/registry/examples/voice-form-01-demo.svelte";
 import VoiceNav01 from "$lib/registry/blocks/voice-nav-01/index.js";
 
 export type BlockEntry = {
@@ -60,7 +60,8 @@ export const blocks: BlockEntry[] = [
 	{
 		name: "voice-form-01",
 		title: "Voice Form 01",
-		description: "Form with a voice-fill button that cycles through idle/recording/success states.",
+		description:
+			"Record speech and fill form fields through injectable transcription and extraction tasks.",
 		component: VoiceForm01,
 	},
 	{

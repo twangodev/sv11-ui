@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { onDestroy } from "svelte";
+	import { useConversation } from "$lib/registry/ui/voice-session/use-conversation.svelte.js";
+	import type { ConversationSession } from "$lib/registry/ui/voice-session/session.js";
+	import type { ConversationAdapter } from "$lib/registry/ui/voice-session/types.js";
 	import AudioLinesIcon from "@lucide/svelte/icons/audio-lines";
 	import CheckIcon from "@lucide/svelte/icons/check";
 	import CopyIcon from "@lucide/svelte/icons/copy";
@@ -25,149 +29,89 @@
 	} from "$lib/registry/ui/tooltip/index.js";
 	import { cn } from "$lib/utils.js";
 
-	let { class: className }: { class?: string } = $props();
-
-	type ChatMessage = {
-		role: "user" | "assistant";
-		content: string;
-	};
-
-	type AgentState = "disconnected" | "connecting" | "connected" | "disconnecting" | null;
-
-	const DEFAULT_AGENT = {
-		name: "Customer Support",
-		description: "AI Voice Assistant",
-	};
-
-	const CANNED_REPLIES = [
-		"Thanks for reaching out — I can help with that. Can you share your order number?",
-		"Got it. Let me pull that up for you.",
-		"I just checked — your order is on track to ship within the next 1-2 business days.",
-		"Anything else I can help with?",
-	];
-
-	let messages = $state<ChatMessage[]>([]);
-	let agentState = $state<AgentState>("disconnected");
-	let textInput = $state("");
-	let copiedIndex = $state<number | null>(null);
-	let errorMessage = $state<string | null>(null);
-
-	let timers: ReturnType<typeof setTimeout>[] = [];
-	let replyIndex = 0;
-
-	function clearTimers() {
-		timers.forEach(clearTimeout);
-		timers = [];
-	}
-
-	function scheduleAssistantReply() {
-		const reply = CANNED_REPLIES[replyIndex % CANNED_REPLIES.length];
-		replyIndex += 1;
-		timers.push(
-			setTimeout(() => {
-				messages = [...messages, { role: "assistant", content: reply }];
-			}, 1200)
-		);
-	}
-
+	let {
+		session,
+		adapter,
+		class: className,
+		name = "Customer Support",
+	}: {
+		session?: ConversationSession;
+		adapter?: ConversationAdapter;
+		class?: string;
+		name?: string;
+	} = $props();
+	const voice = useConversation(() => session ?? adapter);
+	const agentState = $derived(voice.snapshot.status);
+	const errorMessage = $derived(voice.snapshot.error?.message);
+	const isCallActive = $derived(agentState === "connected");
+	const isTransitioning = $derived(agentState === "connecting" || agentState === "disconnecting");
+	const configured = $derived(!!session || !!adapter);
+	const getInputVolume = () => voice.session.getInputVolume();
+	const getOutputVolume = () => voice.session.getOutputVolume();
 	function handleCall() {
-		clearTimers();
-		if (agentState === "disconnected" || agentState === null) {
-			errorMessage = null;
-			messages = [];
-			agentState = "connecting";
-			timers.push(
-				setTimeout(() => {
-					agentState = "connected";
-					messages = [
-						{
-							role: "assistant",
-							content: "Hi, you've reached customer support. How can I help you today?",
-						},
-					];
-				}, 1500)
-			);
-		} else if (agentState === "connected") {
-			agentState = "disconnecting";
-			timers.push(
-				setTimeout(() => {
-					agentState = "disconnected";
-					messages = [];
-				}, 700)
-			);
+		if (isCallActive || agentState === "connecting") void voice.session.disconnect();
+		else void voice.session.connect().catch(() => {});
+	}
+	let textInput = $state("");
+	const messages = $derived(
+		voice.snapshot.messages.map((m) => ({
+			id: m.id,
+			role: m.source === "user" ? ("user" as const) : ("assistant" as const),
+			content: m.message,
+		}))
+	);
+	let copiedIndex = $state<number | null>(null);
+	let copyTimer: ReturnType<typeof setTimeout> | undefined;
+	async function handleSendText() {
+		const text = textInput.trim();
+		if (!text) return;
+		try {
+			await voice.session.sendMessage(text);
+			textInput = "";
+		} catch {
+			/* Error is rendered from the session. */
 		}
 	}
-
-	function handleSendText() {
-		const messageToSend = textInput.trim();
-		if (!messageToSend) return;
-
-		if (agentState === "disconnected" || agentState === null) {
-			textInput = "";
-			agentState = "connecting";
-			timers.push(
-				setTimeout(() => {
-					agentState = "connected";
-					messages = [{ role: "user", content: messageToSend }];
-					scheduleAssistantReply();
-				}, 800)
-			);
-		} else if (agentState === "connected") {
-			messages = [...messages, { role: "user", content: messageToSend }];
-			textInput = "";
-			scheduleAssistantReply();
-		}
-	}
-
 	function handleKeyDown(event: KeyboardEvent) {
 		if (event.key === "Enter" && !event.shiftKey) {
 			event.preventDefault();
-			handleSendText();
+			void handleSendText();
 		}
 	}
-
 	async function handleCopy(index: number, content: string) {
 		try {
 			await navigator.clipboard.writeText(content);
 		} catch {
-			// Insecure context or denied permission — don't flash the "Copied!"
-			// state if the write actually failed.
 			return;
 		}
 		copiedIndex = index;
-		timers.push(
-			setTimeout(() => {
-				if (copiedIndex === index) copiedIndex = null;
-			}, 2000)
-		);
+		clearTimeout(copyTimer);
+		copyTimer = setTimeout(() => (copiedIndex = null), 2000);
 	}
-
-	$effect(() => {
-		return () => clearTimers();
-	});
-
-	const isCallActive = $derived(agentState === "connected");
-	const isTransitioning = $derived(agentState === "connecting" || agentState === "disconnecting");
-
-	function getInputVolume(): number {
-		if (agentState !== "connected") return 0;
-		return 0.3 + 0.2 * Math.sin(performance.now() / 500);
-	}
-
-	function getOutputVolume(): number {
-		if (agentState !== "connected") return 0;
-		return 0.3 + 0.2 * Math.sin(performance.now() / 700 + 1);
-	}
+	onDestroy(() => clearTimeout(copyTimer));
 </script>
 
-<Card class={cn("mx-auto flex h-[380px] w-full flex-col gap-0 overflow-hidden", className)}>
+<Card
+	data-slot="voice-chat-01"
+	class={cn("mx-auto flex h-[380px] w-full flex-col gap-0 overflow-hidden", className)}
+>
 	<CardHeader class="flex shrink-0 flex-row items-center justify-between pb-4">
 		<div class="flex items-center gap-4">
 			<div class="ring-border relative size-10 overflow-hidden rounded-full ring-1">
-				<Orb class="h-full w-full" volumeMode="manual" {getInputVolume} {getOutputVolume} />
+				<Orb
+					class="h-full w-full"
+					volumeMode="manual"
+					{getInputVolume}
+					{getOutputVolume}
+					agentState={voice.snapshot.activity === "speaking"
+						? "talking"
+						: voice.snapshot.activity === "idle"
+							? null
+							: voice.snapshot.activity}
+				/>
 			</div>
 			<div class="flex flex-col gap-0.5">
-				<p class="text-sm leading-none font-medium">{DEFAULT_AGENT.name}</p>
+				<p class="text-sm leading-none font-medium">{name}</p>
 				<div class="flex items-center gap-2">
 					{#if errorMessage}
 						<p class="text-destructive text-xs">{errorMessage}</p>
@@ -275,14 +219,17 @@
 					onkeydown={handleKeyDown}
 					placeholder="Type a message..."
 					class="h-9 focus-visible:ring-0 focus-visible:ring-offset-0"
-					disabled={isTransitioning}
+					disabled={!configured || isTransitioning || voice.session.capabilities.text === false}
 				/>
 				<Button
 					onclick={handleSendText}
 					size="icon"
 					variant="ghost"
 					class="rounded-full"
-					disabled={!textInput.trim() || isTransitioning}
+					disabled={!configured ||
+						!textInput.trim() ||
+						isTransitioning ||
+						voice.session.capabilities.text === false}
 				>
 					<SendIcon class="size-4" />
 					<span class="sr-only">Send message</span>
@@ -293,7 +240,7 @@
 						size="icon"
 						variant="ghost"
 						class={cn("relative shrink-0 rounded-full transition-all")}
-						disabled={isTransitioning}
+						disabled={!configured || agentState === "disconnecting"}
 					>
 						<AudioLinesIcon class="size-4" />
 						<span class="sr-only">Start voice call</span>
@@ -304,7 +251,7 @@
 						size="icon"
 						variant="secondary"
 						class={cn("relative shrink-0 rounded-full transition-all")}
-						disabled={isTransitioning}
+						disabled={!configured || agentState === "disconnecting"}
 					>
 						<PhoneOffIcon class="size-4" />
 						<span class="sr-only">End call</span>

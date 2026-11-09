@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { useConversation } from "$lib/registry/ui/voice-session/use-conversation.svelte.js";
+	import type { ConversationSession } from "$lib/registry/ui/voice-session/session.js";
+	import type { ConversationAdapter } from "$lib/registry/ui/voice-session/types.js";
 	import { fly } from "svelte/transition";
 	import Loader2Icon from "@lucide/svelte/icons/loader-2";
 	import PhoneIcon from "@lucide/svelte/icons/phone";
@@ -9,70 +12,40 @@
 	import { ShimmeringText } from "$lib/registry/ui/shimmering-text/index.js";
 	import { cn } from "$lib/utils.js";
 
-	const DEFAULT_AGENT = {
-		name: "Customer Support",
-		description: "Tap to start voice chat",
-	};
-
-	type AgentState = "disconnected" | "connecting" | "connected" | "disconnecting" | null;
-
-	let agentState = $state<AgentState>("disconnected");
-	let errorMessage = $state<string | null>(null);
-	let timers: ReturnType<typeof setTimeout>[] = [];
-
-	function clearTimers() {
-		timers.forEach(clearTimeout);
-		timers = [];
-	}
-
-	function startConversation() {
-		errorMessage = null;
-		agentState = "connecting";
-		timers.push(
-			setTimeout(() => {
-				agentState = "connected";
-			}, 1500)
-		);
-	}
-
-	function endConversation() {
-		agentState = "disconnecting";
-		timers.push(
-			setTimeout(() => {
-				agentState = "disconnected";
-			}, 1000)
-		);
-	}
-
-	function handleCall() {
-		clearTimers();
-		if (agentState === "disconnected" || agentState === null) {
-			startConversation();
-		} else if (agentState === "connected") {
-			endConversation();
-		}
-	}
-
-	$effect(() => {
-		return () => clearTimers();
-	});
-
+	let {
+		session,
+		adapter,
+		class: className,
+		name = "Customer Support",
+		description = "Tap to start voice chat",
+	}: {
+		session?: ConversationSession;
+		adapter?: ConversationAdapter;
+		class?: string;
+		name?: string;
+		description?: string;
+	} = $props();
+	const voice = useConversation(() => session ?? adapter);
+	const agentState = $derived(voice.snapshot.status);
+	const errorMessage = $derived(voice.snapshot.error?.message);
 	const isCallActive = $derived(agentState === "connected");
 	const isTransitioning = $derived(agentState === "connecting" || agentState === "disconnecting");
-
-	// Canned volume: smooth sine waves when connected, zero otherwise.
-	function getInputVolume(): number {
-		if (agentState !== "connected") return 0;
-		return 0.3 + 0.25 * Math.sin(performance.now() / 500);
-	}
-
-	function getOutputVolume(): number {
-		if (agentState !== "connected") return 0;
-		return 0.3 + 0.25 * Math.sin(performance.now() / 700 + 1);
+	const configured = $derived(!!session || !!adapter);
+	const getInputVolume = () => voice.session.getInputVolume();
+	const getOutputVolume = () => voice.session.getOutputVolume();
+	function handleCall() {
+		if (isCallActive || agentState === "connecting") void voice.session.disconnect();
+		else void voice.session.connect().catch(() => {});
 	}
 </script>
 
-<Card class="flex h-[400px] w-full flex-col items-center justify-center overflow-hidden p-6">
+<Card
+	data-slot="voice-chat-02"
+	class={cn(
+		"flex h-[400px] w-full flex-col items-center justify-center overflow-hidden p-6",
+		className
+	)}
+>
 	<div class="flex flex-col items-center gap-6">
 		<div class="relative size-32">
 			<div
@@ -81,13 +54,23 @@
 				<div
 					class="bg-background h-full w-full overflow-hidden rounded-full shadow-[inset_0_0_12px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_0_12px_rgba(0,0,0,0.3)]"
 				>
-					<Orb class="h-full w-full" volumeMode="manual" {getInputVolume} {getOutputVolume} />
+					<Orb
+						class="h-full w-full"
+						volumeMode="manual"
+						{getInputVolume}
+						{getOutputVolume}
+						agentState={voice.snapshot.activity === "speaking"
+							? "talking"
+							: voice.snapshot.activity === "idle"
+								? null
+								: voice.snapshot.activity}
+					/>
 				</div>
 			</div>
 		</div>
 
 		<div class="flex flex-col items-center gap-2">
-			<h2 class="text-xl font-semibold">{DEFAULT_AGENT.name}</h2>
+			<h2 class="text-xl font-semibold">{name}</h2>
 			{#if errorMessage}
 				<p
 					class="text-destructive text-center text-sm"
@@ -102,7 +85,7 @@
 					in:fly={{ y: -10, duration: 200 }}
 					out:fly={{ y: 10, duration: 200 }}
 				>
-					{DEFAULT_AGENT.description}
+					{description}
 				</p>
 			{:else}
 				<div
@@ -130,7 +113,7 @@
 
 		<Button
 			onclick={handleCall}
-			disabled={isTransitioning}
+			disabled={!configured || agentState === "disconnecting"}
 			size="icon"
 			variant={isCallActive ? "secondary" : "default"}
 			class="h-12 w-12 rounded-full"

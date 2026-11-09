@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { onDestroy } from "svelte";
+	import { useConversation } from "$lib/registry/ui/voice-session/use-conversation.svelte.js";
+	import type { ConversationSession } from "$lib/registry/ui/voice-session/session.js";
+	import type { ConversationAdapter } from "$lib/registry/ui/voice-session/types.js";
 	import CheckIcon from "@lucide/svelte/icons/check";
 	import CopyIcon from "@lucide/svelte/icons/copy";
 	import { Button } from "$lib/registry/ui/button/index.js";
@@ -10,11 +14,7 @@
 		ConversationScrollButton,
 	} from "$lib/registry/ui/conversation/index.js";
 	import { ConversationBar } from "$lib/registry/ui/conversation-bar/index.js";
-	import type {
-		ConversationAdapter,
-		ConversationConfig,
-		ConversationMessage,
-	} from "$lib/registry/ui/conversation-bar/types.js";
+
 	import { Message, MessageContent } from "$lib/registry/ui/message/index.js";
 	import { Orb } from "$lib/registry/ui/orb/index.js";
 	import { Response } from "$lib/registry/ui/response/index.js";
@@ -26,93 +26,25 @@
 	} from "$lib/registry/ui/tooltip/index.js";
 	import { cn } from "$lib/utils.js";
 
-	let { class: className }: { class?: string } = $props();
-
-	type ChatMessage = {
-		role: "user" | "assistant";
-		content: string;
-	};
-
-	const GREETING = "Hi, I'm your voice assistant. Tap the phone button or type a message to begin.";
-	const CANNED_REPLIES = [
-		"Got it — tell me a bit more about what you're after.",
-		"Sure, happy to help. Could you give me an example?",
-		"Here's what I'd suggest as a starting point — let me know if you want to go deeper on any part.",
-		"That's a good point. Want me to expand on it?",
-	];
-
-	let messages = $state<ChatMessage[]>([]);
+	let {
+		session,
+		adapter,
+		class: className,
+	}: {
+		session?: ConversationSession;
+		adapter?: ConversationAdapter;
+		class?: string;
+	} = $props();
+	const voice = useConversation(() => session ?? adapter);
+	const messages = $derived(
+		voice.snapshot.messages.map((m) => ({
+			id: m.id,
+			role: m.source === "user" ? ("user" as const) : ("assistant" as const),
+			content: m.message,
+		}))
+	);
 	let copiedIndex = $state<number | null>(null);
-	let timers: ReturnType<typeof setTimeout>[] = [];
-	let replyIndex = 0;
-
-	function clearTimers() {
-		timers.forEach(clearTimeout);
-		timers = [];
-	}
-
-	function pushMessage(message: ChatMessage) {
-		messages = [...messages, message];
-	}
-
-	const cannedAdapter: ConversationAdapter = {
-		async connect(config: ConversationConfig) {
-			clearTimers();
-			config.onStatusChange("connecting");
-			timers.push(
-				setTimeout(() => {
-					config.onStatusChange("connected");
-					config.onConnect();
-					timers.push(
-						setTimeout(() => {
-							const greeting: ConversationMessage = { source: "ai", message: GREETING };
-							config.onMessage(greeting);
-						}, 600)
-					);
-				}, 900)
-			);
-		},
-		disconnect() {
-			clearTimers();
-		},
-		sendMessage() {
-			const reply = CANNED_REPLIES[replyIndex % CANNED_REPLIES.length];
-			replyIndex += 1;
-			timers.push(
-				setTimeout(() => {
-					pushMessage({ role: "assistant", content: reply });
-				}, 900)
-			);
-		},
-		sendContextualUpdate() {
-			// no-op in canned demo
-		},
-		setMuted() {
-			// no-op in canned demo
-		},
-	};
-
-	function handleConnect() {
-		replyIndex = 0;
-		messages = [];
-	}
-
-	function handleDisconnect() {
-		clearTimers();
-		messages = [];
-	}
-
-	function handleMessage(message: ConversationMessage) {
-		pushMessage({
-			role: message.source === "user" ? "user" : "assistant",
-			content: message.message,
-		});
-	}
-
-	function handleSendMessage(text: string) {
-		pushMessage({ role: "user", content: text });
-	}
-
+	let copyTimer: ReturnType<typeof setTimeout> | undefined;
 	async function handleCopy(index: number, content: string) {
 		try {
 			await navigator.clipboard.writeText(content);
@@ -120,19 +52,13 @@
 			return;
 		}
 		copiedIndex = index;
-		timers.push(
-			setTimeout(() => {
-				if (copiedIndex === index) copiedIndex = null;
-			}, 2000)
-		);
+		clearTimeout(copyTimer);
+		copyTimer = setTimeout(() => (copiedIndex = null), 2000);
 	}
-
-	$effect(() => {
-		return () => clearTimers();
-	});
+	onDestroy(() => clearTimeout(copyTimer));
 </script>
 
-<div class={cn("relative mx-auto h-[600px] w-full", className)}>
+<div data-slot="voice-chat-03" class={cn("relative mx-auto h-[600px] w-full", className)}>
 	<Card class="flex h-full w-full flex-col gap-0 overflow-hidden">
 		<CardContent class="relative flex-1 overflow-hidden p-0">
 			<Conversation class="absolute inset-0 pb-[88px]">
@@ -202,15 +128,7 @@
 				<ConversationScrollButton class="bottom-[100px]" />
 			</Conversation>
 			<div class="absolute right-0 bottom-0 left-0 flex justify-center">
-				<ConversationBar
-					class="w-full max-w-2xl"
-					adapter={cannedAdapter}
-					onConnect={handleConnect}
-					onDisconnect={handleDisconnect}
-					onMessage={handleMessage}
-					onSendMessage={handleSendMessage}
-					onError={(error) => console.error("Conversation error:", error)}
-				/>
+				<ConversationBar class="w-full max-w-2xl" session={voice.session} />
 			</div>
 		</CardContent>
 	</Card>

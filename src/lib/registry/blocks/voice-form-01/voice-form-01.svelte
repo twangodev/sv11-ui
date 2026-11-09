@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { onDestroy } from "svelte";
+	import { AudioRecorder } from "$lib/registry/ui/voice-session/recording.js";
+	import type { TranscribeAudio, ExtractFields } from "$lib/registry/ui/voice-session/types.js";
 	import {
 		Card,
 		CardContent,
@@ -11,53 +14,77 @@
 	import { VoiceButton, type VoiceButtonState } from "$lib/registry/ui/voice-button/index.js";
 	import { validateExampleForm, type ExampleFormValues } from "./schema.js";
 
-	let values = $state<ExampleFormValues>({ firstName: "", lastName: "" });
+	let {
+		values = $bindable({ firstName: "", lastName: "" }),
+		transcribe,
+		extractFields,
+		onValuesChange,
+		class: className,
+	}: {
+		values?: ExampleFormValues;
+		transcribe?: TranscribeAudio;
+		extractFields?: ExtractFields<ExampleFormValues>;
+		onValuesChange?: (values: ExampleFormValues) => void;
+		class?: string;
+	} = $props();
 	const errors = $derived(validateExampleForm(values));
-
+	const recorder = new AudioRecorder();
 	let voiceState = $state<VoiceButtonState>("idle");
-	let cycleTimers: ReturnType<typeof setTimeout>[] = [];
-
-	function clearTimers() {
-		cycleTimers.forEach(clearTimeout);
-		cycleTimers = [];
-	}
-
-	function handleVoiceToggle() {
-		if (voiceState === "recording" || voiceState === "processing") {
-			clearTimers();
-			voiceState = "idle";
-			return;
-		}
-		clearTimers();
-		voiceState = "recording";
-		cycleTimers.push(
-			setTimeout(() => {
-				voiceState = "processing";
-			}, 2000)
-		);
-		cycleTimers.push(
-			setTimeout(() => {
-				values = { firstName: "John", lastName: "Doe" };
+	let error = $state("");
+	let request: AbortController | undefined;
+	let feedback: ReturnType<typeof setTimeout> | undefined;
+	async function handleVoiceToggle() {
+		if (!transcribe || !extractFields) return;
+		if (voiceState === "recording") {
+			voiceState = "processing";
+			const current = request!;
+			try {
+				const audio = await recorder.stop();
+				const transcript = await transcribe(audio, current.signal);
+				if (current.signal.aborted) return;
+				const fields = await extractFields(transcript, current.signal);
+				if (current.signal.aborted) return;
+				values = {
+					firstName: typeof fields.firstName === "string" ? fields.firstName : values.firstName,
+					lastName: typeof fields.lastName === "string" ? fields.lastName : values.lastName,
+				};
+				onValuesChange?.(values);
 				voiceState = "success";
-			}, 3000)
-		);
-		cycleTimers.push(
-			setTimeout(() => {
-				voiceState = "idle";
-			}, 5000)
-		);
+			} catch (cause) {
+				if (!current.signal.aborted) {
+					error = cause instanceof Error ? cause.message : "Voice fill failed.";
+					voiceState = "error";
+				}
+			} finally {
+				if (!current.signal.aborted) feedback = setTimeout(() => (voiceState = "idle"), 1800);
+			}
+		} else {
+			clearTimeout(feedback);
+			request?.abort();
+			request = new AbortController();
+			error = "";
+			voiceState = "recording";
+			try {
+				await recorder.start();
+			} catch (cause) {
+				if (!request.signal.aborted) {
+					error = cause instanceof Error ? cause.message : "Could not record audio.";
+					voiceState = "error";
+				}
+			}
+		}
 	}
-
-	$effect(() => {
-		return () => clearTimers();
+	onDestroy(() => {
+		request?.abort();
+		recorder.cancel();
+		clearTimeout(feedback);
 	});
-
 	function onSubmit(event: SubmitEvent) {
 		event.preventDefault();
 	}
 </script>
 
-<div class="mx-auto w-full">
+<div data-slot="voice-form-01" class={className}>
 	<Card class="relative overflow-hidden">
 		<div class="flex flex-col gap-2">
 			<CardHeader>
@@ -69,12 +96,14 @@
 					<VoiceButton
 						state={voiceState}
 						onPress={handleVoiceToggle}
-						disabled={voiceState === "processing"}
+						disabled={!transcribe || !extractFields || voiceState === "processing"}
+						getLevel={recorder.getLevel}
 						trailing="Voice Fill"
 					/>
 				</div>
 			</CardHeader>
 			<CardContent>
+				{#if error}<p role="alert" class="text-destructive text-sm">{error}</p>{/if}
 				<form onsubmit={onSubmit} class="space-y-6">
 					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div class="space-y-2">
