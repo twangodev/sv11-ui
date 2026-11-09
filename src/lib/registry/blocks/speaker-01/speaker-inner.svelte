@@ -242,7 +242,7 @@
 				<div class="flex items-center justify-between">
 					<div class="min-w-0 flex-1">
 						<h3 class="text-foreground truncate text-sm font-medium">{currentTrack.title}</h3>
-						<p class="text-muted-foreground truncate text-xs">{currentTrack.artist}</p>
+						<span class="text-muted-foreground truncate text-xs">{currentTrack.artist}</span>
 					</div>
 					<div class="flex gap-1">
 						<Button

@@ -39,11 +39,16 @@
 	let curIn = 0;
 	let curOut = 0;
 	let animSpeed = 0.1;
-	const offsets = makeOffsets(seed);
+	const offsets = $derived(makeOffsets(seed));
 
 	$effect(() => {
 		targetColor1.set(colors[0]);
 		targetColor2.set(colors[1]);
+	});
+
+	$effect(() => {
+		const next = offsets;
+		if (mesh) mesh.material.uniforms.uOffsets.value = next;
 	});
 
 	$effect(() => {
