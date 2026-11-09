@@ -32,10 +32,10 @@
 <Button
 	type="button"
 	{variant}
-	disabled={disabled ?? state.isConnecting}
+	disabled={disabled || state.isBusy}
 	onclick={(e) => {
 		if (state.isConnected) {
-			state.stop();
+			void state.stop();
 		} else {
 			void state.start();
 		}
@@ -54,19 +54,19 @@
 	<Skeleton
 		class={cn(
 			"absolute h-4 w-4 rounded-full transition-all duration-200",
-			state.isConnecting ? "bg-primary scale-90" : "scale-[60%] bg-transparent"
+			state.isBusy ? "bg-primary scale-90" : "scale-[60%] bg-transparent"
 		)}
 	/>
 	<SquareIcon
 		class={cn(
 			"text-destructive absolute h-4 w-4 fill-current transition-all duration-200",
-			!state.isConnecting && state.isConnected ? "scale-100 opacity-100" : "scale-[60%] opacity-0"
+			!state.isBusy && state.isConnected ? "scale-100 opacity-100" : "scale-[60%] opacity-0"
 		)}
 	/>
 	<MicIcon
 		class={cn(
 			"absolute h-4 w-4 transition-all duration-200",
-			!state.isConnecting && !state.isConnected ? "scale-100 opacity-100" : "scale-[60%] opacity-0"
+			!state.isBusy && !state.isConnected ? "scale-100 opacity-100" : "scale-[60%] opacity-0"
 		)}
 	/>
 </Button>

@@ -15,6 +15,10 @@
 		 * one page look distinct.
 		 */
 		seed?: number;
+		/** Delay canvas resizing after container changes, in milliseconds. @default 100 */
+		resizeDebounce?: number;
+		/** Noise texture URL. Defaults to the hosted sv11-ui texture. */
+		textureUrl?: string;
 		/**
 		 * Drives the orb's visual behavior to reflect the agent lifecycle.
 		 * Pass `null` to render the idle state.
@@ -22,8 +26,7 @@
 		 */
 		agentState?: OrbAgentState;
 		/**
-		 * `"auto"` uses the active microphone and output audio streams to
-		 * drive reactivity. `"manual"` reads `manualInput` / `manualOutput`
+		 * `"auto"` animates from `agentState`. `"manual"` reads `manualInput` / `manualOutput`
 		 * (or the `get*Volume` callbacks) instead.
 		 * @default "auto"
 		 */
@@ -33,13 +36,11 @@
 		/** Manual output volume in `[0, 1]`. Only read when `volumeMode="manual"`. */
 		manualOutput?: number;
 		/**
-		 * Called every frame to sample input volume in `[0, 1]`. Takes
-		 * precedence over `manualInput` when both are provided.
+		 * Called every frame to sample input volume in `[0, 1]`. Used when `manualInput` is not provided.
 		 */
 		getInputVolume?: () => number;
 		/**
-		 * Called every frame to sample output volume in `[0, 1]`. Takes
-		 * precedence over `manualOutput` when both are provided.
+		 * Called every frame to sample output volume in `[0, 1]`. Used when `manualOutput` is not provided.
 		 */
 		getOutputVolume?: () => number;
 	};
@@ -54,6 +55,8 @@
 	let {
 		colors = ["#CADCFC", "#A0B9D1"],
 		seed,
+		resizeDebounce = 100,
+		textureUrl = "https://sv11.ui.twango.dev/orbs/perlin-noise.png",
 		agentState = null,
 		volumeMode = "auto",
 		manualInput,
@@ -64,31 +67,79 @@
 		...restProps
 	}: OrbProps = $props();
 
-	// Stable per-instance fallback seed if none is passed
 	const instanceSeed = Math.floor(Math.random() * 2 ** 32);
 	const resolvedSeed = $derived(seed ?? instanceSeed);
+	let container = $state<HTMLDivElement>();
+	let measured = $state<{ width: number; height: number }>();
+	let failedTextureUrl = $state<string | null>(null);
+	$effect(() => {
+		if (failedTextureUrl !== textureUrl) failedTextureUrl = null;
+	});
+	$effect(() => {
+		if (!container) return;
+		const delay = Math.max(0, resizeDebounce);
+		let initialized = false;
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		const observer = new ResizeObserver(([entry]) => {
+			clearTimeout(timer);
+			const next = { width: entry.contentRect.width, height: entry.contentRect.height };
+			if (!initialized || !delay) {
+				initialized = true;
+				measured = next;
+			} else timer = setTimeout(() => (measured = next), delay);
+		});
+		observer.observe(container);
+		return () => {
+			observer.disconnect();
+			clearTimeout(timer);
+		};
+	});
 </script>
 
-<div data-slot="orb" class={cn("relative h-full w-full", className)} {...restProps}>
-	<Canvas
-		toneMapping={ACESFilmicToneMapping}
-		createRenderer={(canvas) =>
-			new WebGLRenderer({
-				canvas,
-				alpha: true,
-				antialias: true,
-				premultipliedAlpha: true,
-			})}
+<div
+	bind:this={container}
+	data-slot="orb"
+	class={cn("relative h-full w-full", className)}
+	{...restProps}
+>
+	<div
+		class="h-full w-full"
+		style:width={measured ? `${measured.width}px` : undefined}
+		style:height={measured ? `${measured.height}px` : undefined}
 	>
-		<OrbScene
-			{colors}
-			seed={resolvedSeed}
-			{agentState}
-			{volumeMode}
-			{manualInput}
-			{manualOutput}
-			{getInputVolume}
-			{getOutputVolume}
-		/>
-	</Canvas>
+		<Canvas
+			toneMapping={ACESFilmicToneMapping}
+			createRenderer={(canvas) =>
+				new WebGLRenderer({
+					canvas,
+					alpha: true,
+					antialias: true,
+					premultipliedAlpha: true,
+				})}
+		>
+			{#key textureUrl}
+				<OrbScene
+					{colors}
+					{textureUrl}
+					onTextureError={(url) => (failedTextureUrl = url)}
+					seed={resolvedSeed}
+					{agentState}
+					{volumeMode}
+					{manualInput}
+					{manualOutput}
+					{getInputVolume}
+					{getOutputVolume}
+				/>
+			{/key}
+		</Canvas>
+	</div>
+	{#if failedTextureUrl === textureUrl}
+		<div
+			data-slot="orb-fallback"
+			role="img"
+			aria-label="Orb texture unavailable"
+			class="pointer-events-none absolute inset-0 rounded-full"
+			style:background={`radial-gradient(circle at 35% 30%, ${colors[0]}, ${colors[1]} 65%, transparent 72%)`}
+		></div>
+	{/if}
 </div>

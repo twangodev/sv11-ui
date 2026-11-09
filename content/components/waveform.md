@@ -24,7 +24,7 @@ Pass an array of values in `[0, 1]` to render a static bar chart.
 
 ```svelte
 <script lang="ts">
-	import { Waveform } from "$lib/registry/ui/waveform";
+	import { Waveform } from "$lib/components/ui/waveform";
 
 	const data = Array.from({ length: 50 }, () => Math.random());
 </script>
@@ -38,7 +38,7 @@ Pass an array of values in `[0, 1]` to render a static bar chart.
 
 ```svelte
 <script lang="ts">
-	import { ScrollingWaveform } from "$lib/registry/ui/waveform";
+	import { ScrollingWaveform } from "$lib/components/ui/waveform";
 </script>
 
 <ScrollingWaveform height={80} speed={50} barCount={60} fadeEdges />
@@ -50,7 +50,7 @@ Pass an array of values in `[0, 1]` to render a static bar chart.
 
 ```svelte
 <script lang="ts">
-	import { MicrophoneWaveform } from "$lib/registry/ui/waveform";
+	import { MicrophoneWaveform } from "$lib/components/ui/waveform";
 
 	let isRecording = $state(false);
 </script>
@@ -69,7 +69,7 @@ Pass an array of values in `[0, 1]` to render a static bar chart.
 
 ```svelte
 <script lang="ts">
-	import { StaticWaveform } from "$lib/registry/ui/waveform";
+	import { StaticWaveform } from "$lib/components/ui/waveform";
 </script>
 
 <StaticWaveform bars={40} seed={42} />
@@ -81,7 +81,7 @@ Pass an array of values in `[0, 1]` to render a static bar chart.
 
 ```svelte
 <script lang="ts">
-	import { AudioScrubber } from "$lib/registry/ui/waveform";
+	import { AudioScrubber } from "$lib/components/ui/waveform";
 
 	const data = Array.from({ length: 100 }, () => 0.2 + Math.random() * 0.6);
 	let currentTime = $state(0);
@@ -109,8 +109,8 @@ Pass an array of values in `[0, 1]` to render a static bar chart.
 
 ```svelte
 <script lang="ts">
-	import { RecordingWaveform } from "$lib/registry/ui/waveform";
-	import { Button } from "$lib/registry/ui/button";
+	import { RecordingWaveform } from "$lib/components/ui/waveform";
+	import { Button } from "$lib/components/ui/button";
 
 	let recording = $state(false);
 </script>
@@ -135,7 +135,7 @@ Pass an array of values in `[0, 1]` to render a static bar chart.
 
 ```svelte
 <script lang="ts">
-	import { LiveMicrophoneWaveform } from "$lib/registry/ui/waveform";
+	import { LiveMicrophoneWaveform } from "$lib/components/ui/waveform";
 
 	let active = $state(false);
 </script>

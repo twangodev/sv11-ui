@@ -57,7 +57,7 @@
 	role="log"
 	aria-live="polite"
 	aria-relevant="additions"
-	class={cn("relative flex-1 overflow-y-auto", className)}
+	class={cn("relative flex-1 overflow-y-auto [scrollbar-gutter:stable_both-edges]", className)}
 >
 	{@render children?.()}
 </div>

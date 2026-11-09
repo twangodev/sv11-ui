@@ -24,7 +24,7 @@ Drive the button through its lifecycle by passing a reactive `state`.
 
 ```svelte
 <script lang="ts">
-	import { VoiceButton, type VoiceButtonState } from "$lib/registry/ui/voice-button";
+	import { VoiceButton, type VoiceButtonState } from "$lib/components/ui/voice-button";
 
 	let state = $state<VoiceButtonState>("idle");
 
@@ -59,7 +59,7 @@ Each state renders a distinct visual: the waveform activates on `recording`, con
 
 ```svelte
 <script lang="ts">
-	import { VoiceButton } from "$lib/registry/ui/voice-button";
+	import { VoiceButton } from "$lib/components/ui/voice-button";
 </script>
 
 <VoiceButton state="idle" />
@@ -76,7 +76,7 @@ Set `size="icon"` and pass an `icon` snippet for compact, icon-only layouts.
 ```svelte
 <script lang="ts">
 	import MicIcon from "@lucide/svelte/icons/mic";
-	import { VoiceButton } from "$lib/registry/ui/voice-button";
+	import { VoiceButton } from "$lib/components/ui/voice-button";
 </script>
 
 <VoiceButton state="idle" size="icon">
@@ -106,7 +106,7 @@ Chain state transitions from `onPress` to model a full record → process → su
 
 ```svelte
 <script lang="ts">
-	import { VoiceButton, type VoiceButtonState } from "$lib/registry/ui/voice-button";
+	import { VoiceButton, type VoiceButtonState } from "$lib/components/ui/voice-button";
 
 	let state = $state<VoiceButtonState>("idle");
 
@@ -129,10 +129,12 @@ Chain state transitions from `onPress` to model a full record → process → su
 
 <ComponentAPI component="voice-button" />
 
+The button also accepts inherited shadcn-svelte `Button` props, such as `variant`, `size`, `disabled`, native button attributes, and `onclick`. The table focuses on the voice-button additions.
+
 ## Notes
 
 - Built on top of the shadcn-svelte `Button` primitive, so every button `variant` and `size` — including `"icon"` — works as expected.
-- The integrated [`LiveWaveform`](/docs/components/live-waveform) samples the active microphone stream directly while `state` is `"recording"` or `"processing"`.
+- During `state="recording"`, the integrated [`LiveWaveform`](/docs/components/live-waveform) samples `getLevel` when provided, otherwise it captures microphone input. `processing` uses the placeholder animation. Pass the existing recorder's meter to avoid a second microphone capture.
 - `success` and `error` auto-clear after `feedbackDuration` (default `1500`ms); drive `state` back to `"idle"` from your side on the same cadence if you want the button fully reset.
 - While `state="processing"`, the button is rendered disabled regardless of the `disabled` prop.
 - `onPress` fires after any `onclick` handler you pass — both are invoked.

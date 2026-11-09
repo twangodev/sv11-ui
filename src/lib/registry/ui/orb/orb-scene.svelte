@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { T, useTask, useThrelte } from "@threlte/core";
-	import { useTexture } from "@threlte/extras";
 	import { onMount, untrack } from "svelte";
 	import * as THREE from "three";
 	import { mode } from "mode-watcher";
@@ -11,6 +10,8 @@
 	type Props = {
 		colors: [string, string];
 		seed: number;
+		textureUrl: string;
+		onTextureError: (url: string) => void;
 		agentState: OrbAgentState;
 		volumeMode: "auto" | "manual";
 		manualInput?: number;
@@ -22,6 +23,8 @@
 	let {
 		colors,
 		seed,
+		textureUrl,
+		onTextureError,
 		agentState,
 		volumeMode,
 		manualInput,
@@ -33,17 +36,23 @@
 	const { canvas, renderer } = useThrelte();
 
 	let mesh = $state.raw<THREE.Mesh<THREE.CircleGeometry, THREE.ShaderMaterial>>();
+	let perlinTexture = $state.raw<THREE.Texture<HTMLImageElement>>();
 
-	const targetColor1 = new THREE.Color(colors[0]);
-	const targetColor2 = new THREE.Color(colors[1]);
+	const targetColor1 = new THREE.Color();
+	const targetColor2 = new THREE.Color();
 	let curIn = 0;
 	let curOut = 0;
 	let animSpeed = 0.1;
-	const offsets = makeOffsets(seed);
+	const offsets = $derived(makeOffsets(seed));
 
 	$effect(() => {
 		targetColor1.set(colors[0]);
 		targetColor2.set(colors[1]);
+	});
+
+	$effect(() => {
+		const next = offsets;
+		if (mesh) mesh.material.uniforms.uOffsets.value = next;
 	});
 
 	$effect(() => {
@@ -54,21 +63,36 @@
 	});
 
 	onMount(() => {
+		let disposed = false;
+		let restoreTimer: ReturnType<typeof setTimeout> | undefined;
+		const url = textureUrl;
+		void new THREE.TextureLoader().loadAsync(url).then(
+			(texture) => {
+				if (disposed) {
+					texture.dispose();
+					return;
+				}
+				texture.wrapS = THREE.RepeatWrapping;
+				texture.wrapT = THREE.RepeatWrapping;
+				texture.colorSpace = THREE.NoColorSpace;
+				perlinTexture = texture;
+			},
+			() => {
+				if (!disposed) onTextureError(url);
+			}
+		);
 		const onLost = (e: Event) => {
 			e.preventDefault();
-			setTimeout(() => renderer.forceContextRestore(), 1);
+			clearTimeout(restoreTimer);
+			restoreTimer = setTimeout(() => renderer.forceContextRestore(), 1);
 		};
 		canvas.addEventListener("webglcontextlost", onLost, false);
-		return () => canvas.removeEventListener("webglcontextlost", onLost, false);
-	});
-
-	const texture = useTexture("https://sv11.ui.twango.dev/orbs/perlin-noise.png", {
-		transform: (t) => {
-			t.wrapS = THREE.RepeatWrapping;
-			t.wrapT = THREE.RepeatWrapping;
-			t.colorSpace = THREE.NoColorSpace;
-			return t;
-		},
+		return () => {
+			disposed = true;
+			clearTimeout(restoreTimer);
+			canvas.removeEventListener("webglcontextlost", onLost, false);
+			perlinTexture?.dispose();
+		};
 	});
 
 	function makeUniforms(perlinTexture: THREE.Texture<HTMLImageElement>) {
@@ -156,16 +180,14 @@
 	}
 </script>
 
-{#await $texture then perlinTexture}
-	{#if perlinTexture}
-		<T.Mesh bind:ref={mesh}>
-			<T.CircleGeometry args={[3.5, 64]} />
-			<T.ShaderMaterial
-				uniforms={makeUniforms(perlinTexture)}
-				{fragmentShader}
-				{vertexShader}
-				transparent
-			/>
-		</T.Mesh>
-	{/if}
-{/await}
+{#if perlinTexture}
+	<T.Mesh bind:ref={mesh}>
+		<T.CircleGeometry args={[3.5, 64]} />
+		<T.ShaderMaterial
+			uniforms={makeUniforms(perlinTexture)}
+			{fragmentShader}
+			{vertexShader}
+			transparent
+		/>
+	</T.Mesh>
+{/if}

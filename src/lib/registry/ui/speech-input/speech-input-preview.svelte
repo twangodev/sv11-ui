@@ -20,17 +20,18 @@
 	const state = useSpeechInput();
 
 	const displayText = $derived(state.transcript || placeholder);
+	const showPreview = $derived(state.isConnected || state.status === "stopping");
 	const showPlaceholder = $derived(!state.transcript.trim());
 </script>
 
 <div
-	inert={!state.isConnected}
-	aria-hidden={!state.isConnected}
+	inert={!showPreview}
+	aria-hidden={!showPreview}
 	title={displayText}
 	class={cn(
 		"relative self-stretch text-sm transition-[opacity,transform,width] duration-200 ease-out",
 		showPlaceholder ? "text-muted-foreground italic" : "text-muted-foreground",
-		state.isConnected ? "w-28 opacity-100" : "w-0 opacity-0",
+		showPreview ? "w-28 opacity-100" : "w-0 opacity-0",
 		className
 	)}
 	data-slot="speech-input-preview"

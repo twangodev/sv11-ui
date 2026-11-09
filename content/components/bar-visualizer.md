@@ -24,7 +24,7 @@ Pipe a live `MediaStream` into the visualizer. The FFT slice is analysed on ever
 
 ```svelte
 <script lang="ts">
-	import { BarVisualizer } from "$lib/registry/ui/bar-visualizer";
+	import { BarVisualizer } from "$lib/components/ui/bar-visualizer";
 
 	let stream: MediaStream | null = $state(null);
 </script>
@@ -46,7 +46,7 @@ Drive the highlight sequence and animation cadence from an agent lifecycle value
 
 ```svelte
 <script lang="ts">
-	import { BarVisualizer, type AgentState } from "$lib/registry/ui/bar-visualizer";
+	import { BarVisualizer, type AgentState } from "$lib/components/ui/bar-visualizer";
 
 	let state: AgentState = $state("connecting");
 </script>

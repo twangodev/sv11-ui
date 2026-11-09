@@ -22,8 +22,6 @@ export class AudioPlayerState<TData = unknown> {
 	isBuffering = $derived(this.readyState < 3 && this.networkState === 2);
 	isPlaying = $derived(!this.paused);
 
-	#playPromise: Promise<void> | null = null;
-
 	isItemActive = (id: string | number | null): boolean => {
 		if (id === null) return this.activeItem === null;
 		return this.activeItem?.id === id;
@@ -55,45 +53,17 @@ export class AudioPlayerState<TData = unknown> {
 		const audio = this.audio;
 		if (!audio) return;
 
-		if (this.#playPromise) {
-			try {
-				await this.#playPromise;
-			} catch (error) {
-				console.error("Play promise error:", error);
-			}
+		if (item !== undefined && (item?.id ?? null) !== (this.activeItem?.id ?? null)) {
+			this.#swapTrack(item);
 		}
-
-		if (item === undefined) {
-			const playPromise = audio.play();
-			this.#playPromise = playPromise;
-			return playPromise;
-		}
-		if ((item?.id ?? null) === (this.activeItem?.id ?? null)) {
-			const playPromise = audio.play();
-			this.#playPromise = playPromise;
-			return playPromise;
-		}
-
-		this.#swapTrack(item);
-		const playPromise = audio.play();
-		this.#playPromise = playPromise;
-		return playPromise;
+		return audio.play();
 	};
 
 	pause = async (): Promise<void> => {
 		const audio = this.audio;
 		if (!audio) return;
 
-		if (this.#playPromise) {
-			try {
-				await this.#playPromise;
-			} catch (e) {
-				console.error(e);
-			}
-		}
-
 		audio.pause();
-		this.#playPromise = null;
 	};
 
 	seek = (time: number): void => {

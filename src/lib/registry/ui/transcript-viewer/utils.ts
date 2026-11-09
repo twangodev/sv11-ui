@@ -44,6 +44,34 @@ export type ComposeSegmentsResult = {
 
 export type SegmentComposer = (alignment: CharacterAlignment) => ComposeSegmentsResult;
 
+/** Word timings from any provider, without inventing character alignment. */
+export function composeTimedWords(
+	timings: { text: string; startTime: number; endTime: number }[]
+): ComposeSegmentsResult {
+	const segments: TranscriptSegment[] = [];
+	const words: TranscriptWord[] = [];
+	for (const timing of timings) {
+		if (
+			!Number.isFinite(timing.startTime) ||
+			!Number.isFinite(timing.endTime) ||
+			timing.startTime < 0 ||
+			timing.endTime < timing.startTime ||
+			(words.length && timing.startTime < words[words.length - 1].startTime)
+		)
+			throw new Error("Word timings must be finite, ordered, non-negative ranges.");
+		if (words.length) segments.push({ kind: "gap", segmentIndex: segments.length, text: " " });
+		const word: TranscriptWord = {
+			...timing,
+			kind: "word",
+			wordIndex: words.length,
+			segmentIndex: segments.length,
+		};
+		segments.push(word);
+		words.push(word);
+	}
+	return { segments, words };
+}
+
 /**
  * Walks the character arrays and groups them into word segments (contiguous
  * non-whitespace runs) and gap segments (whitespace). If `hideAudioTags` is

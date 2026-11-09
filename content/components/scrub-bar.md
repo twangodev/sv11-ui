@@ -24,7 +24,7 @@ Compose `Root`, `Track`, `Progress`, `Thumb`, and `TimeLabel` to build a standar
 
 ```svelte
 <script lang="ts">
-	import * as ScrubBar from "$lib/registry/ui/scrub-bar";
+	import * as ScrubBar from "$lib/components/ui/scrub-bar";
 
 	let value = $state(30);
 	const duration = 100;
@@ -46,7 +46,7 @@ Wire `onScrubStart` and `onScrubEnd` to pause playback while the user drags the 
 
 ```svelte
 <script lang="ts">
-	import * as ScrubBar from "$lib/registry/ui/scrub-bar";
+	import * as ScrubBar from "$lib/components/ui/scrub-bar";
 
 	let value = $state(30);
 	let isScrubbing = $state(false);
@@ -75,7 +75,7 @@ Pass a `format` function to `TimeLabel` to render time in your preferred format.
 
 ```svelte
 <script lang="ts">
-	import * as ScrubBar from "$lib/registry/ui/scrub-bar";
+	import * as ScrubBar from "$lib/components/ui/scrub-bar";
 
 	function formatHMS(time: number) {
 		const hours = Math.floor(time / 3600);

@@ -17,7 +17,9 @@
 		 * highlighting. Shape matches ElevenLabs' `CharacterAlignmentResponseModel`;
 		 * reshape other providers' output to the same structure.
 		 */
-		alignment: CharacterAlignment;
+		alignment?: CharacterAlignment;
+		/** Native word timestamps from any provider. Takes precedence over alignment; replacements pause and rewind playback. */
+		words?: import("../voice-session/types.js").TimedWord[];
 		/**
 		 * Override the default word/gap segmentation. Receives the raw
 		 * alignment and returns the composed `segments` and `words` arrays.
@@ -50,14 +52,16 @@
 </script>
 
 <script lang="ts">
+	import { untrack } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import { setTranscriptViewer } from "./context.svelte.js";
-	import { composeSegments, guessedDurationFrom } from "./utils.js";
+	import { composeSegments, composeTimedWords, guessedDurationFrom } from "./utils.js";
 
 	let {
 		audioSrc,
 		audioType = "audio/mpeg",
 		alignment,
+		words: timedWords,
 		segmentComposer,
 		hideAudioTags = true,
 		onPlay,
@@ -73,22 +77,39 @@
 
 	const state = setTranscriptViewer();
 
-	// Sync audio src/type props → state so <TranscriptViewerAudio> can read them.
+	function resetPlayback() {
+		const audio = untrack(() => state.audio);
+		if (audio) {
+			audio.pause();
+			audio.currentTime = 0;
+		}
+		state.isPlaying = false;
+		state.currentTime = 0;
+	}
+
+	// Replacing the audio or transcript timings pauses and rewinds playback.
 	$effect(() => {
+		const source = alignment ?? {
+			characters: [],
+			characterStartTimesSeconds: [],
+			characterEndTimesSeconds: [],
+		};
+		const composed = timedWords
+			? composeTimedWords(timedWords)
+			: segmentComposer
+				? segmentComposer(source)
+				: composeSegments(source, { hideAudioTags });
+		resetPlayback();
 		state.audioSrc = audioSrc;
 		state.audioType = audioType;
-	});
-
-	// Recompute segments and reset playback whenever the alignment changes.
-	$effect(() => {
-		const composed = segmentComposer
-			? segmentComposer(alignment)
-			: composeSegments(alignment, { hideAudioTags });
 		state.segments = composed.segments;
 		state.words = composed.words;
-		state.currentTime = 0;
-		state.duration = guessedDurationFrom(alignment, composed.words);
-		state.isPlaying = false;
+		state.duration = guessedDurationFrom(
+			timedWords
+				? { characters: [], characterStartTimesSeconds: [], characterEndTimesSeconds: [] }
+				: source,
+			composed.words
+		);
 		state.currentWordIndex = composed.words.length ? 0 : -1;
 	});
 

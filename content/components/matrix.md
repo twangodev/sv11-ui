@@ -24,7 +24,7 @@ Render a single frame by passing `pattern`. The built-in `digits` preset ships a
 
 ```svelte
 <script lang="ts">
-	import { Matrix, digits } from "$lib/registry/ui/matrix";
+	import { Matrix, digits } from "$lib/components/ui/matrix";
 </script>
 
 <Matrix rows={7} cols={5} pattern={digits[5]} ariaLabel="Number five" />
@@ -36,7 +36,7 @@ Pass a `Frame[]` to `frames` and the matrix steps through them at `fps`.
 
 ```svelte
 <script lang="ts">
-	import { Matrix, wave } from "$lib/registry/ui/matrix";
+	import { Matrix, wave } from "$lib/components/ui/matrix";
 </script>
 
 <Matrix rows={7} cols={7} frames={wave} fps={20} loop ariaLabel="Wave animation" />
@@ -61,7 +61,7 @@ Hand-author a `Frame` (a 2D array of brightness values) for bespoke glyphs.
 
 ```svelte
 <script lang="ts">
-	import { Matrix, type Frame } from "$lib/registry/ui/matrix";
+	import { Matrix, type Frame } from "$lib/components/ui/matrix";
 
 	const heart: Frame = [
 		[0, 1, 1, 0, 1, 1, 0],
@@ -103,7 +103,7 @@ Swap the `on` / `off` colors to theme the display. Classic phosphor green:
 
 ```svelte
 <script lang="ts">
-	import { Matrix, loader } from "$lib/registry/ui/matrix";
+	import { Matrix, loader } from "$lib/components/ui/matrix";
 
 	let currentFrame = $state(0);
 </script>
@@ -118,7 +118,7 @@ Feed `levels` from reactive state to animate the meter at render time.
 
 ```svelte
 <script lang="ts">
-	import { Matrix } from "$lib/registry/ui/matrix";
+	import { Matrix } from "$lib/components/ui/matrix";
 
 	let levels = $state<number[]>(Array(12).fill(0));
 
@@ -139,7 +139,7 @@ Build an animation by supplying your own frame array.
 
 ```svelte
 <script lang="ts">
-	import { Matrix, type Frame } from "$lib/registry/ui/matrix";
+	import { Matrix, type Frame } from "$lib/components/ui/matrix";
 
 	const frames: Frame[] = [
 		[

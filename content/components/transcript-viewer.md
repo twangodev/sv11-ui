@@ -18,8 +18,8 @@ links:
 
 ```svelte
 <script lang="ts">
-	import * as TranscriptViewer from "$lib/registry/ui/transcript-viewer";
-	import type { CharacterAlignment } from "$lib/registry/ui/transcript-viewer";
+	import * as TranscriptViewer from "$lib/components/ui/transcript-viewer";
+	import type { CharacterAlignment } from "$lib/components/ui/transcript-viewer";
 
 	let {
 		audioSrc,
@@ -60,8 +60,8 @@ Pass `audioType` when the source is not MP3 so the browser picks the right decod
 
 ```svelte
 <script lang="ts">
-	import * as TranscriptViewer from "$lib/registry/ui/transcript-viewer";
-	import type { CharacterAlignment } from "$lib/registry/ui/transcript-viewer";
+	import * as TranscriptViewer from "$lib/components/ui/transcript-viewer";
+	import type { CharacterAlignment } from "$lib/components/ui/transcript-viewer";
 
 	let {
 		audioSrc,
@@ -95,8 +95,8 @@ The root forwards the underlying `<audio>` lifecycle via `onPlay`, `onPause`, `o
 
 ```svelte
 <script lang="ts">
-	import * as TranscriptViewer from "$lib/registry/ui/transcript-viewer";
-	import type { CharacterAlignment } from "$lib/registry/ui/transcript-viewer";
+	import * as TranscriptViewer from "$lib/components/ui/transcript-viewer";
+	import type { CharacterAlignment } from "$lib/components/ui/transcript-viewer";
 
 	let {
 		audioSrc,
@@ -131,8 +131,8 @@ The root forwards the underlying `<audio>` lifecycle via `onPlay`, `onPause`, `o
 <script lang="ts">
 	import PauseIcon from "@lucide/svelte/icons/pause";
 	import PlayIcon from "@lucide/svelte/icons/play";
-	import * as TranscriptViewer from "$lib/registry/ui/transcript-viewer";
-	import type { CharacterAlignment } from "$lib/registry/ui/transcript-viewer";
+	import * as TranscriptViewer from "$lib/components/ui/transcript-viewer";
+	import type { CharacterAlignment } from "$lib/components/ui/transcript-viewer";
 
 	let {
 		audioSrc,
@@ -164,7 +164,7 @@ The root forwards the underlying `<audio>` lifecycle via `onPlay`, `onPause`, `o
 
 ```svelte
 <script lang="ts">
-	import { useTranscriptViewer } from "$lib/registry/ui/transcript-viewer";
+	import { useTranscriptViewer } from "$lib/components/ui/transcript-viewer";
 
 	const state = useTranscriptViewer();
 </script>
@@ -235,9 +235,8 @@ Time-aware scrub bar composed over the standalone `ScrubBar` primitive. Extends 
 ## Notes
 
 - `alignment` shape mirrors ElevenLabs' `CharacterAlignmentResponseModel` — three parallel arrays (`characters`, `characterStartTimesSeconds`, `characterEndTimesSeconds`) indexed per character. Reshape data from other providers (OpenAI, Deepgram, custom) to the same structure.
-- The root composes character alignment into word and gap segments internally via `composeSegments`, or a custom `segmentComposer` when provided. Recomposition runs whenever `alignment` changes.
+- The root composes character alignment into word and gap segments, using `segmentComposer` when supplied. Changing the audio source/type, alignment, composer, or audio-tag filtering pauses playback and resets its position to zero.
 - When `hideAudioTags` is `true` (default), anything inside `[...]` brackets — e.g. ElevenLabs' `[excited]` style tags — is stripped from the rendered transcript.
-- The audio element is owned by `TranscriptViewerAudio`. The root wires up `play`, `pause`, `timeupdate`, `seeked`, `durationchange`, and `loadedmetadata` listeners plus a `requestAnimationFrame` loop to drive `currentTime` and the active word index.
-- The active-word walk is incremental: normal playback advances via a forward scan, and seeks fall back to a binary search over the word list.
+- `TranscriptViewerAudio` owns the audio element. Playback and seeking update the shared `currentTime` and active word.
 - `TranscriptViewerScrubBar` composes the standalone `ScrubBar` primitive with time labels and suspends `timeupdate`-driven UI updates while the user is scrubbing so the thumb doesn't fight the pointer.
 - Words take one of three statuses — `"spoken"`, `"current"`, `"unspoken"` — which you can target via the built-in Tailwind classes on `TranscriptViewerWord` or render yourself through `renderWord` / `renderGap` snippets.

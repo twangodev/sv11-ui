@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync } from "nod
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizePath, type Plugin } from "vite";
-import { extractAllProps } from "../scripts/extract-props.js";
+import { expandDocTags, registryOrigin } from "../scripts/docs-transform.js";
 import { COLOR_GROUPS, tokenUtility } from "../src/lib/components/color-tokens.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -26,81 +26,6 @@ const GET_STARTED_ORDER = [
 	"dark-mode",
 	"troubleshooting",
 ];
-
-const DEFAULT_ORIGIN = "https://sv11.ui.twango.dev";
-
-// Single source of truth for the public origin: registry.json's homepage, the
-// same value the shadcn registry build stamps into r/*.json.
-function siteOrigin(): string {
-	try {
-		const reg = JSON.parse(readFileSync(join(ROOT, "registry.json"), "utf-8")) as {
-			homepage?: unknown;
-		};
-		if (typeof reg.homepage === "string" && reg.homepage) return reg.homepage.replace(/\/+$/, "");
-	} catch {
-		/* fall through to default */
-	}
-	return DEFAULT_ORIGIN;
-}
-
-type Prop = {
-	name: string;
-	type: string;
-	optional: boolean;
-	description: string;
-	default: string;
-};
-
-const INSTALL_RE = /<Install\s+component=["']([^"']+)["']\s*\/>/g;
-const USAGE_RE = /<Usage\s+component=["']([^"']+)["']\s*\/>/g;
-const API_RE = /<ComponentAPI\s+component=["']([^"']+)["']\s*\/>/g;
-const PREVIEW_RE = /<ComponentPreview\s+name=["']([^"']+)["'][^/]*\/>/g;
-const SOURCE_RE = /<ComponentSource\s+name=["']([^"']+)["'][^/]*\/>/g;
-const COLOR_PALETTE_RE = /<ColorPalette\s*\/>/g;
-
-const toPascal = (name: string) => name.replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
-const flatten = (s: string) => s.replace(/\s+/g, " ").trim();
-const escapeCell = (s: string) => s.replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
-
-function expandInstall(name: string) {
-	return [
-		"```bash",
-		`npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/${name}.json`,
-		"```",
-	].join("\n");
-}
-
-function expandUsage(name: string) {
-	const exportName = toPascal(name);
-	return [
-		"```svelte",
-		`<script lang="ts">`,
-		`\timport { ${exportName} } from "$lib/registry/ui/${name}";`,
-		`</script>`,
-		``,
-		`<${exportName} />`,
-		"```",
-	].join("\n");
-}
-
-function expandComponentAPI(name: string) {
-	const index = extractAllProps() as Record<string, { props: Prop[] }>;
-	const entry = index[name];
-	if (!entry) return `_Component \`${name}\` has no registered API._`;
-	if (entry.props.length === 0) return `_This component takes no props._`;
-	const rows = entry.props.map((p) => {
-		const propName = `\`${flatten(p.name)}${p.optional ? "?" : ""}\``;
-		const type = `\`${escapeCell(flatten(p.type))}\``;
-		const def = p.default ? `\`${escapeCell(flatten(p.default))}\`` : "—";
-		const desc = p.description ? escapeCell(flatten(p.description)) : "—";
-		return `| ${propName} | ${type} | ${def} | ${desc} |`;
-	});
-	return [
-		"| Prop | Type | Default | Description |",
-		"| ---- | ---- | ------- | ----------- |",
-		...rows,
-	].join("\n");
-}
 
 function expandComponentPreview(name: string) {
 	// The preview is an interactive Svelte component — can't serialize. Inline
@@ -143,12 +68,11 @@ function transform(source: string): string {
 		);
 		out = out.replace(leadingH1, "");
 	}
-	out = out.replace(INSTALL_RE, (_, n) => expandInstall(n));
-	out = out.replace(USAGE_RE, (_, n) => expandUsage(n));
-	out = out.replace(API_RE, (_, n) => expandComponentAPI(n));
-	out = out.replace(PREVIEW_RE, (_, n) => expandComponentPreview(n));
-	out = out.replace(SOURCE_RE, (_, n) => expandComponentPreview(n));
-	out = out.replace(COLOR_PALETTE_RE, () => expandColorPalette());
+	out = expandDocTags(out, {
+		ComponentPreview: ({ name }) => expandComponentPreview(name),
+		ComponentSource: ({ name }) => expandComponentPreview(name),
+		ColorPalette: () => expandColorPalette(),
+	}).code;
 	const header = [title && `# ${title}`, description && `> ${description}`]
 		.filter(Boolean)
 		.join("\n\n");
@@ -283,7 +207,7 @@ function generateAll() {
 	rmSync(join(STATIC_DIR, "llms.txt"), { force: true });
 	rmSync(join(STATIC_DIR, "llms-full.txt"), { force: true });
 
-	const origin = siteOrigin();
+	const origin = registryOrigin();
 	const entries: DocEntry[] = [];
 
 	for (const file of walkMd(CONTENT_DIR)) {

@@ -63,10 +63,7 @@
 
 	const state = setSpeechInput();
 
-	// Sync props → state on every render. Adapter reference is stored via
-	// configure() as a plain private field, not reactive state — swapping
-	// adapters mid-recording is explicitly unsupported and does nothing
-	// until the next start() call.
+	// Adapter changes apply on the next start; callbacks stay current.
 	$effect(() => {
 		state.configure({
 			adapter,
@@ -75,12 +72,8 @@
 		state.size = size;
 	});
 
-	// Teardown on unmount only. We deliberately use onDestroy here instead of
-	// $effect(() => () => ...). $effect cleanup runs on every re-run (e.g.,
-	// dev-mode HMR, parent re-mounts), which would cancel recording mid-session.
-	// onDestroy fires only when the component is destroyed.
 	onDestroy(() => {
-		if (state.status !== "idle") state.cancel();
+		void state.dispose();
 	});
 </script>
 
@@ -89,7 +82,7 @@
 	data-slot="speech-input-root"
 	class={cn(
 		"relative inline-flex items-center overflow-hidden rounded-md transition-all duration-200",
-		state.isConnected &&
+		(state.isConnected || state.status === "stopping") &&
 			"bg-background dark:bg-muted shadow-[inset_0_0_0_1px_var(--color-input),0_1px_2px_0_rgba(0,0,0,0.05)]",
 		className
 	)}

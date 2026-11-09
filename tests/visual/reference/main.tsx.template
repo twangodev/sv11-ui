@@ -1,0 +1,191 @@
+import React, { Suspense, lazy, useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import { ConversationProvider } from "@elevenlabs/react";
+import { Orb } from "./registry/elevenlabs-ui/ui/orb";
+import { Waveform } from "./registry/elevenlabs-ui/ui/waveform";
+import { LiveWaveform } from "./registry/elevenlabs-ui/ui/live-waveform";
+import { ShimmeringText } from "./registry/elevenlabs-ui/ui/shimmering-text";
+import * as Audio from "./registry/elevenlabs-ui/ui/audio-player";
+import * as Message from "./registry/elevenlabs-ui/ui/message";
+import * as Conversation from "./registry/elevenlabs-ui/ui/conversation";
+import { Response } from "./registry/elevenlabs-ui/ui/response";
+import { BarVisualizer } from "./registry/elevenlabs-ui/ui/bar-visualizer";
+import { Matrix } from "./registry/elevenlabs-ui/ui/matrix";
+import { VoicePicker } from "./registry/elevenlabs-ui/ui/voice-picker";
+import { VoiceButton } from "./registry/elevenlabs-ui/ui/voice-button";
+import { ConversationBar } from "./registry/elevenlabs-ui/ui/conversation-bar";
+import { MicSelector } from "./registry/elevenlabs-ui/ui/mic-selector";
+import * as Transcript from "./registry/elevenlabs-ui/ui/transcript-viewer";
+import * as Scrub from "./registry/elevenlabs-ui/ui/scrub-bar";
+import * as Speech from "./registry/elevenlabs-ui/ui/speech-input";
+import "./style.css";
+import inventory from "./upstream-parity.json";
+const params = new URL(location.href).searchParams;
+const name = params.get("component") ?? "orb";
+const theme = params.get("theme") ?? "light";
+if (![...inventory.ui, ...inventory.blocks.map((block) => `block-${block}`)].includes(name))
+	throw new Error(`Unknown visual fixture: ${name}`);
+if (theme !== "light" && theme !== "dark") throw new Error(`Unknown fixture theme: ${theme}`);
+document.documentElement.classList.toggle("dark", theme === "dark");
+const blocks = import.meta.glob("./registry/elevenlabs-ui/blocks/*/page.tsx");
+const block = name.startsWith("block-") ? name.slice(6) : undefined;
+const Block = block ? lazy(blocks[`./registry/elevenlabs-ui/blocks/${block}/page.tsx`]) : undefined;
+const samples = Array.from({ length: 80 }, (_, i) => 0.12 + Math.abs(Math.sin(i * 0.45)) * 0.75);
+const pattern = Array.from({ length: 7 }, (_, row) =>
+	Array.from({ length: 7 }, (_, col) => (row === col || row + col === 6 ? 1 : 0))
+);
+const text = "Hello world. This is a timed transcript.";
+const alignment = {
+	characters: text.split(""),
+	characterStartTimesSeconds: [...text].map((_, i) => i * 0.1),
+	characterEndTimesSeconds: [...text].map((_, i) => (i + 1) * 0.1),
+};
+const markdown =
+	"Hello **world**. Here is a [link](https://example.com).\n\n- First item\n- Second item\n\n> A useful quote.";
+function Fixture() {
+	const [value, setValue] = useState(30);
+	if (Block) return <Block />;
+	switch (name) {
+		case "orb":
+			return (
+				<div className="mx-auto size-48">
+					<Orb seed={1000} volumeMode="manual" manualInput={0} manualOutput={0} />
+				</div>
+			);
+		case "waveform":
+			return <Waveform data={samples} height={80} />;
+		case "live-waveform":
+			return <LiveWaveform height={80} active={false} />;
+		case "shimmering-text":
+			return <ShimmeringText text="Listening to your voice" repeat={false} duration={0} />;
+		case "audio-player":
+			return (
+				<Audio.AudioPlayerProvider>
+					<div className="flex items-center gap-3">
+						<Audio.AudioPlayerButton />
+						<Audio.AudioPlayerTime />
+						<Audio.AudioPlayerProgress className="flex-1" />
+						<Audio.AudioPlayerDuration />
+						<Audio.AudioPlayerSpeed />
+					</div>
+				</Audio.AudioPlayerProvider>
+			);
+		case "message":
+			return (
+				<div className="space-y-4">
+					<Message.Message from="user">
+						<Message.MessageContent>How can I build a voice agent?</Message.MessageContent>
+					</Message.Message>
+					<Message.Message from="assistant">
+						<Message.MessageContent>
+							Choose your provider and connect an adapter.
+						</Message.MessageContent>
+					</Message.Message>
+				</div>
+			);
+		case "conversation":
+			return (
+				<div className="h-80 rounded-xl border">
+					<Conversation.Conversation>
+						<Conversation.ConversationContent>
+							<Conversation.ConversationEmptyState
+								title="Start a conversation"
+								description="Type a message to begin"
+							/>
+						</Conversation.ConversationContent>
+					</Conversation.Conversation>
+				</div>
+			);
+		case "response":
+			return <Response>{markdown}</Response>;
+		case "bar-visualizer":
+			return <BarVisualizer barCount={15} />;
+		case "matrix":
+			return (
+				<div className="flex justify-center">
+					<Matrix rows={7} cols={7} pattern={pattern} />
+				</div>
+			);
+		case "voice-picker":
+			return (
+				<VoicePicker
+					voices={[
+						{ voiceId: "rachel", name: "Rachel", labels: { gender: "female", accent: "american" } },
+						{ voiceId: "drew", name: "Drew", labels: { gender: "male", accent: "american" } },
+					]}
+				/>
+			);
+		case "voice-button":
+			return (
+				<div className="flex flex-wrap gap-4">
+					<VoiceButton label="Voice input" trailing="⌥Space" />
+					<VoiceButton label="Processing" state="processing" />
+					<VoiceButton label="Success" state="success" feedbackDuration={60000} />
+					<VoiceButton label="Error" state="error" feedbackDuration={60000} />
+				</div>
+			);
+		case "conversation-bar":
+			return (
+				<ConversationProvider>
+					<ConversationBar agentId="visual-fixture" />
+				</ConversationProvider>
+			);
+		case "mic-selector":
+			return <MicSelector />;
+		case "transcript-viewer":
+			return (
+				<Transcript.TranscriptViewerContainer
+					alignment={alignment}
+					audioSrc="/audio/transcript-viewer.wav"
+					className="rounded-xl border p-4"
+				>
+					<Transcript.TranscriptViewerAudio className="sr-only" />
+					<Transcript.TranscriptViewerWords />
+					<Transcript.TranscriptViewerScrubBar />
+					<Transcript.TranscriptViewerPlayPauseButton size="default" className="w-full">
+						Play
+					</Transcript.TranscriptViewerPlayPauseButton>
+				</Transcript.TranscriptViewerContainer>
+			);
+		case "scrub-bar":
+			return (
+				<Scrub.ScrubBarContainer duration={100} value={value} onScrub={setValue}>
+					<Scrub.ScrubBarTimeLabel time={value} className="w-10 text-center" />
+					<Scrub.ScrubBarTrack className="mx-2">
+						<Scrub.ScrubBarProgress />
+						<Scrub.ScrubBarThumb className="bg-primary" />
+					</Scrub.ScrubBarTrack>
+					<Scrub.ScrubBarTimeLabel time={100} className="w-10 text-center" />
+				</Scrub.ScrubBarContainer>
+			);
+		case "speech-input":
+			return (
+				<Speech.SpeechInput getToken={async () => "fixture"}>
+					<Speech.SpeechInputCancelButton />
+					<Speech.SpeechInputPreview placeholder="Listening..." />
+					<Speech.SpeechInputRecordButton />
+				</Speech.SpeechInput>
+			);
+	}
+}
+function Ready() {
+	useEffect(() => {
+		document
+			.querySelector('[data-testid="visual-stage"]')!
+			.setAttribute("data-visual-ready", "true");
+	}, []);
+	return null;
+}
+createRoot(document.getElementById("root")!).render(
+	<main
+		className="mx-auto w-full max-w-3xl p-8"
+		data-testid="visual-stage"
+		data-component={name}
+		data-visual-ready="false"
+	>
+		<Suspense fallback={null}>
+			<Fixture />
+			<Ready />
+		</Suspense>
+	</main>
+);

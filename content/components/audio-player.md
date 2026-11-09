@@ -18,7 +18,7 @@ links:
 
 ```svelte
 <script lang="ts">
-	import * as AudioPlayer from "$lib/registry/ui/audio-player";
+	import * as AudioPlayer from "$lib/components/ui/audio-player";
 </script>
 
 <AudioPlayer.Root>
@@ -39,7 +39,7 @@ Pass an `AudioPlayerItem` to `AudioPlayer.Button` via the `item` prop. Activatin
 
 ```svelte
 <script lang="ts">
-	import * as AudioPlayer from "$lib/registry/ui/audio-player";
+	import * as AudioPlayer from "$lib/components/ui/audio-player";
 
 	const track = {
 		id: "track-1",
@@ -60,7 +60,7 @@ A single `AudioPlayer.Root` can front many tracks. Each per-track `AudioPlayer.B
 
 ```svelte
 <script lang="ts">
-	import * as AudioPlayer from "$lib/registry/ui/audio-player";
+	import * as AudioPlayer from "$lib/components/ui/audio-player";
 
 	const tracks = [
 		{ id: "1", src: "/audio/track1.mp3", data: { title: "Track 1" } },
@@ -93,7 +93,7 @@ Drop in `AudioPlayer.Speed` for a dropdown picker, or `AudioPlayer.SpeedButtonGr
 
 ```svelte
 <script lang="ts">
-	import * as AudioPlayer from "$lib/registry/ui/audio-player";
+	import * as AudioPlayer from "$lib/components/ui/audio-player";
 </script>
 
 <AudioPlayer.Root>
@@ -115,8 +115,8 @@ Drop in `AudioPlayer.Speed` for a dropdown picker, or `AudioPlayer.SpeedButtonGr
 ```svelte
 <!-- CustomControls.svelte -->
 <script lang="ts">
-	import { useAudioPlayer } from "$lib/registry/ui/audio-player";
-	import { Button } from "$lib/registry/ui/button";
+	import { useAudioPlayer } from "$lib/components/ui/audio-player";
+	import { Button } from "$lib/components/ui/button";
 
 	const player = useAudioPlayer();
 </script>
@@ -142,7 +142,7 @@ Drop in `AudioPlayer.Speed` for a dropdown picker, or `AudioPlayer.SpeedButtonGr
 
 ```svelte
 <script lang="ts">
-	import * as AudioPlayer from "$lib/registry/ui/audio-player";
+	import * as AudioPlayer from "$lib/components/ui/audio-player";
 	import CustomControls from "./CustomControls.svelte";
 </script>
 
@@ -158,8 +158,8 @@ The root surfaces the `<audio>` element's `MediaError` through `player.error`. R
 ```svelte
 <!-- ErrorBanner.svelte -->
 <script lang="ts">
-	import * as AudioPlayer from "$lib/registry/ui/audio-player";
-	import { useAudioPlayer } from "$lib/registry/ui/audio-player";
+	import * as AudioPlayer from "$lib/components/ui/audio-player";
+	import { useAudioPlayer } from "$lib/components/ui/audio-player";
 
 	const player = useAudioPlayer();
 </script>
@@ -177,7 +177,7 @@ The root surfaces the `<audio>` element's `MediaError` through `player.error`. R
 
 ```svelte
 <script lang="ts">
-	import * as AudioPlayer from "$lib/registry/ui/audio-player";
+	import * as AudioPlayer from "$lib/components/ui/audio-player";
 	import ErrorBanner from "./ErrorBanner.svelte";
 </script>
 

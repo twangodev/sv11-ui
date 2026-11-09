@@ -2,9 +2,11 @@
 	export type MicSelectorProps = {
 		/**
 		 * Selected microphone `deviceId`. Leave unset for uncontrolled mode —
-		 * the first available device is auto-selected.
+		 * the first available device is auto-selected. A shared session takes precedence.
 		 */
 		value?: string;
+		/** Shared state takes precedence over value/muted. Controls are available while connected. */
+		session?: import("../voice-session/session.js").ConversationSession;
 		/** Called when the user picks a different microphone from the dropdown. */
 		onValueChange?: (deviceId: string) => void;
 		/**
@@ -21,6 +23,7 @@
 </script>
 
 <script lang="ts">
+	import { useConversation } from "../voice-session/use-conversation.svelte.js";
 	import Check from "@lucide/svelte/icons/check";
 	import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
 	import Mic from "@lucide/svelte/icons/mic";
@@ -39,6 +42,7 @@
 
 	let {
 		value,
+		session,
 		onValueChange,
 		muted,
 		onMutedChange,
@@ -47,13 +51,28 @@
 	}: MicSelectorProps = $props();
 
 	const audio = useAudioDevices();
+	const voice = useConversation(() => session);
 
-	let selectedDevice = $state("");
+	let internalDeviceId = $state("");
 	let internalMuted = $state(false);
 	let isDropdownOpen = $state(false);
 
-	const isMuted = $derived(muted !== undefined ? muted : internalMuted);
+	const isMuted = $derived(
+		session ? voice.snapshot.muted : muted !== undefined ? muted : internalMuted
+	);
 	const defaultDeviceId = $derived(audio.devices[0]?.deviceId ?? "");
+	const selectedDevice = $derived(
+		session
+			? (voice.snapshot.inputDeviceId ?? defaultDeviceId)
+			: (value ?? (internalDeviceId || defaultDeviceId))
+	);
+	const canSelectDevice = $derived(
+		!session ||
+			(voice.snapshot.status === "connected" && voice.session.capabilities.inputDevice !== false)
+	);
+	const canMute = $derived(
+		!session || (voice.snapshot.status === "connected" && voice.session.capabilities.mute !== false)
+	);
 	const currentDevice = $derived(
 		audio.devices.find((d) => d.deviceId === selectedDevice) ??
 			audio.devices[0] ?? {
@@ -65,31 +84,45 @@
 	const isPreviewActive = $derived(isDropdownOpen && !isMuted);
 
 	$effect(() => {
-		if (value !== undefined) selectedDevice = value;
-	});
-
-	$effect(() => {
-		if (!selectedDevice && defaultDeviceId) {
-			selectedDevice = defaultDeviceId;
+		if (!session && value === undefined && !internalDeviceId && defaultDeviceId) {
+			internalDeviceId = defaultDeviceId;
 			onValueChange?.(defaultDeviceId);
 		}
 	});
 
-	function handleDeviceSelect(deviceId: string) {
-		selectedDevice = deviceId;
+	async function handleDeviceSelect(deviceId: string) {
+		if (!canSelectDevice) return;
+		const targetSession = session;
+		if (targetSession) {
+			try {
+				await targetSession.setInputDevice(deviceId);
+			} catch {
+				return;
+			}
+			if (targetSession !== session) return;
+		} else if (value === undefined) internalDeviceId = deviceId;
 		onValueChange?.(deviceId);
 	}
 
 	async function handleDropdownOpenChange(open: boolean) {
 		isDropdownOpen = open;
-		if (open && !audio.hasPermission && !audio.loading) {
+		if (open && !session && !audio.hasPermission && !audio.loading) {
 			await audio.loadDevices();
 		}
 	}
 
-	function toggleMute() {
+	async function toggleMute() {
+		if (!canMute) return;
 		const newMuted = !isMuted;
-		if (muted === undefined) internalMuted = newMuted;
+		const targetSession = session;
+		if (targetSession) {
+			try {
+				await targetSession.setMuted(newMuted);
+			} catch {
+				return;
+			}
+			if (targetSession !== session) return;
+		} else if (muted === undefined) internalMuted = newMuted;
 		onMutedChange?.(newMuted);
 	}
 </script>
@@ -127,6 +160,7 @@
 		{:else}
 			{#each audio.devices as device (device.deviceId)}
 				<DropdownMenuItem
+					disabled={!canSelectDevice}
 					onSelect={(e) => {
 						e.preventDefault();
 						handleDeviceSelect(device.deviceId);
@@ -147,6 +181,7 @@
 				<Button
 					variant="ghost"
 					size="sm"
+					disabled={!canMute}
 					onclick={(e) => {
 						e.preventDefault();
 						toggleMute();
@@ -163,6 +198,7 @@
 				<div class="bg-accent ml-auto w-16 overflow-hidden rounded-md p-1.5">
 					<LiveWaveform
 						active={isPreviewActive}
+						getLevel={session?.getInputVolume}
 						deviceId={selectedDevice || defaultDeviceId}
 						mode="static"
 						height={15}

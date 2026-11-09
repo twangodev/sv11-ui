@@ -24,7 +24,7 @@ Wrap your message list in `Conversation.Root` and `Conversation.Content`. Includ
 
 ```svelte
 <script lang="ts">
-	import * as Conversation from "$lib/registry/ui/conversation";
+	import * as Conversation from "$lib/components/ui/conversation";
 
 	type Turn = { id: string; content: string };
 	let messages: Turn[] = $state([]);
@@ -47,7 +47,7 @@ Render `Conversation.EmptyState` when the message list is empty. It accepts `tit
 ```svelte
 <script lang="ts">
 	import MessageCircleIcon from "@lucide/svelte/icons/message-circle";
-	import * as Conversation from "$lib/registry/ui/conversation";
+	import * as Conversation from "$lib/components/ui/conversation";
 
 	type Turn = { id: string; content: string };
 	let messages: Turn[] = $state([]);

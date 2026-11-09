@@ -68,7 +68,7 @@ The orb accepts a `colors` prop — a tuple of two color strings that are fed in
 
 ```svelte
 <script lang="ts">
-	import { Orb } from "$lib/registry/ui/orb";
+	import { Orb } from "$lib/components/ui/orb";
 </script>
 
 <Orb colors={["#CADCFC", "#A0B9D1"]} />
@@ -82,7 +82,7 @@ The matrix LED display accepts a `palette` prop with `on` and `off` colors for l
 
 ```svelte
 <script lang="ts">
-	import { Matrix } from "$lib/registry/ui/matrix";
+	import { Matrix } from "$lib/components/ui/matrix";
 </script>
 
 <Matrix rows={7} cols={7} palette={{ on: "oklch(0.7 0.2 150)", off: "var(--muted-foreground)" }} />
@@ -96,8 +96,8 @@ Both `Waveform` and `LiveWaveform` accept an optional `barColor` prop. When omit
 
 ```svelte
 <script lang="ts">
-	import { Waveform } from "$lib/registry/ui/waveform";
-	import { LiveWaveform } from "$lib/registry/ui/live-waveform";
+	import { Waveform } from "$lib/components/ui/waveform";
+	import { LiveWaveform } from "$lib/components/ui/live-waveform";
 </script>
 
 <Waveform data={samples} barColor="oklch(0.55 0.2 250)" />

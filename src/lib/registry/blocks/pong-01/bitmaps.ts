@@ -1,97 +1,43 @@
 import type { Frame } from "$lib/registry/ui/matrix/index.js";
 import { COLS, ROWS } from "./game-engine.js";
 
-// 3×5 bitmap font, just the glyphs needed for PONG / WIN / LOSE.
-const GLYPHS: Record<string, number[][]> = {
-	P: [
-		[1, 1, 1],
-		[1, 0, 1],
-		[1, 1, 1],
-		[1, 0, 0],
-		[1, 0, 0],
+// Matrix title and result lettering from the pinned ElevenLabs UI reference.
+const WORDS: Record<string, string[]> = {
+	PONG: [
+		"000000000000000000000",
+		"000111011101110111100",
+		"000101010101010100000",
+		"000111010101010101100",
+		"000100010101010100100",
+		"000100011101010111100",
+		"000000000000000000000",
 	],
-	O: [
-		[1, 1, 1],
-		[1, 0, 1],
-		[1, 0, 1],
-		[1, 0, 1],
-		[1, 1, 1],
+	WIN: [
+		"000000000000000000000",
+		"001010101110100010000",
+		"001010100100110010000",
+		"001010100100101010000",
+		"001010100100100110000",
+		"000101001110100010000",
+		"000000000000000000000",
 	],
-	N: [
-		[1, 0, 1],
-		[1, 1, 1],
-		[1, 1, 1],
-		[1, 1, 1],
-		[1, 0, 1],
-	],
-	G: [
-		[1, 1, 1],
-		[1, 0, 0],
-		[1, 0, 1],
-		[1, 0, 1],
-		[1, 1, 1],
-	],
-	W: [
-		[1, 0, 1],
-		[1, 0, 1],
-		[1, 1, 1],
-		[1, 1, 1],
-		[1, 0, 1],
-	],
-	I: [
-		[1, 1, 1],
-		[0, 1, 0],
-		[0, 1, 0],
-		[0, 1, 0],
-		[1, 1, 1],
-	],
-	L: [
-		[1, 0, 0],
-		[1, 0, 0],
-		[1, 0, 0],
-		[1, 0, 0],
-		[1, 1, 1],
-	],
-	S: [
-		[1, 1, 1],
-		[1, 0, 0],
-		[1, 1, 1],
-		[0, 0, 1],
-		[1, 1, 1],
-	],
-	E: [
-		[1, 1, 1],
-		[1, 0, 0],
-		[1, 1, 1],
-		[1, 0, 0],
-		[1, 1, 1],
+	LOSE: [
+		"000000000000000000000",
+		"001000111011101111000",
+		"001000101010001000000",
+		"001000101011101110000",
+		"001000101000101000000",
+		"001110111011101111000",
+		"000000000000000000000",
 	],
 };
 
-const GLYPH_W = 3;
-const GLYPH_H = 5;
-
-/** Render a short word centered in a ROWS×COLS frame using the bitmap font. */
+/** Center the reference lettering in a board, cropping only when the board is smaller. */
 export function renderWord(word: string, cols = COLS, rows = ROWS): Frame {
-	const letters = word.toUpperCase().split("");
-	const width = letters.length * GLYPH_W + (letters.length - 1);
-	const startCol = Math.floor((cols - width) / 2);
-	const startRow = Math.floor((rows - GLYPH_H) / 2);
-
-	const frame: Frame = Array.from({ length: rows }, () => Array(cols).fill(0));
-	let col = startCol;
-	for (const letter of letters) {
-		const glyph = GLYPHS[letter];
-		if (glyph) {
-			for (let r = 0; r < GLYPH_H; r++) {
-				for (let c = 0; c < GLYPH_W; c++) {
-					const row = startRow + r;
-					const cc = col + c;
-					if (row >= 0 && row < rows && cc >= 0 && cc < cols) frame[row][cc] = glyph[r][c];
-				}
-			}
-		}
-		col += GLYPH_W + 1;
-	}
-	return frame;
+	const pattern = WORDS[word.toUpperCase()] ?? [];
+	const top = Math.floor((rows - ROWS) / 2);
+	const left = Math.floor((cols - COLS) / 2);
+	return Array.from({ length: rows }, (_, row) =>
+		Array.from({ length: cols }, (_, col) => Number(pattern[row - top]?.[col - left] ?? 0))
+	);
 }

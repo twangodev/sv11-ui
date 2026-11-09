@@ -1,92 +1,19 @@
 # sv11-ui
 
-[sv11-ui](https://sv11.ui.twango.dev) is a Svelte 5 port of [elevenlabs/ui](https://github.com/elevenlabs/ui), built on top of [shadcn-svelte](https://shadcn-svelte.com/) to help you build AI agent interfaces faster.
+A provider-agnostic Svelte 5 port of [ElevenLabs UI](https://github.com/elevenlabs/ui), built with [shadcn-svelte](https://shadcn-svelte.com/).
 
-## Overview
+Voice agents, orbs, waveforms, audio players, chat, and transcription components. Bring your own backend or use the optional ElevenLabs, Pipecat, LiveKit, and AI SDK integrations.
 
-sv11-ui brings the [ElevenLabs UI](https://ui.elevenlabs.io) component library to the Svelte ecosystem. Same components — orbs, waveforms, voice agents, audio players, conversation UIs, and more — rebuilt from the ground up for Svelte 5 and SvelteKit.
+## Install
 
-This time, it's provider-agnostic by design. You can bring your own backend (ElevenLabs, OpenAI, Deepgram, or custom).
-
-The CLI makes it easy to add these components to your SvelteKit project.
-
-## Installation
+Start with a Svelte 5 project with Tailwind CSS and shadcn-svelte initialized.
 
 ```bash
-# Using shadcn-svelte CLI
-npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/<component-name>.json
-
-# Install all components
-npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/all.json
-```
-
-## Prerequisites
-
-Before using sv11-ui, ensure your SvelteKit project meets these requirements:
-
-- **Node.js 18** or later
-- **shadcn-svelte** initialized in your project
-- **Tailwind CSS** configured
-- **Svelte 5** with runes
-
-## Usage
-
-### Install Specific Components
-
-```bash
-# Install the message component
-npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/message.json
-
-# Install the audio player
-npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/audio-player.json
-
-# Install the orb
+# Add a component
 npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/orb.json
-```
 
-### Install All Components
-
-```bash
+# Add all components (provider SDKs are optional installs)
 npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/all.json
 ```
 
-## Components
-
-### UI Components
-
-Components below are listed in recommended porting order: foundations first, then composites that build on them, saving the heaviest lifts (Web Audio, Three.js) for last.
-
-| Component           | Description                                         | Status |
-| ------------------- | --------------------------------------------------- | ------ |
-| `message`           | Chat message bubble with avatar and variant styling | Done   |
-| `response`          | Streaming markdown renderer for AI responses        | Done   |
-| `shimmering-text`   | Text with shimmer/gradient animation                | Done   |
-| `scrub-bar`         | Audio timeline scrubber                             | Done   |
-| `conversation`      | Chat message container with auto-scroll             | Done   |
-| `audio-player`      | Full-featured audio playback with scrubbing         | Done   |
-| `waveform`          | Static audio waveform visualization                 | Done   |
-| `live-waveform`     | Real-time microphone waveform                       | Done   |
-| `voice-button`      | Voice input button with state feedback              | Done   |
-| `mic-selector`      | Microphone device selector                          | Done   |
-| `matrix`            | LED matrix display with animations                  | Done   |
-| `bar-visualizer`    | Audio frequency band visualization                  | Done   |
-| `transcript-viewer` | Synchronized transcript with audio playback         | Done   |
-| `speech-input`      | Real-time speech-to-text input                      | Done   |
-| `conversation-bar`  | Chat input bar with voice/text modes                | Done   |
-| `orb`               | 3D animated voice agent visualclzation              | Done   |
-| `voice-picker`      | Voice selection dropdown with preview               | Done   |
-
-### Provider-Agnostic
-
-Components that interact with AI services accept adapter interfaces — not SDK-specific types. Implement `ConversationAdapter`, `TranscriptionAdapter`, or `Voice` for your provider of choice.
-
-```svelte
-<script>
-	import { ConversationBar } from "$lib/registry/ui/conversation-bar";
-	import { createMyConversation } from "./my-adapter";
-
-	const conversation = createMyConversation({ agentId: "xxx" });
-</script>
-
-<ConversationBar adapter={conversation} />
-```
+[Documentation](https://sv11.ui.twango.dev/docs) · [Components](https://sv11.ui.twango.dev/docs/components) · [Adapter guides](https://sv11.ui.twango.dev/docs/adapters)

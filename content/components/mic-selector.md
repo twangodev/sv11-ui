@@ -24,7 +24,7 @@ Drop the selector in. It auto-selects the first available microphone and manages
 
 ```svelte
 <script lang="ts">
-	import { MicSelector } from "$lib/registry/ui/mic-selector";
+	import { MicSelector } from "$lib/components/ui/mic-selector";
 </script>
 
 <MicSelector />
@@ -36,7 +36,7 @@ Bind the selected `deviceId` to local state to react to device changes elsewhere
 
 ```svelte
 <script lang="ts">
-	import { MicSelector } from "$lib/registry/ui/mic-selector";
+	import { MicSelector } from "$lib/components/ui/mic-selector";
 
 	let selectedDevice = $state("");
 </script>
@@ -50,7 +50,7 @@ Pair the mute callback with your own mute state so recording controls can react 
 
 ```svelte
 <script lang="ts">
-	import { MicSelector } from "$lib/registry/ui/mic-selector";
+	import { MicSelector } from "$lib/components/ui/mic-selector";
 
 	let selectedDevice = $state("");
 	let isMuted = $state(false);
@@ -62,6 +62,14 @@ Pair the mute callback with your own mute state so recording controls can react 
 	muted={isMuted}
 	onMutedChange={(m) => (isMuted = m)}
 />
+```
+
+### Share Active Session Controls
+
+Pass the same `session` used by your conversation controls to switch the active input and share mute state. Session controls require a connected session and the corresponding adapter capability (`inputDevice` or `mute`). The selector uses the session's audio meter rather than acquiring a preview stream.
+
+```svelte
+<MicSelector {session} />
 ```
 
 ### Custom Styling
@@ -78,7 +86,7 @@ The exported `useAudioDevices` hook powers the dropdown and can be reused to ren
 
 ```svelte
 <script lang="ts">
-	import { useAudioDevices } from "$lib/registry/ui/mic-selector";
+	import { useAudioDevices } from "$lib/components/ui/mic-selector";
 
 	const audio = useAudioDevices();
 </script>
@@ -102,9 +110,9 @@ The exported `useAudioDevices` hook powers the dropdown and can be reused to ren
 
 ## Notes
 
-- The trigger uses the `LiveWaveform` component inside the dropdown to preview the selected microphone in real time.
-- On first open, the dropdown calls `navigator.mediaDevices.getUserMedia` to request microphone permission so device labels can be populated.
+- The dropdown uses `LiveWaveform` to preview local microphone input, or the existing session meter when `session` is supplied.
+- Without a session, the first open requests microphone permission so device labels can be populated. A supplied session owns its input permission and media lifecycle.
 - The hook re-enumerates devices on `devicechange` events, so hot-plugging a headset updates the list without a refresh.
 - Device labels are cleaned of parenthesized metadata (for example `"(Built-in)"`) before being displayed.
-- Works in both controlled and uncontrolled modes for `value` and `muted` independently — omit either pair to let the component track state internally.
+- Without a session, `value` and `muted` can be controlled independently; omit either pair for local state. With a session, its device and mute state drive the control.
 - The preview waveform only animates while the dropdown is open and the mic is not muted, so an idle selector does not hold an audio stream.

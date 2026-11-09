@@ -24,7 +24,7 @@ Pass a string to the `content` prop. Any markdown is rendered to HTML on the fly
 
 ```svelte
 <script lang="ts">
-	import { Response } from "$lib/registry/ui/response";
+	import { Response } from "$lib/components/ui/response";
 </script>
 
 <Response content="This is a simple text response." />
@@ -36,7 +36,7 @@ Full markdown is supported — headings, lists, tables, blockquotes, inline code
 
 ```svelte
 <script lang="ts">
-	import { Response } from "$lib/registry/ui/response";
+	import { Response } from "$lib/components/ui/response";
 
 	const content = `# Heading
 
@@ -62,7 +62,7 @@ Drive `content` from `$state` and append tokens as they arrive. `Response` forwa
 
 ```svelte
 <script lang="ts">
-	import { Response } from "$lib/registry/ui/response";
+	import { Response } from "$lib/components/ui/response";
 
 	let content = $state("");
 
@@ -80,8 +80,8 @@ Compose inside a `Message` to render streaming assistant output next to an avata
 
 ```svelte
 <script lang="ts">
-	import * as Message from "$lib/registry/ui/message";
-	import { Response } from "$lib/registry/ui/response";
+	import * as Message from "$lib/components/ui/message";
+	import { Response } from "$lib/components/ui/response";
 
 	let { streamingResponse }: { streamingResponse: string } = $props();
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { onDestroy, untrack } from "svelte";
 	import Music from "@lucide/svelte/icons/music";
 	import SkipBack from "@lucide/svelte/icons/skip-back";
 	import SkipForward from "@lucide/svelte/icons/skip-forward";
@@ -165,10 +165,11 @@
 		audioEl.addEventListener("play", handleStart);
 		return () => {
 			audioEl.removeEventListener("play", handleStart);
-			graph.destroy();
 			scrub.reset();
+			graph.destroy();
 		};
 	});
+	onDestroy(() => scrub.dispose());
 
 	$effect(() => {
 		let animationId: number;
@@ -242,7 +243,7 @@
 				<div class="flex items-center justify-between">
 					<div class="min-w-0 flex-1">
 						<h3 class="text-foreground truncate text-sm font-medium">{currentTrack.title}</h3>
-						<p class="text-muted-foreground truncate text-xs">{currentTrack.artist}</p>
+						<span class="text-muted-foreground truncate text-xs">{currentTrack.artist}</span>
 					</div>
 					<div class="flex gap-1">
 						<Button

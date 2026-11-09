@@ -7,6 +7,7 @@
 
 	let {
 		class: className,
+		theme,
 		...restProps
 	}: StreamdownProps & {
 		/**
@@ -27,8 +28,18 @@
 <div data-slot="response" class="contents">
 	<Streamdown
 		baseTheme="shadcn"
+		theme={{
+			paragraph: { base: "text-inherit" },
+			ul: { base: "ml-0 [li_&]:pl-6" },
+			ol: { base: "ml-0 [li_&]:pl-6" },
+			li: { base: "[&>p]:inline" },
+			...theme,
+		}}
 		components={{ code: Code, mermaid: Mermaid, math: Math }}
-		class={cn("size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0", className)}
+		class={cn(
+			"size-full space-y-4 whitespace-normal [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+			className
+		)}
 		{...restProps}
 	/>
 </div>

@@ -14,7 +14,15 @@ links:
 
 ## Usage
 
-<Usage component="orb" />
+The orb fills its parent. Give the parent an explicit size so the canvas has room to render.
+
+```svelte
+<script lang="ts">
+	import { Orb } from "$lib/components/ui/orb";
+</script>
+
+<div class="size-48"><Orb /></div>
+```
 
 ## Examples
 
@@ -28,11 +36,11 @@ Pass a two-tuple of hex colors to replace the default gradient.
 
 ### Audio Reactivity
 
-Sample live input and output volumes every frame by passing `getInputVolume` and `getOutputVolume`. Each should return a normalized value in `[0, 1]`.
+Set `volumeMode="manual"` to sample live input and output volumes every frame through `getInputVolume` and `getOutputVolume`. Each should return a normalized value in `[0, 1]`. The default `"auto"` mode animates from `agentState`; it does not sample a microphone.
 
 ```svelte
 <script lang="ts">
-	import { Orb } from "$lib/registry/ui/orb";
+	import { Orb } from "$lib/components/ui/orb";
 
 	function getInputVolume() {
 		// Return normalized microphone volume between 0 and 1.
@@ -45,7 +53,7 @@ Sample live input and output volumes every frame by passing `getInputVolume` and
 	}
 </script>
 
-<Orb {getInputVolume} {getOutputVolume} />
+<Orb volumeMode="manual" {getInputVolume} {getOutputVolume} />
 ```
 
 ### Custom Seed
@@ -62,8 +70,8 @@ Drive the orb's visual behavior from an agent lifecycle value. Pass `null` to re
 
 ```svelte
 <script lang="ts">
-	import { Orb } from "$lib/registry/ui/orb";
-	import type { OrbAgentState } from "$lib/registry/ui/orb";
+	import { Orb } from "$lib/components/ui/orb";
+	import type { OrbAgentState } from "$lib/components/ui/orb";
 
 	let agentState: OrbAgentState = $state(null);
 </script>
@@ -77,7 +85,7 @@ Switch `volumeMode` to `"manual"` and drive reactivity from reactive state inste
 
 ```svelte
 <script lang="ts">
-	import { Orb } from "$lib/registry/ui/orb";
+	import { Orb } from "$lib/components/ui/orb";
 
 	let inputVolume = $state(0.5);
 	let outputVolume = $state(0.7);
@@ -93,7 +101,8 @@ Switch `volumeMode` to `"manual"` and drive reactivity from reactive state inste
 ## Notes
 
 - Built on [Three.js](https://threejs.org/) and [@threlte/core](https://threlte.xyz/) for performant WebGL rendering from Svelte.
-- Pass functions (`getInputVolume` / `getOutputVolume`) for live audio, or `manualInput` / `manualOutput` with `volumeMode="manual"` for direct control. The callbacks take precedence when both are set.
+- Pass functions (`getInputVolume` / `getOutputVolume`) for live audio, or `manualInput` / `manualOutput` with `volumeMode="manual"` for direct control. Explicit `manualInput` and `manualOutput` values take precedence over their callbacks.
 - Reactive props (`colors`, `agentState`) update smoothly — you can animate palette transitions by mutating `$state` without remounting.
 - `seed` defaults to a stable per-instance random value, so multiple orbs on the same page render distinct shapes by default.
-- Canvas resizing is handled internally — the orb fills its container and re-renders on layout changes.
+- Canvas resizing is handled internally. `resizeDebounce` controls the delay after layout changes (default `100`ms).
+- `textureUrl` defaults to `https://sv11.ui.twango.dev/orbs/perlin-noise.png`. Supply your own noise texture URL to host that asset locally. Changing the URL reloads the scene; a failed load shows a static gradient using `colors`, labeled "Orb texture unavailable".

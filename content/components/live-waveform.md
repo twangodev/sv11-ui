@@ -20,11 +20,11 @@ links:
 
 ### Static Mode
 
-Render a symmetric frequency-band visualization with bars in fixed positions.
+Render a symmetric frequency-band visualization with bars in fixed positions. An external scalar meter drives the same value across the bars; microphone analysis supplies frequency bands.
 
 ```svelte
 <script lang="ts">
-	import { LiveWaveform } from "$lib/registry/ui/live-waveform";
+	import { LiveWaveform } from "$lib/components/ui/live-waveform";
 </script>
 
 <LiveWaveform active mode="static" />
@@ -36,7 +36,7 @@ Render the volume average as a timeline that scrolls right-to-left.
 
 ```svelte
 <script lang="ts">
-	import { LiveWaveform } from "$lib/registry/ui/live-waveform";
+	import { LiveWaveform } from "$lib/components/ui/live-waveform";
 </script>
 
 <LiveWaveform active mode="scrolling" />
@@ -48,10 +48,23 @@ Render the volume average as a timeline that scrolls right-to-left.
 
 ```svelte
 <script lang="ts">
-	import { LiveWaveform } from "$lib/registry/ui/live-waveform";
+	import { LiveWaveform } from "$lib/components/ui/live-waveform";
 </script>
 
 <LiveWaveform processing mode="static" />
+```
+
+### Meter an Existing Audio Source
+
+Pass `getLevel` to sample a normalized value in `[0, 1]` from an existing recorder or SDK. This takes precedence over microphone capture, so the waveform does not open a second input stream. `deviceId` and microphone lifecycle callbacks apply only when the component captures its own microphone.
+
+```svelte
+<script lang="ts">
+	import { LiveWaveform } from "$lib/components/ui/live-waveform";
+	let level = $state(0);
+</script>
+
+<LiveWaveform active getLevel={() => level} mode="static" />
 ```
 
 ### Custom Styling
@@ -60,7 +73,7 @@ Every rendering parameter is a plain prop — adjust bar geometry, color, height
 
 ```svelte
 <script lang="ts">
-	import { LiveWaveform } from "$lib/registry/ui/live-waveform";
+	import { LiveWaveform } from "$lib/components/ui/live-waveform";
 </script>
 
 <LiveWaveform
@@ -80,8 +93,8 @@ Every rendering parameter is a plain prop — adjust bar geometry, color, height
 
 ## Notes
 
-- Uses the Web Audio API via `AnalyserNode` for real-time frequency analysis.
-- Automatically requests microphone permission when `active` becomes `true` and tears down the stream and audio context when it flips back to `false`.
+- Microphone mode uses the Web Audio API via `AnalyserNode`; external-meter mode reads `getLevel` directly.
+- Without `getLevel`, requests microphone permission when `active` becomes `true` and releases its stream and audio context when it becomes inactive or an external meter takes over.
 - Canvas rendering is HiDPI-aware — internal `ResizeObserver` scales the drawing buffer by `devicePixelRatio`.
 - `mode="static"` draws symmetric frequency bars in fixed positions; `mode="scrolling"` maintains a `historySize`-length ring buffer of volume averages that scrolls right-to-left.
 - `processing` smoothly crossfades from the last active frame into the synthetic wave, and a fade-out pass clears the canvas when both flags are off.

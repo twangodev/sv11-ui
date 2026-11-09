@@ -24,7 +24,7 @@ Compose `Message` with `MessageAvatar` and `MessageContent`. The `from` prop dri
 
 ```svelte
 <script lang="ts">
-	import * as Message from "$lib/registry/ui/message";
+	import * as Message from "$lib/components/ui/message";
 </script>
 
 <Message.Root from="user">
@@ -44,7 +44,7 @@ Compose `Message` with `MessageAvatar` and `MessageContent`. The `from` prop dri
 
 ```svelte
 <script lang="ts">
-	import * as Message from "$lib/registry/ui/message";
+	import * as Message from "$lib/components/ui/message";
 </script>
 
 <Message.Root from="user">
@@ -64,8 +64,8 @@ Compose `Message` with `MessageAvatar` and `MessageContent`. The `from` prop dri
 
 ```svelte
 <script lang="ts">
-	import * as Conversation from "$lib/registry/ui/conversation";
-	import * as Message from "$lib/registry/ui/message";
+	import * as Conversation from "$lib/components/ui/conversation";
+	import * as Message from "$lib/components/ui/message";
 
 	type Turn = {
 		id: string;
