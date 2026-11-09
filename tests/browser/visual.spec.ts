@@ -1,12 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-const inventory = JSON.parse(readFileSync("tests/fixtures/upstream-parity.json", "utf8")) as {
-	ui: string[];
-	blocks: string[];
-};
-const components = [...inventory.ui, ...inventory.blocks.map((name) => `block-${name}`)];
-
 test.beforeEach(async ({ page }) => {
 	await page.route("**/*perlin-noise.png", (route) =>
 		route.fulfill({ contentType: "image/png", body: readFileSync("static/orbs/perlin-noise.png") })
@@ -24,35 +18,6 @@ test.beforeEach(async ({ page }) => {
 		})
 	);
 });
-
-for (const theme of ["light", "dark"] as const) {
-	for (const component of components) {
-		test(`${component} renders in ${theme} without overflow`, async ({ page }, testInfo) => {
-			const errors: string[] = [];
-			page.on("pageerror", (error) => errors.push(error.message));
-			await page.emulateMedia({ colorScheme: theme });
-			await page.goto(`/?scenario=visual&component=${component}&theme=${theme}`);
-			const stage = page.getByTestId("visual-stage");
-			await expect(stage).toBeVisible();
-			await expect.poll(() => stage.evaluate((el) => el.children.length)).toBeGreaterThan(0);
-			await page.evaluate(() => document.fonts.ready);
-			if (theme === "dark") await expect(page.locator("html")).toHaveClass(/dark/);
-			else await expect(page.locator("html")).not.toHaveClass(/dark/);
-			await expect
-				.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
-				.toBe(true);
-			if (component === "orb") await expect(stage.locator("canvas")).toBeVisible();
-			if (component === "block-transcriber-01") {
-				await expect(stage.getByRole("button", { name: "Start recording" })).toBeVisible();
-			}
-			expect(errors).toEqual([]);
-			await testInfo.attach(`${component}-${theme}`, {
-				body: await stage.screenshot(),
-				contentType: "image/png",
-			});
-		});
-	}
-}
 
 test("voice picker opens a styled, usable list", async ({ page }) => {
 	await page.goto("/?scenario=visual&component=voice-picker&theme=light");

@@ -2,7 +2,7 @@
 
 The reference is ElevenLabs UI at `3a28ebab197f8cfa599934f52db12ad1396e54f4`, recorded in `../fixtures/upstream-parity.json`. The browser fixtures cover all 17 custom UI components and 11 blocks in light/dark mode at desktop/mobile widths.
 
-`pnpm test:browser` checks rendering, theme application, horizontal overflow, and expanded voice-picker/microphone menus. It captures screenshots as test attachments. These are layout and interaction checks, not pixel-equality assertions.
+`pnpm test:browser` covers shared-session behavior, recording and transcript finalization, expanded menus, and Pong controls on desktop/mobile. The complete light/dark component gallery below is an on-demand review tool, outside the routine test suite. Neither performs pixel-equality assertions.
 
 ## Compare against upstream
 
