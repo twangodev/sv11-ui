@@ -32,10 +32,10 @@
 <Button
 	type="button"
 	{variant}
-	disabled={disabled ?? state.isConnecting}
+	disabled={disabled || state.isConnecting}
 	onclick={(e) => {
 		if (state.isConnected) {
-			state.stop();
+			void state.stop();
 		} else {
 			void state.start();
 		}

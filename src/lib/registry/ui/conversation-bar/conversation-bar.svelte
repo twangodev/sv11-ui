@@ -1,6 +1,6 @@
 <script lang="ts" module>
 	import type { HTMLAttributes } from "svelte/elements";
-	import type { ConversationAdapter, ConversationMessage, AgentConnectionState } from "./types.js";
+	import type { ConversationAdapter, ConversationMessage } from "./types.js";
 
 	export type ConversationBarProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
 		/**
@@ -8,7 +8,9 @@
 		 * messages, and muting. Conforms to
 		 * [`ConversationAdapter`](/docs/providers#conversationadapter).
 		 */
-		adapter: ConversationAdapter;
+		adapter?: ConversationAdapter;
+		/** Share a session with other controls or blocks. Its creator owns its lifetime. */
+		session?: import("../voice-session/session.js").ConversationSession;
 		/**
 		 * Label shown in the waveform slot while the session is disconnected.
 		 * @default "Customer Support"
@@ -32,7 +34,8 @@
 </script>
 
 <script lang="ts">
-	import { onDestroy } from "svelte";
+	import { untrack } from "svelte";
+	import { useConversation } from "../voice-session/use-conversation.svelte.js";
 	import { cn } from "$lib/utils.js";
 	import { Button } from "$lib/registry/ui/button/index.js";
 	import { Card } from "$lib/registry/ui/card/index.js";
@@ -49,6 +52,7 @@
 
 	let {
 		adapter,
+		session,
 		disconnectedText = "Customer Support",
 		waveformClassName,
 		onConnect,
@@ -61,102 +65,59 @@
 		...restProps
 	}: ConversationBarProps = $props();
 
-	let isMuted = $state(false);
-	let agentState = $state<AgentConnectionState>("disconnected");
+	const voice = useConversation(() => session ?? adapter);
+	const isMuted = $derived(voice.snapshot.muted);
+	const agentState = $derived(voice.snapshot.status);
 	let keyboardOpen = $state(false);
 	let textInput = $state("");
-	let sessionId = 0;
-
 	const isConnected = $derived(agentState === "connected");
 	const isConnecting = $derived(agentState === "connecting");
 
-	async function startConversation() {
-		if (agentState !== "disconnected") return;
-		const id = ++sessionId;
-		agentState = "connecting";
-
-		try {
-			await adapter.connect({
-				onConnect: () => {
-					if (sessionId !== id) return;
-					agentState = "connected";
-					onConnect?.();
-				},
-				onDisconnect: () => {
-					if (sessionId !== id) return;
-					agentState = "disconnected";
+	$effect(() => {
+		let previous = voice.session.snapshot;
+		return voice.session.subscribe((next) => {
+			const before = previous;
+			previous = next;
+			untrack(() => {
+				if (next.status === "connected" && before.status !== "connected") onConnect?.();
+				if (next.status === "disconnected" && before.status !== "disconnected") {
 					keyboardOpen = false;
 					onDisconnect?.();
-				},
-				onMessage: (message) => {
-					if (sessionId !== id) return;
-					onMessage?.(message);
-				},
-				onError: (error: Error) => {
-					if (sessionId !== id) return;
-					agentState = "disconnected";
-					onError?.(error);
-				},
-				onStatusChange: (status) => {
-					if (sessionId !== id) return;
-					agentState = status;
-				},
+				}
+				if (next.error && next.error !== before.error) onError?.(next.error);
+				for (const message of next.messages)
+					if (!before.messages.includes(message)) onMessage?.(message);
 			});
-		} catch (err) {
-			if (sessionId !== id) return;
-			agentState = "disconnected";
-			const error = err instanceof Error ? err : new Error(String(err));
-			onError?.(error);
-		}
-	}
-
-	function endConversation() {
-		++sessionId;
-		adapter.disconnect();
-		agentState = "disconnected";
-		keyboardOpen = false;
-	}
-
+		});
+	});
 	function handleStartOrEnd() {
-		if (isConnected || isConnecting) {
-			endConversation();
-		} else if (agentState === "disconnected") {
-			startConversation();
-		}
+		if (isConnected || isConnecting) void voice.session.disconnect();
+		else void voice.session.connect().catch(() => {});
 	}
-
 	function toggleMute() {
-		if (!isConnected) return;
-		isMuted = !isMuted;
-		adapter.setMuted(isMuted);
+		void voice.session.setMuted(!isMuted).catch(() => {});
 	}
-
-	function handleSendText() {
-		if (!textInput.trim() || !isConnected) return;
-		const messageToSend = textInput;
-		adapter.sendMessage(messageToSend);
-		textInput = "";
-		onSendMessage?.(messageToSend);
-	}
-
-	function handleContextualUpdate() {
-		if (textInput.trim() && isConnected) {
-			adapter.sendContextualUpdate(textInput);
+	async function handleSendText() {
+		if (!textInput.trim()) return;
+		const text = textInput;
+		try {
+			await voice.session.sendMessage(text);
+			textInput = "";
+			onSendMessage?.(text);
+		} catch {
+			/* Session exposes the error to controls and callbacks. */
 		}
 	}
-
+	function handleContextualUpdate() {
+		if (textInput.trim() && isConnected && voice.session.capabilities.context !== false)
+			void voice.session.sendContextualUpdate(textInput).catch(() => {});
+	}
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === "Enter" && !e.shiftKey) {
 			e.preventDefault();
-			handleSendText();
+			void handleSendText();
 		}
 	}
-
-	onDestroy(() => {
-		if (agentState !== "disconnected") {
-			adapter.disconnect();
-		}
-	});
 </script>
 
 <div
@@ -166,6 +127,9 @@
 	{...restProps}
 >
 	<Card class="m-0 w-full gap-0 border p-0 shadow-lg">
+		{#if voice.snapshot.error}<p role="alert" class="text-destructive px-3 pt-2 text-sm">
+				{voice.snapshot.error.message}
+			</p>{/if}
 		<div class="flex flex-col-reverse">
 			<div>
 				{#if keyboardOpen}
@@ -189,6 +153,7 @@
 									{#key agentState === "disconnected" ? "idle" : "active"}
 										<LiveWaveform
 											active={isConnected && !isMuted}
+											getLevel={voice.session.getInputVolume}
 											processing={isConnecting}
 											barWidth={3}
 											barGap={1}
@@ -224,7 +189,7 @@
 							aria-pressed={isMuted}
 							aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
 							class={cn(isMuted ? "bg-foreground/5" : "")}
-							disabled={!isConnected}
+							disabled={!isConnected || voice.session.capabilities.mute === false}
 						>
 							{#if isMuted}
 								<MicOffIcon />
@@ -239,7 +204,7 @@
 							aria-pressed={keyboardOpen}
 							aria-label={keyboardOpen ? "Close text input" : "Open text input"}
 							class="relative"
-							disabled={!isConnected}
+							disabled={!isConnected || voice.session.capabilities.text === false}
 						>
 							<KeyboardIcon
 								class={"h-5 w-5 transform-gpu transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] " +

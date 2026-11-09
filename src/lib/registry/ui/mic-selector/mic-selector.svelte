@@ -5,6 +5,8 @@
 		 * the first available device is auto-selected.
 		 */
 		value?: string;
+		/** Optional shared session; device and mute changes are applied to its SDK. */
+		session?: import("../voice-session/session.js").ConversationSession;
 		/** Called when the user picks a different microphone from the dropdown. */
 		onValueChange?: (deviceId: string) => void;
 		/**
@@ -21,6 +23,7 @@
 </script>
 
 <script lang="ts">
+	import { useConversation } from "../voice-session/use-conversation.svelte.js";
 	import Check from "@lucide/svelte/icons/check";
 	import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
 	import Mic from "@lucide/svelte/icons/mic";
@@ -39,6 +42,7 @@
 
 	let {
 		value,
+		session,
 		onValueChange,
 		muted,
 		onMutedChange,
@@ -47,12 +51,15 @@
 	}: MicSelectorProps = $props();
 
 	const audio = useAudioDevices();
+	const voice = useConversation(() => session);
 
 	let selectedDevice = $state("");
 	let internalMuted = $state(false);
 	let isDropdownOpen = $state(false);
 
-	const isMuted = $derived(muted !== undefined ? muted : internalMuted);
+	const isMuted = $derived(
+		session ? voice.snapshot.muted : muted !== undefined ? muted : internalMuted
+	);
 	const defaultDeviceId = $derived(audio.devices[0]?.deviceId ?? "");
 	const currentDevice = $derived(
 		audio.devices.find((d) => d.deviceId === selectedDevice) ??
@@ -65,7 +72,8 @@
 	const isPreviewActive = $derived(isDropdownOpen && !isMuted);
 
 	$effect(() => {
-		if (value !== undefined) selectedDevice = value;
+		if (session && voice.snapshot.inputDeviceId) selectedDevice = voice.snapshot.inputDeviceId;
+		else if (value !== undefined) selectedDevice = value;
 	});
 
 	$effect(() => {
@@ -75,20 +83,34 @@
 		}
 	});
 
-	function handleDeviceSelect(deviceId: string) {
+	async function handleDeviceSelect(deviceId: string) {
+		if (session) {
+			try {
+				await session.setInputDevice(deviceId);
+			} catch {
+				return;
+			}
+		}
 		selectedDevice = deviceId;
 		onValueChange?.(deviceId);
 	}
 
 	async function handleDropdownOpenChange(open: boolean) {
 		isDropdownOpen = open;
-		if (open && !audio.hasPermission && !audio.loading) {
+		if (open && !session && !audio.hasPermission && !audio.loading) {
 			await audio.loadDevices();
 		}
 	}
 
-	function toggleMute() {
+	async function toggleMute() {
 		const newMuted = !isMuted;
+		if (session) {
+			try {
+				await session.setMuted(newMuted);
+			} catch {
+				return;
+			}
+		}
 		if (muted === undefined) internalMuted = newMuted;
 		onMutedChange?.(newMuted);
 	}
@@ -127,6 +149,7 @@
 		{:else}
 			{#each audio.devices as device (device.deviceId)}
 				<DropdownMenuItem
+					disabled={session?.capabilities.inputDevice === false}
 					onSelect={(e) => {
 						e.preventDefault();
 						handleDeviceSelect(device.deviceId);
@@ -147,6 +170,7 @@
 				<Button
 					variant="ghost"
 					size="sm"
+					disabled={session?.capabilities.mute === false}
 					onclick={(e) => {
 						e.preventDefault();
 						toggleMute();
@@ -163,6 +187,7 @@
 				<div class="bg-accent ml-auto w-16 overflow-hidden rounded-md p-1.5">
 					<LiveWaveform
 						active={isPreviewActive}
+						getLevel={session?.getInputVolume}
 						deviceId={selectedDevice || defaultDeviceId}
 						mode="static"
 						height={15}

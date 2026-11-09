@@ -1,7 +1,7 @@
 import { getContext, setContext } from "svelte";
 import type { TranscriptionAdapter } from "./types.js";
 
-export type SpeechInputStatus = "idle" | "connecting" | "connected" | "error";
+export type SpeechInputStatus = "idle" | "connecting" | "connected" | "stopping" | "error";
 export type ButtonSize = "default" | "sm" | "lg";
 
 export interface SpeechInputData {
@@ -30,7 +30,7 @@ export class SpeechInputState {
 
 	// Derived fields
 	isConnected = $derived(this.status === "connected");
-	isConnecting = $derived(this.status === "connecting");
+	isConnecting = $derived(this.status === "connecting" || this.status === "stopping");
 	transcript = $derived.by(() => {
 		const committed = this.committedTranscripts.join(" ").trim();
 		const partial = this.partialTranscript.trim();
@@ -43,6 +43,7 @@ export class SpeechInputState {
 	// mid-recording is unsupported by design.
 	#adapter: TranscriptionAdapter | null = null;
 	#requestId = 0;
+	#activeAdapter: TranscriptionAdapter | null = null;
 	#callbacks: SpeechInputCallbacks = {};
 
 	/**
@@ -58,8 +59,15 @@ export class SpeechInputState {
 		// Allow restart from "idle" or "error" — but not while actively recording.
 		// The error path leaves status === "error"; without this, users would be
 		// stuck and unable to retry after a failed start.
-		if (!this.#adapter || this.status === "connecting" || this.status === "connected") return;
+		if (
+			!this.#adapter ||
+			this.status === "connecting" ||
+			this.status === "connected" ||
+			this.status === "stopping"
+		)
+			return;
 		const id = ++this.#requestId;
+		const adapter = (this.#activeAdapter = this.#adapter);
 
 		this.partialTranscript = "";
 		this.committedTranscripts = [];
@@ -67,9 +75,9 @@ export class SpeechInputState {
 		this.status = "connecting";
 
 		try {
-			await this.#adapter.start({
+			await adapter.start({
 				onConnect: () => {
-					if (this.#requestId !== id) return;
+					if (this.#requestId !== id || this.status !== "connecting") return;
 					this.status = "connected";
 					this.#callbacks.onStart?.(this.#data());
 				},
@@ -87,37 +95,61 @@ export class SpeechInputState {
 				onDisconnect: () => {
 					if (this.#requestId !== id) return;
 					if (this.status === "connected") {
-						this.partialTranscript = "";
 						this.status = "idle";
 					}
 				},
-				onError: (err) => {
-					if (this.#requestId !== id) return;
-					this.error = err.message;
-					this.status = "error";
-					this.#callbacks.onError?.(err);
-				},
+				onError: (err) => this.#fail(err, id),
 			});
+			if (this.#requestId === id && this.status === "connecting") {
+				this.status = "connected";
+				this.#callbacks.onStart?.(this.#data());
+			}
 		} catch (err) {
-			if (this.#requestId !== id) return;
-			const error = err instanceof Error ? err : new Error(String(err));
-			this.error = error.message;
-			this.status = "error";
-			this.#callbacks.onError?.(error);
+			this.#fail(err instanceof Error ? err : new Error(String(err)), id);
 		}
 	};
 
-	stop = (): void => {
-		++this.#requestId; // invalidate in-flight adapter callbacks
-		this.#adapter?.stop();
-		if (this.status !== "idle") this.status = "idle";
-		this.#callbacks.onStop?.(this.#data());
+	stop = async (): Promise<void> => {
+		if (this.status === "idle" || this.status === "stopping") return;
+		const id = this.status === "connecting" ? ++this.#requestId : this.#requestId;
+		this.status = "stopping";
+		try {
+			await this.#activeAdapter?.stop();
+			if (id !== this.#requestId) return;
+			++this.#requestId;
+			this.status = "idle";
+			this.#callbacks.onStop?.(this.#data());
+		} catch (cause) {
+			this.#fail(cause instanceof Error ? cause : new Error(String(cause)), id);
+		}
 	};
 
-	cancel = (): void => {
+	#fail(error: Error, id: number) {
+		if (id !== this.#requestId) return;
 		++this.#requestId;
-		const data = this.#data(); // snapshot BEFORE clearing, for the callback
-		this.#adapter?.cancel();
+		this.status = "error";
+		this.error = error.message;
+		try {
+			void Promise.resolve(this.#activeAdapter?.cancel()).catch(() => {});
+		} catch {
+			/* Preserve the original failure. */
+		}
+		this.#callbacks.onError?.(error);
+	}
+	cancel = (): void => {
+		const id = ++this.#requestId;
+		const data = this.#data();
+		const report = (cause: unknown) => {
+			if (id !== this.#requestId) return;
+			const error = cause instanceof Error ? cause : new Error(String(cause));
+			this.error = error.message;
+			this.#callbacks.onError?.(error);
+		};
+		try {
+			void Promise.resolve(this.#activeAdapter?.cancel()).catch(report);
+		} catch (cause) {
+			report(cause);
+		}
 		this.partialTranscript = "";
 		this.committedTranscripts = [];
 		this.status = "idle";

@@ -45,3 +45,5 @@ export type {
 	ComposeSegmentsOptions,
 	ComposeSegmentsResult,
 } from "./utils.js";
+
+export { composeTimedWords } from "./utils.js";

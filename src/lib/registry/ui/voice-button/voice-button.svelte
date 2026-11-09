@@ -17,6 +17,8 @@
 		 * @default "idle"
 		 */
 		state?: VoiceButtonState;
+		/** Meter an existing recording without acquiring a second microphone. */
+		getLevel?: () => number;
 		/** Called when the button is clicked, after any native `onclick` handler. */
 		onPress?: () => void;
 		/** Native click handler invoked before `onPress`. */
@@ -42,6 +44,7 @@
 
 	let {
 		state: voiceState = "idle",
+		getLevel,
 		onPress,
 		label,
 		trailing,
@@ -119,6 +122,7 @@
 		{#if shouldShowWaveform}
 			<LiveWaveform
 				active={isRecording}
+				{getLevel}
 				processing={isProcessing || isSuccess}
 				barWidth={2}
 				barGap={1}

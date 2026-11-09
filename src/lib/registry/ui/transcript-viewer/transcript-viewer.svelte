@@ -17,7 +17,9 @@
 		 * highlighting. Shape matches ElevenLabs' `CharacterAlignmentResponseModel`;
 		 * reshape other providers' output to the same structure.
 		 */
-		alignment: CharacterAlignment;
+		alignment?: CharacterAlignment;
+		/** Native word timestamps from any transcription provider. Takes precedence over alignment. */
+		words?: import("../voice-session/types.js").TimedWord[];
 		/**
 		 * Override the default word/gap segmentation. Receives the raw
 		 * alignment and returns the composed `segments` and `words` arrays.
@@ -52,12 +54,13 @@
 <script lang="ts">
 	import { cn } from "$lib/utils.js";
 	import { setTranscriptViewer } from "./context.svelte.js";
-	import { composeSegments, guessedDurationFrom } from "./utils.js";
+	import { composeSegments, composeTimedWords, guessedDurationFrom } from "./utils.js";
 
 	let {
 		audioSrc,
 		audioType = "audio/mpeg",
 		alignment,
+		words: timedWords,
 		segmentComposer,
 		hideAudioTags = true,
 		onPlay,
@@ -81,13 +84,25 @@
 
 	// Recompute segments and reset playback whenever the alignment changes.
 	$effect(() => {
-		const composed = segmentComposer
-			? segmentComposer(alignment)
-			: composeSegments(alignment, { hideAudioTags });
+		const source = alignment ?? {
+			characters: [],
+			characterStartTimesSeconds: [],
+			characterEndTimesSeconds: [],
+		};
+		const composed = timedWords
+			? composeTimedWords(timedWords)
+			: segmentComposer
+				? segmentComposer(source)
+				: composeSegments(source, { hideAudioTags });
 		state.segments = composed.segments;
 		state.words = composed.words;
 		state.currentTime = 0;
-		state.duration = guessedDurationFrom(alignment, composed.words);
+		state.duration = guessedDurationFrom(
+			timedWords
+				? { characters: [], characterStartTimesSeconds: [], characterEndTimesSeconds: [] }
+				: source,
+			composed.words
+		);
 		state.isPlaying = false;
 		state.currentWordIndex = composed.words.length ? 0 : -1;
 	});

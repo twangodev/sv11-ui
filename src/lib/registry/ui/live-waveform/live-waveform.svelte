@@ -10,6 +10,8 @@
 		 * @default false
 		 */
 		active?: boolean;
+		/** Read an existing session level without opening another microphone. */
+		getLevel?: () => number;
 		/**
 		 * When `true` (and `active` is `false`), renders an animated placeholder
 		 * wave pattern. Use this to signal a processing or awaiting state.
@@ -108,6 +110,7 @@
 
 	let {
 		active = false,
+		getLevel,
 		processing = false,
 		deviceId,
 		barWidth = 3,
@@ -312,7 +315,7 @@
 		const _onStreamReady = onStreamReady;
 		const _onStreamEnd = onStreamEnd;
 
-		if (!_active) {
+		if (!_active || getLevel) {
 			if (streamRef) {
 				streamRef.getTracks().forEach((track) => track.stop());
 				streamRef = null;
@@ -405,6 +408,7 @@
 
 		const _active = active;
 		const _processing = processing;
+		const _getLevel = getLevel;
 		const _sensitivity = sensitivity;
 		const _updateRate = updateRate;
 		const _historySize = historySize;
@@ -428,9 +432,10 @@
 			if (_active && currentTime - lastUpdateRef > _updateRate) {
 				lastUpdateRef = currentTime;
 
-				if (analyserRef) {
-					const dataArray = new Uint8Array(analyserRef.frequencyBinCount);
-					analyserRef.getByteFrequencyData(dataArray);
+				if (analyserRef || _getLevel) {
+					const dataArray = new Uint8Array(analyserRef?.frequencyBinCount ?? 128);
+					if (_getLevel) dataArray.fill(Math.max(0, Math.min(1, _getLevel() || 0)) * 255);
+					else analyserRef!.getByteFrequencyData(dataArray);
 
 					if (_mode === "static") {
 						// Static mode: symmetric frequency bands, fixed positions.
