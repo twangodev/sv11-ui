@@ -2,10 +2,10 @@
 	export type MicSelectorProps = {
 		/**
 		 * Selected microphone `deviceId`. Leave unset for uncontrolled mode —
-		 * the first available device is auto-selected.
+		 * the first available device is auto-selected. A shared session takes precedence.
 		 */
 		value?: string;
-		/** Optional shared session; device and mute changes are applied to its SDK. */
+		/** Shared state takes precedence over value/muted. Controls are available while connected. */
 		session?: import("../voice-session/session.js").ConversationSession;
 		/** Called when the user picks a different microphone from the dropdown. */
 		onValueChange?: (deviceId: string) => void;
@@ -53,7 +53,7 @@
 	const audio = useAudioDevices();
 	const voice = useConversation(() => session);
 
-	let selectedDevice = $state("");
+	let internalDeviceId = $state("");
 	let internalMuted = $state(false);
 	let isDropdownOpen = $state(false);
 
@@ -61,6 +61,18 @@
 		session ? voice.snapshot.muted : muted !== undefined ? muted : internalMuted
 	);
 	const defaultDeviceId = $derived(audio.devices[0]?.deviceId ?? "");
+	const selectedDevice = $derived(
+		session
+			? (voice.snapshot.inputDeviceId ?? defaultDeviceId)
+			: (value ?? (internalDeviceId || defaultDeviceId))
+	);
+	const canSelectDevice = $derived(
+		!session ||
+			(voice.snapshot.status === "connected" && voice.session.capabilities.inputDevice !== false)
+	);
+	const canMute = $derived(
+		!session || (voice.snapshot.status === "connected" && voice.session.capabilities.mute !== false)
+	);
 	const currentDevice = $derived(
 		audio.devices.find((d) => d.deviceId === selectedDevice) ??
 			audio.devices[0] ?? {
@@ -72,26 +84,23 @@
 	const isPreviewActive = $derived(isDropdownOpen && !isMuted);
 
 	$effect(() => {
-		if (session && voice.snapshot.inputDeviceId) selectedDevice = voice.snapshot.inputDeviceId;
-		else if (value !== undefined) selectedDevice = value;
-	});
-
-	$effect(() => {
-		if (!selectedDevice && defaultDeviceId) {
-			selectedDevice = defaultDeviceId;
+		if (!session && value === undefined && !internalDeviceId && defaultDeviceId) {
+			internalDeviceId = defaultDeviceId;
 			onValueChange?.(defaultDeviceId);
 		}
 	});
 
 	async function handleDeviceSelect(deviceId: string) {
-		if (session) {
+		if (!canSelectDevice) return;
+		const targetSession = session;
+		if (targetSession) {
 			try {
-				await session.setInputDevice(deviceId);
+				await targetSession.setInputDevice(deviceId);
 			} catch {
 				return;
 			}
-		}
-		selectedDevice = deviceId;
+			if (targetSession !== session) return;
+		} else if (value === undefined) internalDeviceId = deviceId;
 		onValueChange?.(deviceId);
 	}
 
@@ -103,15 +112,17 @@
 	}
 
 	async function toggleMute() {
+		if (!canMute) return;
 		const newMuted = !isMuted;
-		if (session) {
+		const targetSession = session;
+		if (targetSession) {
 			try {
-				await session.setMuted(newMuted);
+				await targetSession.setMuted(newMuted);
 			} catch {
 				return;
 			}
-		}
-		if (muted === undefined) internalMuted = newMuted;
+			if (targetSession !== session) return;
+		} else if (muted === undefined) internalMuted = newMuted;
 		onMutedChange?.(newMuted);
 	}
 </script>
@@ -149,7 +160,7 @@
 		{:else}
 			{#each audio.devices as device (device.deviceId)}
 				<DropdownMenuItem
-					disabled={session?.capabilities.inputDevice === false}
+					disabled={!canSelectDevice}
 					onSelect={(e) => {
 						e.preventDefault();
 						handleDeviceSelect(device.deviceId);
@@ -170,7 +181,7 @@
 				<Button
 					variant="ghost"
 					size="sm"
-					disabled={session?.capabilities.mute === false}
+					disabled={!canMute}
 					onclick={(e) => {
 						e.preventDefault();
 						toggleMute();

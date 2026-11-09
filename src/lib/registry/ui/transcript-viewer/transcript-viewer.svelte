@@ -18,7 +18,7 @@
 		 * reshape other providers' output to the same structure.
 		 */
 		alignment?: CharacterAlignment;
-		/** Native word timestamps from any transcription provider. Takes precedence over alignment. */
+		/** Native word timestamps from any provider. Takes precedence over alignment; replacements pause and rewind playback. */
 		words?: import("../voice-session/types.js").TimedWord[];
 		/**
 		 * Override the default word/gap segmentation. Receives the raw
@@ -52,6 +52,7 @@
 </script>
 
 <script lang="ts">
+	import { untrack } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import { setTranscriptViewer } from "./context.svelte.js";
 	import { composeSegments, composeTimedWords, guessedDurationFrom } from "./utils.js";
@@ -76,13 +77,17 @@
 
 	const state = setTranscriptViewer();
 
-	// Sync audio src/type props → state so <TranscriptViewerAudio> can read them.
-	$effect(() => {
-		state.audioSrc = audioSrc;
-		state.audioType = audioType;
-	});
+	function resetPlayback() {
+		const audio = untrack(() => state.audio);
+		if (audio) {
+			audio.pause();
+			audio.currentTime = 0;
+		}
+		state.isPlaying = false;
+		state.currentTime = 0;
+	}
 
-	// Recompute segments and reset playback whenever the alignment changes.
+	// Replacing the audio or transcript timings pauses and rewinds playback.
 	$effect(() => {
 		const source = alignment ?? {
 			characters: [],
@@ -94,16 +99,17 @@
 			: segmentComposer
 				? segmentComposer(source)
 				: composeSegments(source, { hideAudioTags });
+		resetPlayback();
+		state.audioSrc = audioSrc;
+		state.audioType = audioType;
 		state.segments = composed.segments;
 		state.words = composed.words;
-		state.currentTime = 0;
 		state.duration = guessedDurationFrom(
 			timedWords
 				? { characters: [], characterStartTimesSeconds: [], characterEndTimesSeconds: [] }
 				: source,
 			composed.words
 		);
-		state.isPlaying = false;
 		state.currentWordIndex = composed.words.length ? 0 : -1;
 	});
 

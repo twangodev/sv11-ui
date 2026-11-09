@@ -29,16 +29,16 @@
 <Button
 	type="button"
 	{variant}
-	inert={!state.isConnected}
+	inert={!state.canCancel}
 	onclick={(e) => {
-		state.cancel();
+		void state.cancel();
 		onclick?.(e);
 	}}
 	aria-label="Cancel recording"
 	class={cn(
 		buttonSizeVariants({ size: state.size }),
 		"transition-[opacity,transform,width] duration-200 ease-out",
-		state.isConnected ? "scale-[80%] opacity-100" : "pointer-events-none w-0 scale-100 opacity-0",
+		state.canCancel ? "scale-[80%] opacity-100" : "pointer-events-none w-0 scale-100 opacity-0",
 		className
 	)}
 	data-slot="speech-input-cancel-button"
