@@ -13,7 +13,7 @@ npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/orb.json
 
 Before installing sv11-ui, make sure your environment meets the following requirements:
 
-- [Node.js](https://nodejs.org/) version 18 or later
+- [Node.js](https://nodejs.org/) 24 for the supported sv11-ui development/build baseline
 - A [SvelteKit 2](https://svelte.dev/docs/kit) project
 - [Svelte 5](https://svelte.dev/) with runes
 - [Tailwind CSS 4](https://tailwindcss.com/) configured
@@ -39,4 +39,6 @@ To install every sv11-ui component at once, use the `all` entry:
 npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/all.json
 ```
 
-The CLI downloads the component source, resolves any registry or npm dependencies, and writes the files into your project (typically under `src/lib/registry/ui/<name>/`). Once the command completes, import the component and use it in your code.
+The CLI downloads the component source, resolves registry and npm dependencies, and writes files using the aliases in your `components.json`. The examples assume the standard UI alias, `$lib/components/ui`, so a component normally lands under `src/lib/components/ui/<name>/`. Adjust imports if your project uses another alias.
+
+Optional adapters are separate registry entries. The AI SDK 7 integration requires Node 22 or newer on its backend; use the supported Node 24 baseline when developing this repository.

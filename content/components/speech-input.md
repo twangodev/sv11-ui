@@ -26,8 +26,8 @@ Compose `SpeechInput` with the record button, preview, and cancel button. Pass a
 
 ```svelte
 <script lang="ts">
-	import * as SpeechInput from "$lib/registry/ui/speech-input";
-	import type { TranscriptionAdapter } from "$lib/registry/ui/speech-input";
+	import * as SpeechInput from "$lib/components/ui/speech-input";
+	import type { TranscriptionAdapter } from "$lib/components/ui/speech-input";
 
 	const adapter: TranscriptionAdapter = createMyAdapter(/* ... */);
 </script>
@@ -49,8 +49,8 @@ Use `onStop` to append the committed transcript onto an external text field.
 
 ```svelte
 <script lang="ts">
-	import * as SpeechInput from "$lib/registry/ui/speech-input";
-	import type { TranscriptionAdapter } from "$lib/registry/ui/speech-input";
+	import * as SpeechInput from "$lib/components/ui/speech-input";
+	import type { TranscriptionAdapter } from "$lib/components/ui/speech-input";
 
 	const adapter: TranscriptionAdapter = createMyAdapter(/* ... */);
 	let value = $state("");
@@ -106,7 +106,7 @@ Drop the preview and cancel slots for an icon-only recorder; the transcript is s
 
 ```svelte
 <script lang="ts">
-	import { useSpeechInput } from "$lib/registry/ui/speech-input";
+	import { useSpeechInput } from "$lib/components/ui/speech-input";
 
 	const state = useSpeechInput();
 </script>
@@ -130,8 +130,8 @@ Drop the preview and cancel slots for an icon-only recorder; the transcript is s
 ## Notes
 
 - The component is a compound primitive — `SpeechInput.Root` wires context and the adapter; `SpeechInputRecordButton`, `SpeechInputPreview`, and `SpeechInputCancelButton` read that context. Sub-components must be rendered inside a root or their `useSpeechInput()` call will throw.
-- The adapter reference is stored as a plain private field (not reactive) — swapping adapters mid-recording is unsupported and takes effect on the next `start()`.
-- An internal request-id invalidates late callbacks, so a `stop()` or `cancel()` during connection reliably wins even if the adapter's `onConnect` fires after.
-- `stop()` preserves the in-flight partial transcript and forwards it to `onStop`; `cancel()` clears partial + committed state before firing `onCancel`. Choose based on whether the user is committing or discarding the utterance.
-- Teardown uses `onDestroy` rather than `$effect` cleanup so dev-mode HMR and parent re-renders do not cancel an active recording.
-- The record button is disabled while `state.isConnecting`; the cancel button is inert unless `state.isConnected`.
+- Each recording keeps the adapter it started with. Changing the `adapter` prop applies to the next recording; callback props stay current.
+- `stop()` waits for the adapter's final transcript before firing `onStop`, preserving any remaining partial transcript. Stopping during connection cancels startup and fires `onStop` after cleanup.
+- `cancel()` immediately clears the displayed transcript and fires `onCancel` with the discarded data, then resolves when adapter cleanup finishes. A new recording waits for that cleanup. Late events from a previous recording cannot change the current transcript.
+- Unmounting cancels the active recording and releases its adapter resources.
+- The record button is disabled while connecting, stopping, or cancelling. The cancel button is available while connecting, recording, and stopping.

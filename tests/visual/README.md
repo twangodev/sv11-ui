@@ -6,7 +6,7 @@ The reference is ElevenLabs UI at `3a28ebab197f8cfa599934f52db12ad1396e54f4`, re
 
 ## Compare against upstream
 
-Use Node 24 and a clean checkout at the pinned revision. The reference runs the actual upstream React components. Only server actions and Next's link wrapper are replaced with local fixtures; no authenticated provider calls are made. React dependencies stay in a temporary directory, outside the Svelte project.
+Use Node 24, Git, and tar with an upstream checkout at the pinned revision. Preparation reads its committed Git tree, so uncommitted changes do not affect the reference. The reference runs the actual upstream React components. Only server actions and Next's link wrapper are replaced with local fixtures; no authenticated provider calls are made. React dependencies stay in a temporary directory, outside the Svelte project.
 
 ```bash
 # Prepare and install the reference once.
@@ -15,10 +15,10 @@ pnpm --dir "$REFERENCE_DIR" install --frozen-lockfile
 pnpm exec playwright install chromium
 
 # Terminal 1: upstream fixture (port 4176).
-pnpm --dir "$REFERENCE_DIR" exec vite
+pnpm --dir "$REFERENCE_DIR" exec vite build && pnpm --dir "$REFERENCE_DIR" exec vite preview
 
 # Terminal 2: Svelte fixture (port 4174).
-pnpm exec vite --config tests/browser/vite.config.ts
+pnpm exec vite build --config tests/browser/vite.config.ts && pnpm exec vite preview --config tests/browser/vite.config.ts
 
 # Terminal 3: matched screenshots and a comparison report.
 node tests/visual/capture.mjs "$REFERENCE_DIR"
@@ -26,7 +26,7 @@ node tests/visual/capture.mjs "$REFERENCE_DIR"
 
 Open `test-results/visual/index.html`. Each case includes upstream, Svelte, and difference images, plus geometry/runtime details in `results.json`. `COMPONENTS`, `VIEWPORT`, `THEME`, and `VISUAL_OUTPUT` environment variables can narrow or separate runs. Screenshots use 1280px/390px viewport widths, 900px height, the same Geist fonts, device scale 1, and local noise/audio/iframe fixtures.
 
-The reference templates and dependency lockfile are checked in; `prepare.mjs` verifies the upstream revision and copies its unmodified registry into a temporary fixture.
+The reference templates and dependency lockfile are checked in; `prepare.mjs` verifies the upstream revision and extracts its registry into a temporary fixture. Capture validates component/theme/viewport filters and waits for each fixture's readiness signal, fonts, theme, and pending network resources before taking screenshots.
 
 ## Review boundaries
 

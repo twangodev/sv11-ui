@@ -64,7 +64,7 @@ Because every token is swapped in one place, you generally won't need to write y
 ```svelte
 <script lang="ts">
 	import { toggleMode } from "mode-watcher";
-	import { Button } from "$lib/registry/ui/button";
+	import { Button } from "$lib/components/ui/button";
 </script>
 
 <Button variant="ghost" size="icon" onclick={toggleMode}>

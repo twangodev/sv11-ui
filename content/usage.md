@@ -13,11 +13,11 @@ After installing sv11-ui components, you can use them in your application like a
 
 ```svelte
 <script lang="ts">
-	import { Orb } from "$lib/registry/ui/orb";
-	import { Card } from "$lib/registry/ui/card";
+	import { Orb } from "$lib/components/ui/orb";
+	import { Card } from "$lib/components/ui/card";
 </script>
 
-<Card class="flex items-center justify-center p-8">
+<Card class="flex h-64 items-center justify-center p-8">
 	<Orb />
 </Card>
 ```

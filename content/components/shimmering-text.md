@@ -24,7 +24,7 @@ Pass any string to `text` and the shimmer begins as soon as the element enters t
 
 ```svelte
 <script lang="ts">
-	import { ShimmeringText } from "$lib/registry/ui/shimmering-text";
+	import { ShimmeringText } from "$lib/components/ui/shimmering-text";
 </script>
 
 <ShimmeringText text="Hello, World!" />

@@ -24,7 +24,7 @@ Pass an array of `Voice` objects and bind `value`/`onValueChange` to track the s
 
 ```svelte
 <script lang="ts">
-	import { VoicePicker, type Voice } from "$lib/registry/ui/voice-picker";
+	import { VoicePicker, type Voice } from "$lib/components/ui/voice-picker";
 
 	const voices: Voice[] = [
 		{
@@ -41,24 +41,7 @@ Pass an array of `Voice` objects and bind `value`/`onValueChange` to track the s
 <VoicePicker {voices} value={selectedVoice} onValueChange={(v) => (selectedVoice = v)} />
 ```
 
-### Controlled vs Uncontrolled
-
-Pass both `value` and `onValueChange` for a fully controlled picker, or just `onValueChange` to observe selections without owning the state.
-
-```svelte
-<script lang="ts">
-	import { VoicePicker, type Voice } from "$lib/registry/ui/voice-picker";
-
-	let { voices }: { voices: Voice[] } = $props();
-	let selectedVoice = $state("");
-</script>
-
-<!-- Controlled -->
-<VoicePicker {voices} value={selectedVoice} onValueChange={(v) => (selectedVoice = v)} />
-
-<!-- Uncontrolled -->
-<VoicePicker {voices} onValueChange={(voiceId) => console.log("Selected:", voiceId)} />
-```
+The parent owns selection: update `value` in `onValueChange` to keep the selected voice visible. An `onValueChange` callback alone reports the click without retaining a selected value.
 
 ### Control Open State
 
@@ -66,7 +49,7 @@ Pair `open` with `onOpenChange` to drive the popover externally — useful if yo
 
 ```svelte
 <script lang="ts">
-	import { VoicePicker, type Voice } from "$lib/registry/ui/voice-picker";
+	import { VoicePicker, type Voice } from "$lib/components/ui/voice-picker";
 
 	let { voices }: { voices: Voice[] } = $props();
 	let open = $state(false);
@@ -102,7 +85,7 @@ Map any provider's voice shape into the `Voice` interface once, then hand the ar
 ```svelte
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { VoicePicker, type Voice } from "$lib/registry/ui/voice-picker";
+	import { VoicePicker, type Voice } from "$lib/components/ui/voice-picker";
 
 	let voices = $state<Voice[]>([]);
 	let selectedVoice = $state("");
@@ -132,5 +115,5 @@ Map any provider's voice shape into the `Voice` interface once, then hand the ar
 - Preview playback is driven by `AudioPlayer`, so only one voice plays at a time across the picker.
 - Voices without a `previewUrl` still render, but the hover play/pause overlay is suppressed.
 - Search filtering draws on each voice's `name` plus the common `labels` keys (`accent`, `gender`, `age`, `description`, `use case`).
-- Works controlled (`value` + `onValueChange`), uncontrolled (`onValueChange` only), or with an externally-driven popover (`open` + `onOpenChange`).
-- The `Voice` type is provider-agnostic — see [Providers](/docs/providers) for the full shape and how to map your backend onto it.
+- Selection is controlled through `value` and `onValueChange`. The popover manages its own open state unless you provide `open` and `onOpenChange`.
+- The `Voice` type is provider-agnostic — see [Providers](/docs/providers#voice) for the canonical contract and how to map your backend onto it.

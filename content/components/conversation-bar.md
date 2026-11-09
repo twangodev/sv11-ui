@@ -16,7 +16,7 @@ links:
 
 <Usage component="conversation-bar" />
 
-`<ConversationBar>` requires an `adapter` prop — see [Providers](/docs/providers#conversationadapter) for the interface and [Adapters](/docs/adapters) for provider recipes.
+`<ConversationBar>` accepts either a shared `session` or an `adapter` from which it creates its own session. See [Providers](/docs/providers#shared-conversation-sessions) for ownership and [Adapters](/docs/adapters) for provider recipes. Without either, it renders disconnected and reports an error if a connection is requested.
 
 ## Examples
 
@@ -26,8 +26,8 @@ Pass any object that matches `ConversationAdapter` and wire up the lifecycle cal
 
 ```svelte
 <script lang="ts">
-	import { ConversationBar } from "$lib/registry/ui/conversation-bar";
-	import type { ConversationAdapter } from "$lib/registry/ui/conversation-bar";
+	import { ConversationBar } from "$lib/components/ui/conversation-bar";
+	import type { ConversationAdapter } from "$lib/components/ui/conversation-bar";
 
 	const adapter: ConversationAdapter = createMyAdapter(/* ... */);
 </script>
@@ -61,20 +61,32 @@ Replace the placeholder text shown in the waveform slot while the session is idl
 <ConversationBar {adapter} disconnectedText="Tap to call support" />
 ```
 
-### Collecting Messages
+### Sharing a Session and Transcript
 
-Accumulate the incoming `ConversationMessage` stream into reactive state — handy for pairing `ConversationBar` with a transcript or chat view.
+Read the session snapshot when rendering messages. Stable IDs let interim/final updates replace one utterance instead of appending duplicate rows. The parent owns this session and disposes it when the parent is destroyed.
 
 ```svelte
 <script lang="ts">
-	import { ConversationBar } from "$lib/registry/ui/conversation-bar";
-	import type { ConversationAdapter, ConversationMessage } from "$lib/registry/ui/conversation-bar";
+	import { onDestroy } from "svelte";
+	import { ConversationBar } from "$lib/components/ui/conversation-bar";
+	import {
+		createConversationSession,
+		useConversation,
+		type ConversationAdapter,
+	} from "$lib/components/ui/voice-session";
 
-	const adapter: ConversationAdapter = createMyAdapter(/* ... */);
-	let messages: ConversationMessage[] = $state([]);
+	declare const adapter: ConversationAdapter;
+	const session = createConversationSession(adapter);
+	const conversation = useConversation(() => session);
+	onDestroy(() => {
+		void session.dispose();
+	});
 </script>
 
-<ConversationBar {adapter} onMessage={(m) => (messages = [...messages, m])} />
+<ConversationBar {session} />
+{#each conversation.snapshot.messages as message (message.id)}
+	<p>{message.source}: {message.message}</p>
+{/each}
 ```
 
 ## API Reference
@@ -83,9 +95,8 @@ Accumulate the incoming `ConversationMessage` stream into reactive state — han
 
 ## Notes
 
-- Every method on `ConversationAdapter` is driven from user interaction: the mic, keyboard, phone, and send buttons call `setMuted`, `sendContextualUpdate`, `disconnect`/`connect`, and `sendMessage` respectively.
-- The component tracks an internal `sessionId` so late callbacks from a prior `connect()` are ignored — swapping adapters or rapid connect/disconnect cycles cannot leak stale state into the UI.
-- Text input fires `sendContextualUpdate(text)` on every keystroke while the keyboard is open, and `sendMessage(text)` on `Enter` (shift-enter inserts a newline). Adapters that do not implement contextual updates can make `sendContextualUpdate` a no-op.
-- The waveform visualizes the active microphone stream while `connected && !muted`. The mic, keyboard, and end-call buttons are disabled outside the `connected` state.
-- `onDestroy` calls `adapter.disconnect()` if a session is still active, so unmounting the component always releases the underlying resources.
-- `adapter` is a required prop on `ConversationBarProps`, so TypeScript will flag its omission at compile time. At runtime, pressing the phone button without an adapter would throw from `connect()` — the demo on this page uses a stub adapter that always rejects there to illustrate the `onError` path.
+- Passing an `adapter` creates a component-owned session. Passing a `session` subscribes to shared state and leaves disposal to its creator, so unmounting one control does not end another control's conversation.
+- `onMessage` observes adapter messages, including interim/final replacements. It does not report every local transcript change; use `session.snapshot.messages` for the complete current transcript.
+- Text input sends contextual updates while connected when that capability is supported; `Enter` sends a message and shift-enter inserts a newline.
+- The waveform samples the session's meter while connected and unmuted. It does not acquire another microphone.
+- Unsupported mute or text operations are disabled according to the adapter's capabilities. Errors are available through the session and `onError`.

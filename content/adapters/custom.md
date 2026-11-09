@@ -77,7 +77,7 @@ export function createSocketConversation(url: string): ConversationAdapter {
 
 Adapt the example protocol to your server and validate its payloads. Resolve `connect()` only once the transport and agent are ready. When startup is cancelled, settle the promise and release any microphone granted later. Events after disconnect are ignored by the session, but adapters still own cleanup of their underlying SDK resources.
 
-Reuse a stable message ID for interim and final versions of an utterance. Set `final: false` for partial text. Typed messages are added optimistically by the shared session; an echoed user message with the same text replaces the pending local turn.
+Reuse a stable message ID for interim and final versions of an utterance. Set `final: false` for partial text. By default, `textMessageOwner: "session"` inserts a typed turn after the adapter accepts it. Set `textMessageOwner: "adapter"` if your bridge emits that user turn itself. Correlate acknowledgements by stable ID; equal text alone does not identify the same utterance.
 
 For audio backends, implement `setMuted`, optionally `setInputDevice`, and either `getInputVolume`/`getOutputVolume` or `onAudioLevels`. Mark unsupported capabilities explicitly. `onActivityChange` accepts `idle`, `listening`, `thinking`, or `speaking`. An existing stream can be exposed through `onInputStream`; visualizations should reuse SDK meters or that stream.
 

@@ -7,7 +7,7 @@ description: Use any compatible AI SDK provider for transcription, voice forms, 
 npx shadcn-svelte@latest add https://sv11.ui.twango.dev/r/adapter-ai-sdk.json
 ```
 
-This optional integration provides server-side task factories. It does not provide a realtime conversation transport. Keep the `.server.ts` helper on your backend and use the lightweight HTTP helpers in browser components.
+This optional integration requires Node 22 or newer on the backend and provides server-side task factories. It does not provide a realtime conversation transport. Keep the `.server.ts` helper on your backend and use the lightweight HTTP helpers in browser components.
 
 ## Transcribe recorded audio
 

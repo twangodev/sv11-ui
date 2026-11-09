@@ -39,6 +39,8 @@ Install the transport appropriate to your backend separately, such as `@pipecat-
 
 The connection factory returns the connection parameters expected by your transport and backend. This does not make an arbitrary provider endpoint RTVI-compatible: your server must implement RTVI, commonly using Pipecat.
 
-The adapter maps current `UserInput` and `BotOutput` events to transcript updates, forwards speech/thinking activity and audio levels, applies microphone selection and mute, and attaches remote audio for playback. Text input calls `sendText`; contextual updates call `sendText` with `run_immediately: false` so they do not request an immediate answer. Explicit interruption is marked unsupported; conversational barge-in remains a backend/transport behavior.
+The adapter maps current `UserInput` and `BotOutput` events to transcript updates, forwards speech/thinking activity and audio levels, applies microphone selection and mute, and attaches remote audio for playback. Text input calls `sendText`. Context updates are unsupported by default: pass an `updateContext(client, text)` callback in the factory's optional third argument to use your application's context protocol. Explicit interruption is marked unsupported; conversational barge-in remains a backend/transport behavior.
+
+Pipecat owns submitted text turns through `textMessageOwner: "adapter"`, using message IDs to correlate its local acknowledgement with later transport events.
 
 Use a dedicated client. The adapter owns its connection, listeners, and remote audio elements, and releases them on disconnect. See [Pipecat's SDK overview](https://docs.pipecat.ai/api-reference/client/js/overview) and [transport documentation](https://docs.pipecat.ai/api-reference/client/js/transports/transport) for connection parameters.

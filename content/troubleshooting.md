@@ -56,11 +56,11 @@ If you are using a `data-theme` attribute or a different selector, component dar
 
 ## Component imports fail with "module not found"
 
-SvelteKit uses the `$lib` alias, not `@/`. Registry components land under `src/lib/registry/ui/<name>/` and should be imported via `$lib/registry/ui/<name>`:
+SvelteKit uses the `$lib` alias, not `@/`. Registry components use your `components.json` UI alias. With the standard alias, they land under `src/lib/components/ui/<name>/` and are imported via `$lib/components/ui/<name>`:
 
 ```svelte
 <script lang="ts">
-	import { Orb } from "$lib/registry/ui/orb";
+	import { Orb } from "$lib/components/ui/orb";
 </script>
 ```
 
