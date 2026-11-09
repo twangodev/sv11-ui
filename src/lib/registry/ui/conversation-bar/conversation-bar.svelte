@@ -85,11 +85,10 @@
 					onDisconnect?.();
 				}
 				if (next.error && next.error !== before.error) onError?.(next.error);
-				for (const message of next.messages)
-					if (!before.messages.includes(message)) onMessage?.(message);
 			});
 		});
 	});
+	$effect(() => voice.session.subscribeMessages((message) => untrack(() => onMessage?.(message))));
 	function handleStartOrEnd() {
 		if (isConnected || isConnecting) void voice.session.disconnect();
 		else void voice.session.connect().catch(() => {});
@@ -105,7 +104,7 @@
 			textInput = "";
 			onSendMessage?.(text);
 		} catch {
-			/* Session exposes the error to controls and callbacks. */
+			return;
 		}
 	}
 	function handleContextualUpdate() {

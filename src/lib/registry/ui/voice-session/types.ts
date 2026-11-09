@@ -3,11 +3,11 @@ export type AgentActivity = "idle" | "listening" | "thinking" | "speaking";
 export type ConversationMode = "speaking" | "listening";
 
 export interface ConversationMessage {
-	id?: string;
-	source: "user" | "ai";
-	message: string;
+	readonly id?: string;
+	readonly source: "user" | "ai";
+	readonly message: string;
 	/** Reuse the id to replace an interim transcript with its final text. */
-	final?: boolean;
+	readonly final?: boolean;
 }
 export interface AudioLevels {
 	input: number;
@@ -33,7 +33,10 @@ export interface ConversationCapabilities {
 	interrupt?: boolean;
 	audioLevels?: boolean;
 }
+export type TextMessageOwner = "session" | "adapter";
 export interface ConversationAdapter {
+	/** The adapter must emit typed turns with stable IDs when it owns them. Defaults to session. */
+	readonly textMessageOwner?: TextMessageOwner;
 	readonly capabilities?: ConversationCapabilities;
 	connect(config: ConversationConfig): Promise<void>;
 	disconnect(): void | Promise<void>;

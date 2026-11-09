@@ -47,15 +47,27 @@ describe("shared conversation session", () => {
 		]);
 		expect(first.mock.lastCall?.[0]).toBe(second.mock.lastCall?.[0]);
 	});
-	it("reconciles SDK echoes with a pending typed user turn", async () => {
+	it("preserves distinct spoken turns with the same text as local input", async () => {
+		const f = fake(),
+			session = new ConversationSession(f.adapter),
+			messages = vi.fn();
+		session.subscribeMessages(messages);
+		await session.sendMessage("yes");
+		expect(messages).not.toHaveBeenCalled();
+		f.events.onMessage({ id: "spoken", source: "user", message: "yes" });
+		expect(session.snapshot.messages).toHaveLength(2);
+		expect(messages).toHaveBeenCalledOnce();
+	});
+	it("lets adapters correlate typed turns and echoes by stable ID", async () => {
 		const f = fake(),
 			session = new ConversationSession(f.adapter);
+		Object.assign(f.adapter, { textMessageOwner: "adapter" });
+		f.adapter.sendMessage = async (message) => {
+			f.events.onMessage({ id: "typed", source: "user", message });
+		};
 		await session.sendMessage("hello");
-		f.events.onMessage({ id: "provider-1", source: "user", message: "hello" });
+		f.events.onMessage({ id: "typed", source: "user", message: "hello", final: true });
 		expect(session.snapshot.messages).toHaveLength(1);
-		await session.sendMessage("hello");
-		f.events.onMessage({ id: "provider-2", source: "user", message: "hello" });
-		expect(session.snapshot.messages).toHaveLength(2);
 	});
 	it("settles cancellation during startup and ignores late callbacks", async () => {
 		const f = fake(),
@@ -68,8 +80,9 @@ describe("shared conversation session", () => {
 		const session = new ConversationSession(f.adapter),
 			connect = session.connect();
 		await Promise.resolve();
+		const rejected = expect(connect).rejects.toMatchObject({ name: "AbortError" });
 		await session.disconnect();
-		await connect;
+		await rejected;
 		opening.resolve();
 		await Promise.resolve();
 		await Promise.resolve();
@@ -112,7 +125,7 @@ describe("shared conversation session", () => {
 		);
 		expect(f.adapter.sendContextualUpdate).not.toHaveBeenCalled();
 	});
-	it("retains operation failures and rolls back failed typed input", async () => {
+	it("retains operation failures without adding failed typed input", async () => {
 		const f = fake();
 		f.adapter.sendMessage = vi.fn(() => {
 			throw new Error("socket closed");
@@ -136,6 +149,56 @@ describe("shared conversation session", () => {
 		expect(session.snapshot.muted).toBe(false);
 		expect(session.snapshot.inputLevel).toBe(0);
 	});
+	it("cleans up remote closure before reconnecting and resets device and mute state", async () => {
+		const f = fake(),
+			teardown = deferred(),
+			session = new ConversationSession(f.adapter);
+		f.adapter.setInputDevice = vi.fn();
+		await expect(session.setInputDevice("early")).rejects.toThrow("Connect before");
+		await session.connect();
+		await session.setMuted(true);
+		await session.setInputDevice("mic");
+		f.adapter.disconnect = vi.fn(() => teardown.promise);
+		f.events.onDisconnect();
+		const reconnect = session.connect();
+		expect(session.snapshot.muted).toBe(false);
+		expect(session.snapshot.inputDeviceId).toBeUndefined();
+		expect(f.adapter.connect).toHaveBeenCalledOnce();
+		teardown.resolve();
+		await reconnect;
+		expect(f.adapter.connect).toHaveBeenCalledTimes(2);
+	});
+	it("honors a later disconnect while reconnect is waiting for teardown", async () => {
+		const f = fake(),
+			teardown = deferred(),
+			session = new ConversationSession(f.adapter);
+		await session.connect();
+		f.adapter.disconnect = () => teardown.promise;
+		const ending = session.disconnect();
+		const reconnect = session.connect();
+		const rejected = expect(reconnect).rejects.toMatchObject({ name: "AbortError" });
+		void session.disconnect();
+		teardown.resolve();
+		await ending;
+		await rejected;
+		expect(session.snapshot.status).toBe("disconnected");
+		expect(f.adapter.connect).toHaveBeenCalledOnce();
+	});
+	it("rejects cancelled sends without adding a turn to the next connection", async () => {
+		const f = fake(),
+			pending = deferred(),
+			session = new ConversationSession(f.adapter);
+		f.adapter.sendMessage = vi.fn(() => pending.promise);
+		await session.connect();
+		const sending = session.sendMessage("late");
+		await vi.waitFor(() => expect(f.adapter.sendMessage).toHaveBeenCalledOnce());
+		const rejected = expect(sending).rejects.toMatchObject({ name: "AbortError" });
+		await session.disconnect();
+		await session.connect();
+		pending.resolve();
+		await rejected;
+		expect(session.snapshot.messages).toEqual([]);
+	});
 	it("cannot fabricate a session when no adapter is supplied", async () => {
 		const session = new ConversationSession();
 		await expect(session.connect()).rejects.toThrow("Provide a conversation adapter");
@@ -154,10 +217,11 @@ describe("shared conversation session", () => {
 		const session = new ConversationSession(f.adapter);
 		await session.connect();
 		const muting = session.setMuted(true);
+		const rejected = expect(muting).rejects.toMatchObject({ name: "AbortError" });
 		await session.disconnect();
 		await session.connect();
 		pending.resolve();
-		await muting;
+		await rejected;
 		expect(session.snapshot.muted).toBe(false);
 	});
 });
