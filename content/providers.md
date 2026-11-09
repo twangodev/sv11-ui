@@ -3,7 +3,19 @@ title: Providers
 description: Provider-agnostic adapter interfaces for wiring sv11 components to any backend.
 ---
 
-sv11 components do not ship with backend bindings. Instead, they consume small TypeScript adapter interfaces — you pass an object that conforms to the interface, and the component calls into it. Components plus adapters equal a working system, and you are free to wrap ElevenLabs, OpenAI, Deepgram, the Web Speech API, or any custom service.
+sv11 components consume small TypeScript adapter interfaces. Optional [SDK adapters](/docs/adapters) provide ElevenLabs, Pipecat, LiveKit, and AI SDK integrations. Install the integration you use, or implement the same contract for a custom backend. Ordinary UI installs do not pull in SDKs.
+
+## Shared conversation sessions
+
+`createConversationSession(adapter)` creates one observable session. Pass it as `session` to `ConversationBar`, any voice-chat block, and `MicSelector`. All controls share connection state, transcript updates, mute and device state, and audio levels. The creator disposes an external session when its owning view is destroyed. Passing `adapter` directly creates a local session owned by that component.
+
+The session exposes `snapshot`, `subscribe`, `connect`, `disconnect`, `sendMessage`, `sendContextualUpdate`, `setMuted`, `setInputDevice`, `interrupt`, `getInputVolume`, `getOutputVolume`, `clearMessages`, and `dispose`. Its snapshot contains `status`, `activity`, `messages`, `muted`, `inputDeviceId`, `inputStream`, `inputLevel`, `outputLevel`, and `error`.
+
+`useConversation(() => session)` makes a session's snapshot reactive in a Svelte component. It does not take ownership of an external session. To share state, construct the session in the parent component; do not create a server-global session shared between requests.
+
+Adapters can declare `capabilities` for text, context, mute, input-device switching, explicit interruption, and audio levels. A capability set to `false` is rejected with `UnsupportedCapabilityError`. Controls hide or disable unsupported operations where applicable. Optional adapter methods are required before the corresponding operation can run.
+
+Conversation messages can include a stable `id` and `final` flag. Reusing an ID replaces the previous transcript version; SDK echoes of typed user messages reconcile with pending local turns. Connection callbacks may additionally report activity, levels, or a stream through `onActivityChange`, `onAudioLevels`, and `onInputStream`. `signal` cancels startup.
 
 ## ConversationAdapter
 
@@ -73,12 +85,12 @@ export interface TranscriptionAdapter {
 	 * Close the connection cleanly. Any in-flight partial transcript is
 	 * preserved by the component and passed to the user's `onStop` callback.
 	 */
-	stop(): void;
+	stop(): void | Promise<void>;
 	/**
 	 * Close the connection AND discard any in-flight partial transcript.
 	 * The component clears partial + committed state before firing `onCancel`.
 	 */
-	cancel(): void;
+	cancel(): void | Promise<void>;
 }
 ```
 
@@ -95,7 +107,7 @@ export interface TranscriptionAdapterCallbacks {
 ### Contract details
 
 - **`start()` resolution timing** — The returned promise must only resolve once the connection is actually ready for audio (i.e. after `onConnect` has fired or the transport is confirmed open). Rejection is reserved for authentication, permission, or initialization failures so the component can surface them to the user.
-- **`stop()` vs `cancel()`** — Both close the connection, but they differ in how the component treats any partial transcript still in flight. `stop()` preserves that partial and forwards it to the user's `onStop` callback, so it is the right choice when the user is committing what they said. `cancel()` causes the component to clear partial and committed state before firing `onCancel`, so it is the right choice when the user is throwing the utterance away.
+- **`stop()` vs `cancel()`** — `stop()` can be asynchronous: finalize pending speech, deliver its committed transcript, then resolve. The component preserves any remaining partial in `onStop`. `cancel()` discards pending work and clears the component state; `onCancel` receives a snapshot taken before clearing.
 - **Partial vs committed** — Call `onPartialTranscript` for interim hypotheses that may still change, and `onCommittedTranscript` once the provider finalizes a segment.
 
 ## Voice
