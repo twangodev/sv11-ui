@@ -18,6 +18,7 @@ vi.mock("@elevenlabs/client", () => ({
 	CommitStrategy: { VAD: "vad" },
 	RealtimeEvents: {
 		SESSION_STARTED: "ready",
+		AUDIO_STARTED: "audio",
 		PARTIAL_TRANSCRIPT: "partial",
 		COMMITTED_TRANSCRIPT: "final",
 		ERROR: "error",
@@ -40,16 +41,22 @@ function callbacks(): ConversationConfig {
 beforeEach(() => {
 	vi.clearAllMocks();
 	sdk.events.clear();
-	sdk.scribe.mockReturnValue({
-		on: (name: string, handler: (data?: unknown) => void) => sdk.events.set(name, handler),
-		close: sdk.close,
-		commit: sdk.commit,
-		send: vi.fn(),
+	sdk.scribe.mockImplementation(() => {
+		const events = new Map<string, (data?: unknown) => void>();
+		sdk.events = events;
+		return {
+			events,
+			on: (name: string, handler: (data?: unknown) => void) => events.set(name, handler),
+			close: vi.fn(() => sdk.close()),
+			commit: vi.fn(() => sdk.commit()),
+			send: vi.fn(),
+		};
 	});
 });
 describe("ElevenLabs SDK bridge", () => {
 	it("forwards native messages, controls and level meters", async () => {
 		const native = {
+			type: "voice",
 			endSession: vi.fn(),
 			sendUserMessage: vi.fn(),
 			sendContextualUpdate: vi.fn(),
@@ -87,13 +94,13 @@ describe("ElevenLabs SDK bridge", () => {
 		const adapter = createElevenLabsConversation(async () => ({ agentId: "test" }));
 		const controller = new AbortController();
 		const opening = adapter.connect({ ...callbacks(), signal: controller.signal });
-		await Promise.resolve();
+		await vi.waitFor(() => expect(sdk.start).toHaveBeenCalledOnce());
 		controller.abort();
 		await adapter.disconnect();
 		const endSession = vi.fn();
 		finish({ endSession });
 		await opening;
-		expect(endSession).toHaveBeenCalledOnce();
+		await vi.waitFor(() => expect(endSession).toHaveBeenCalledOnce());
 	});
 	it("waits for the final committed transcript before closing Scribe", async () => {
 		const adapter = createElevenLabsTranscription({ getToken: async () => "ephemeral" });
@@ -104,6 +111,7 @@ describe("ElevenLabs SDK bridge", () => {
 		await opening;
 		sdk.events.get("partial")?.({ text: "hel" });
 		const stopping = adapter.stop();
+		expect(adapter.stop()).toBe(stopping);
 		expect(sdk.commit).toHaveBeenCalledOnce();
 		expect(sdk.close).not.toHaveBeenCalled();
 		sdk.events.get("final")?.({ text: "hello" });
@@ -148,5 +156,105 @@ describe("ElevenLabs SDK bridge", () => {
 		const stopping = adapter.stop();
 		sdk.events.get("close")?.();
 		await expect(stopping).rejects.toThrow("before finalizing");
+	});
+	it("advertises only supported text-only controls and rejects disconnected device changes", async () => {
+		const adapter = createElevenLabsConversation(async () => ({ agentId: "test", textOnly: true }));
+		await expect(adapter.setInputDevice?.("mic-2")).rejects.toThrow("not connected");
+		const native = {
+			type: "text",
+			endSession: vi.fn(),
+			setMicMuted: vi.fn(),
+		};
+		sdk.start.mockResolvedValue(native);
+		await adapter.connect(callbacks());
+		expect(adapter.capabilities).toMatchObject({
+			text: true,
+			mute: false,
+			inputDevice: false,
+			audioLevels: false,
+		});
+		expect(() => adapter.setMuted(true)).toThrow("does not support mute");
+		await expect(adapter.setInputDevice?.("mic-2")).rejects.toThrow("does not support inputDevice");
+		expect(native.setMicMuted).not.toHaveBeenCalled();
+		await adapter.disconnect();
+	});
+
+	it.each(["microphone", "manual"])(
+		"flushes submitted %s audio before the first partial transcript",
+		async (mode) => {
+			const adapter = createElevenLabsTranscription({ getToken: async () => "token" });
+			const committed = vi.fn();
+			const opening = adapter.start({ onCommittedTranscript: committed });
+			await vi.waitFor(() => expect(sdk.events.has("ready")).toBe(true));
+			sdk.events.get("ready")?.();
+			await opening;
+			if (mode === "microphone") sdk.events.get("audio")?.();
+			else adapter.sendAudio?.(new Uint8Array([1, 2, 3]));
+			const stopping = adapter.stop();
+			expect(sdk.commit).toHaveBeenCalledOnce();
+			expect(sdk.close).not.toHaveBeenCalled();
+			sdk.events.get("final")?.({ text: "complete phrase" });
+			await stopping;
+			expect(committed).toHaveBeenCalledWith("complete phrase");
+			expect(sdk.close).toHaveBeenCalledOnce();
+		}
+	);
+
+	it("keeps a restarted transcription alive when a cancelled stop finishes", async () => {
+		const adapter = createElevenLabsTranscription({ getToken: async () => "token" });
+		const firstOpening = adapter.start({});
+		await vi.waitFor(() => expect(sdk.scribe).toHaveBeenCalledTimes(1));
+		const first = sdk.scribe.mock.results[0].value;
+		first.events.get("ready")?.();
+		await firstOpening;
+		first.events.get("partial")?.({ text: "discard" });
+		const stopping = adapter.stop();
+		adapter.cancel();
+		const committed = vi.fn();
+		const nextOpening = adapter.start({ onCommittedTranscript: committed });
+		await stopping;
+		await vi.waitFor(() => expect(sdk.scribe).toHaveBeenCalledTimes(2));
+		const next = sdk.scribe.mock.results[1].value;
+		next.events.get("ready")?.();
+		await nextOpening;
+		first.events.get("final")?.({ text: "stale" });
+		next.events.get("final")?.({ text: "current" });
+		expect(committed).toHaveBeenCalledExactlyOnceWith("current");
+		expect(first.close).toHaveBeenCalledOnce();
+		expect(next.close).not.toHaveBeenCalled();
+		adapter.cancel();
+	});
+
+	it("queues a restart until finalization closes the preceding connection", async () => {
+		const adapter = createElevenLabsTranscription({ getToken: async () => "token" });
+		const opening = adapter.start({});
+		expect(adapter.start({})).toBe(opening);
+		await vi.waitFor(() => expect(sdk.scribe).toHaveBeenCalledTimes(1));
+		sdk.events.get("ready")?.();
+		await opening;
+		sdk.events.get("partial")?.({ text: "pending" });
+		const stopping = adapter.stop();
+		const restarting = adapter.start({});
+		expect(sdk.scribe).toHaveBeenCalledTimes(1);
+		sdk.events.get("final")?.({ text: "done" });
+		await stopping;
+		await vi.waitFor(() => expect(sdk.scribe).toHaveBeenCalledTimes(2));
+		sdk.events.get("ready")?.();
+		await restarting;
+		adapter.cancel();
+	});
+
+	it("cancels a restart queued behind a finalizing transcription", async () => {
+		const adapter = createElevenLabsTranscription({ getToken: async () => "token" });
+		const opening = adapter.start({});
+		await vi.waitFor(() => expect(sdk.scribe).toHaveBeenCalledTimes(1));
+		sdk.events.get("ready")?.();
+		await opening;
+		sdk.events.get("partial")?.({ text: "pending" });
+		const stopping = adapter.stop();
+		const restarting = adapter.start({});
+		adapter.cancel();
+		await Promise.all([stopping, restarting]);
+		expect(sdk.scribe).toHaveBeenCalledTimes(1);
 	});
 });

@@ -1085,7 +1085,7 @@
 			"type": "registry:ui",
 			"title": "elevenlabs adapter",
 			"description": "Optional elevenlabs integration for voice sessions and tasks.",
-			"dependencies": ["@elevenlabs/client"],
+			"dependencies": ["@elevenlabs/client@^1.35.0"],
 			"registryDependencies": ["https://sv11.ui.twango.dev/r/voice-session.json"],
 			"files": [
 				{
@@ -1100,7 +1100,7 @@
 			"type": "registry:ui",
 			"title": "pipecat adapter",
 			"description": "Optional pipecat integration for voice sessions and tasks.",
-			"dependencies": ["@pipecat-ai/client-js"],
+			"dependencies": ["@pipecat-ai/client-js@^1.16.0"],
 			"registryDependencies": ["https://sv11.ui.twango.dev/r/voice-session.json"],
 			"files": [
 				{
@@ -1115,7 +1115,7 @@
 			"type": "registry:ui",
 			"title": "livekit adapter",
 			"description": "Optional livekit integration for voice sessions and tasks.",
-			"dependencies": ["livekit-client"],
+			"dependencies": ["livekit-client@^2.23.0"],
 			"registryDependencies": ["https://sv11.ui.twango.dev/r/voice-session.json"],
 			"files": [
 				{
@@ -1130,7 +1130,7 @@
 			"type": "registry:ui",
 			"title": "ai-sdk adapter",
 			"description": "Optional ai-sdk integration for voice sessions and tasks.",
-			"dependencies": ["ai"],
+			"dependencies": ["ai@^7.0.165"],
 			"registryDependencies": ["https://sv11.ui.twango.dev/r/voice-session.json"],
 			"files": [
 				{
