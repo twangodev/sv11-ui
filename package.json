@@ -52,6 +52,7 @@
 		"globals": "^17.5.0",
 		"livekit-client": "2.23.0",
 		"magic-string": "^0.30.21",
+		"mdast-util-from-markdown": "^2.0.3",
 		"mdsx": "^0.0.7",
 		"mode-watcher": "^1.1.0",
 		"motion": "^12.38.0",

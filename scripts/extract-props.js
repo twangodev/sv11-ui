@@ -2,8 +2,8 @@
 /**
  * Extracts component prop metadata from Svelte registry sources.
  *
- * Pure function — no I/O. Consumers (svelte.config.js preprocessor, vite.config.ts
- * plugin) call `extractAllProps()` and use the returned index directly.
+ * Reads registry component sources and memoizes their documented prop metadata.
+ * Consumers call `extractAllProps()` and use the returned index directly.
  *
  * For each component listed in `content/components/*.md` (excluding index.md),
  * reads `src/lib/registry/ui/<name>/<name>.svelte`, parses its TypeScript
@@ -20,6 +20,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Project, SyntaxKind } from "ts-morph";
+import { parse, print } from "svelte/compiler";
 
 const STRICT_MODE = false;
 
@@ -30,7 +31,7 @@ const REGISTRY_DIR = join(ROOT, "src", "lib", "registry", "ui");
 
 /**
  * @typedef {{ name: string; type: string; optional: boolean; description: string; default: string }} Prop
- * @typedef {{ props: Prop[] }} ExtractResult
+ * @typedef {{ props: Prop[]; inheritedProps: string[] }} ExtractResult
  * @typedef {Record<string, ExtractResult>} PropsIndex
  */
 
@@ -46,13 +47,12 @@ function listComponentNames() {
 		.sort();
 }
 
-/** @param {string} source */
-function splitScripts(source) {
-	const moduleMatch = source.match(/<script\b[^>]*\bmodule\b[^>]*>([\s\S]*?)<\/script>/);
-	const instanceMatch = source.match(/<script(?![^>]*\bmodule\b)[^>]*>([\s\S]*?)<\/script>/);
+/** @param {string} source @param {string} filename */
+function parseComponentScripts(source, filename) {
+	const component = parse(source, { modern: true, filename });
 	return {
-		module: moduleMatch ? moduleMatch[1] : null,
-		instance: instanceMatch ? instanceMatch[1] : null,
+		module: component.module ? print(component.module.content).code : null,
+		instance: component.instance ? print(component.instance.content).code : null,
 	};
 }
 
@@ -64,28 +64,34 @@ function splitScripts(source) {
  *
  * External references (e.g. `HTMLAttributes<HTMLDivElement>`, `Omit<...>`,
  * `ComponentProps<typeof Button>`) can't be resolved without a real TS program,
- * so they contribute no members. We deliberately keep the extractor local and
- * document this in the Props shape.
+ * so they contribute no members. Record them separately so public docs state
+ * which inherited props are accepted but not expanded in the generated table.
  *
  * @param {import("ts-morph").TypeNode | undefined} typeNode
  * @param {import("ts-morph").SourceFile[]} files
+ * @param {Set<string>} inheritedProps
  * @param {Set<string>} [seen]
  * @returns {import("ts-morph").PropertySignature[]}
  */
-function collectLiteralMembers(typeNode, files, seen = new Set()) {
+function collectLiteralMembers(typeNode, files, inheritedProps, seen = new Set()) {
 	if (!typeNode) return [];
 	if (typeNode.isKind(SyntaxKind.TypeLiteral)) {
 		return typeNode.getMembers().filter((m) => m.isKind(SyntaxKind.PropertySignature));
 	}
 	if (typeNode.isKind(SyntaxKind.IntersectionType)) {
-		return typeNode.getTypeNodes().flatMap((n) => collectLiteralMembers(n, files, seen));
+		return typeNode
+			.getTypeNodes()
+			.flatMap((n) => collectLiteralMembers(n, files, inheritedProps, seen));
 	}
 	if (typeNode.isKind(SyntaxKind.TypeReference)) {
 		const refName = typeNode.asKindOrThrow(SyntaxKind.TypeReference).getTypeName().getText();
 		if (seen.has(refName)) return [];
 		const resolved = findTypeAlias(files, refName);
-		if (!resolved) return [];
-		return collectLiteralMembers(resolved, files, new Set([...seen, refName]));
+		if (!resolved) {
+			inheritedProps.add(typeNode.getText());
+			return [];
+		}
+		return collectLiteralMembers(resolved, files, inheritedProps, new Set([...seen, refName]));
 	}
 	return [];
 }
@@ -251,7 +257,10 @@ function extractForComponent(componentName) {
 	}
 
 	const source = readFileSync(svelteFile, "utf-8");
-	const { module: moduleSource, instance: instanceSource } = splitScripts(source);
+	const { module: moduleSource, instance: instanceSource } = parseComponentScripts(
+		source,
+		svelteFile
+	);
 
 	// One Project per component, reused for both Props-type resolution and
 	// destructuring-default extraction. Avoids double-allocating a ts-morph
@@ -286,7 +295,8 @@ function extractForComponent(componentName) {
 		);
 	}
 
-	const members = collectLiteralMembers(typeNode, files);
+	const inheritedProps = new Set();
+	const members = collectLiteralMembers(typeNode, files, inheritedProps);
 	const destructuringDefaults = parseDestructuringDefaults(instanceFile);
 	/** @type {Prop[]} */
 	const props = [];
@@ -313,7 +323,7 @@ function extractForComponent(componentName) {
 		);
 	}
 
-	return { props };
+	return { props, inheritedProps: [...inheritedProps] };
 }
 
 /**
